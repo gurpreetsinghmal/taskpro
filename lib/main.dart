@@ -4,6 +4,7 @@ import 'package:taskpro/modules/app_routes/app_pages.dart';
 import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:taskpro/modules/splash/splash_bindings.dart';
 import 'package:taskpro/modules/splash/splash_screen.dart';
+import 'package:taskpro/theme/app_colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,10 +21,7 @@ class MyApp extends StatelessWidget {
       initialBinding: SplashBinding(),
       initialRoute: AppRoutes.splash,
       title: 'Task Pro',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: AppColors.primaryDark),
       home: const SplashScreen(),
     );
   }

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:taskpro/modules/worker/dashboard/w_dashboard_controller.dart';
+
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
@@ -59,7 +59,7 @@ class LoginController extends GetxController {
     await storage.write(StorageKeys.accessToken, 'your_access_token');
     var data={"name":usernameController.text,"role":"worker","email":"test@gmail.com"};
     await storage.write(StorageKeys.empname, jsonEncode(data));
-    Get.offAll(() => MainLayoutScreen());
+    Get.offAll(() => WorkerDashboardScreen());
   }
 
   @override

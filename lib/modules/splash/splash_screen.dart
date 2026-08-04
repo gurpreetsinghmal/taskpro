@@ -1,8 +1,9 @@
-import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/modules/splash/splash_controller.dart';
+import 'package:taskpro/theme/app_colors.dart';
 
 // Note: Replace these imports with your project's actual path if needed:
 // import 'package:taskpro/theme/app_colors.dart';
@@ -463,11 +464,4 @@ class _BackgroundPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Color palette constants (matches AppColors contract)
-class AppColors {
-  static const Color background = Color(0xFFF8FAFC);
-  static const Color primary = Color(0xFF2563EB); // Vibrant Modern Royal Blue
-  static const Color primaryDark = Color(0xFF1D4ED8);
-  static const Color textSecondary = Color(0xFF64748B); // Sleek Slate Gray
-}
 

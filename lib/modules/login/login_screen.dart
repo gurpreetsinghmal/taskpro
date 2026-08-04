@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/modules/login/login_controller.dart';
-import 'package:taskpro/modules/splash/splash_screen.dart';
+
+import 'package:taskpro/theme/app_colors.dart';
 
 
 
