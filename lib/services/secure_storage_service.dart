@@ -35,4 +35,8 @@ class SecureStorageService {
     final token = await read(StorageKeys.accessToken);
     return token != null && token.isNotEmpty;
   }
+  Future<String?> getAccessToken() async{
+    final token = await read(StorageKeys.accessToken);
+    return token;
+  }
 }

@@ -6,6 +6,7 @@ import 'package:taskpro/modules/worker/dashboard/w_dashboard_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_screen.dart';
 
 import 'package:get/get.dart';
+import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
 class WorkerDashboardScreen extends StatelessWidget {
@@ -1323,11 +1324,16 @@ class RightProfileDrawer extends StatelessWidget {
               ),
               onPressed: () {
                 Navigator.pop(context);
+                final storage = SecureStorageService.instance;
+                storage.deleteAll();
                 Get.snackbar(
                   "Logged Out",
                   "Successfully logged out.",
+                  backgroundColor: AppColors.error,
+                  colorText: Colors.white,
                   snackPosition: SnackPosition.BOTTOM,
                 );
+                Get.offAllNamed('/login');
               },
               icon: Icon(Icons.logout, color: Colors.red.shade700, size: 18),
               label: Text(

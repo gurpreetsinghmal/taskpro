@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
+import 'package:taskpro/theme/app_colors.dart';
 
 class LoginController extends GetxController {
   final usernameController = TextEditingController();
@@ -50,7 +51,7 @@ class LoginController extends GetxController {
       'Success',
       'Logged in successfully!',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.shade600,
+      backgroundColor: AppColors.success,
       colorText: Colors.white,
       margin: const EdgeInsets.all(16),
     );

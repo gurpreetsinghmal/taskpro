@@ -1,17 +1,35 @@
 class UploadedPhotoModel {
   final String id;
-  final String imageUrl;
+  final String filePath;
+  final String fileName;
+  final int fileSizeBytes;
+  final String source;
   final String timestamp;
-  final String gpsLocation;
   final String caption;
 
-  UploadedPhotoModel({
+  const UploadedPhotoModel({
     required this.id,
-    required this.imageUrl,
+    required this.filePath,
+    required this.fileName,
+    required this.fileSizeBytes,
+    required this.source,
     required this.timestamp,
-    required this.gpsLocation,
     this.caption = '',
   });
+
+  String get readableFileSize {
+    if (fileSizeBytes < 1024) {
+      return '$fileSizeBytes B';
+    }
+
+    final kilobytes = fileSizeBytes / 1024;
+    if (kilobytes < 1024) {
+      return '${kilobytes.toStringAsFixed(1)} KB';
+    }
+
+    final megabytes = kilobytes / 1024;
+    return '${megabytes.toStringAsFixed(1)} MB';
+  }
 }
 
 class VerificationCheckItem {
@@ -22,4 +40,12 @@ class VerificationCheckItem {
     required this.title,
     this.isChecked = false,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'isChecked': isChecked,
+    };
+  }
 }
+

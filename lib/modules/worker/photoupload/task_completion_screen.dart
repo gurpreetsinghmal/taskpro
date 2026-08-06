@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
+import 'package:taskpro/theme/app_colors.dart';
+
 class TaskCompletionScreen extends StatelessWidget {
   const TaskCompletionScreen({super.key});
 
@@ -10,13 +15,17 @@ class TaskCompletionScreen extends StatelessWidget {
     final controller = Get.put(TaskCompletionController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.textWhite,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: AppColors.textWhite,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.secondary,
+            size: 18,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Column(
@@ -27,16 +36,16 @@ class TaskCompletionScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
+                color: AppColors.textPrimary,
               ),
             ),
             Obx(
-                  () => Text(
+              () => Text(
                 "ID: ${controller.taskId.value}",
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
@@ -52,15 +61,19 @@ class TaskCompletionScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF2563EB)),
+                const Icon(
+                  Icons.shield_outlined,
+                  size: 14,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(width: 4),
                 Obx(
-                      () => Text(
+                  () => Text(
                     controller.taskCategory.value,
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2563EB),
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -87,9 +100,6 @@ class TaskCompletionScreen extends StatelessWidget {
             _buildNotesSection(controller),
             const SizedBox(height: 24),
 
-            _buildSignoffSection(controller),
-            const SizedBox(height: 32),
-
             _buildSubmitButton(context, controller),
             const SizedBox(height: 24),
           ],
@@ -104,7 +114,7 @@ class TaskCompletionScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: AppColors.textWhite),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -121,12 +131,12 @@ class TaskCompletionScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Obx(
-                      () => Text(
+                  () => Text(
                     controller.taskTitle.value,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -151,15 +161,19 @@ class TaskCompletionScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF2563EB)),
+              const Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: Obx(
-                      () => Text(
+                  () => Text(
                     controller.taskLocation.value,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textHint,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -170,14 +184,18 @@ class TaskCompletionScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.person_outline_rounded, size: 14, color: Color(0xFF64748B)),
+              const Icon(
+                Icons.person_outline_rounded,
+                size: 14,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 4),
               Obx(
-                    () => Text(
+                () => Text(
                   "Assigned to: ${controller.workerName.value}",
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textHint,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -189,7 +207,10 @@ class TaskCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImageUploadSection(BuildContext context, TaskCompletionController controller) {
+  Widget _buildImageUploadSection(
+    BuildContext context,
+    TaskCompletionController controller,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -198,25 +219,29 @@ class TaskCompletionScreen extends StatelessWidget {
           children: [
             const Row(
               children: [
-                Icon(Icons.camera_alt_outlined, size: 18, color: Color(0xFF2563EB)),
+                Icon(
+                  Icons.camera_alt_outlined,
+                  size: 18,
+                  color: AppColors.primary,
+                ),
                 SizedBox(width: 6),
                 Text(
                   "Proof of Work (Photos)",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
             Obx(
-                  () => Text(
+              () => Text(
                 "${controller.uploadedPhotos.length} / 4 Photos",
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF64748B),
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -226,7 +251,7 @@ class TaskCompletionScreen extends StatelessWidget {
 
         // Photo Grid Layout
         Obx(
-              () => GridView.builder(
+          () => GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -235,7 +260,9 @@ class TaskCompletionScreen extends StatelessWidget {
               mainAxisSpacing: 12,
               childAspectRatio: 1.1,
             ),
-            itemCount: controller.uploadedPhotos.length + (controller.uploadedPhotos.length < 4 ? 1 : 0),
+            itemCount:
+                controller.uploadedPhotos.length +
+                (controller.uploadedPhotos.length < 4 ? 1 : 0),
             itemBuilder: (context, index) {
               // Add Photo Picker Button Tile
               if (index == controller.uploadedPhotos.length) {
@@ -251,7 +278,10 @@ class TaskCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAddPhotoButton(BuildContext context, TaskCompletionController controller) {
+  Widget _buildAddPhotoButton(
+    BuildContext context,
+    TaskCompletionController controller,
+  ) {
     return InkWell(
       onTap: () => _showPhotoPickerSourceSheet(context, controller),
       borderRadius: BorderRadius.circular(16),
@@ -259,18 +289,19 @@ class TaskCompletionScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFEFF6FF),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFFBFDBFE),
-            width: 1.5,
-          ),
+          border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor: Color(0xFF2563EB),
-              child: Icon(Icons.add_a_photo_rounded, color: Colors.white, size: 20),
+              backgroundColor: AppColors.primary,
+              child: Icon(
+                Icons.add_a_photo_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
             SizedBox(height: 8),
             Text(
@@ -278,15 +309,129 @@ class TaskCompletionScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2563EB),
+                color: AppColors.primary,
               ),
             ),
             SizedBox(height: 2),
             Text(
               "Camera or Gallery",
-              style: TextStyle(
-                fontSize: 10,
-                color: Color(0xFF64748B),
+              style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoTile(
+    BuildContext context,
+    UploadedPhotoModel photo,
+    TaskCompletionController controller,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _showAttachedPhotoPreview(context, photo),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(
+              File(photo.filePath),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color(0xFFE2E8F0),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                    color: Color(0xFF64748B),
+                    size: 32,
+                  ),
+                );
+              },
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.25),
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.75),
+                  ],
+                ),
+              ),
+            ),
+            const Center(
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.black45,
+                child: Icon(
+                  Icons.zoom_in_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 6,
+              child: GestureDetector(
+                onTap: () => controller.removePhoto(photo.id),
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white,
+                    size: 15,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 8,
+              left: 8,
+              right: 8,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        photo.source == 'Camera'
+                            ? Icons.camera_alt_rounded
+                            : Icons.photo_library_rounded,
+                        color: Colors.amber,
+                        size: 11,
+                      ),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          '${photo.source} • ${photo.readableFileSize}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    photo.timestamp,
+                    style: const TextStyle(fontSize: 8, color: Colors.white70),
+                  ),
+                ],
               ),
             ),
           ],
@@ -295,151 +440,202 @@ class TaskCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotoTile(BuildContext context, UploadedPhotoModel photo, TaskCompletionController controller) {
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            image: DecorationImage(
-              image: NetworkImage(photo.imageUrl),
-              fit: BoxFit.cover,
-            ),
+  Future<void> _showAttachedPhotoPreview(
+    BuildContext context,
+    UploadedPhotoModel photo,
+  ) {
+    return showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.black,
+          insetPadding: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ),
-        // Overlay Gradient for legibility
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.3),
-                Colors.transparent,
-                Colors.black.withOpacity(0.7),
-              ],
-            ),
-          ),
-        ),
-        // Delete Photo Button
-        Positioned(
-          top: 6,
-          right: 6,
-          child: GestureDetector(
-            onTap: () => controller.removePhoto(photo.id),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.black54,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.close, color: Colors.white, size: 14),
-            ),
-          ),
-        ),
-        // GPS & Time Tag Info Box
-        Positioned(
-          bottom: 8,
-          left: 8,
-          right: 8,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.pin_drop, color: Colors.amber, size: 10),
-                  const SizedBox(width: 2),
-                  Expanded(
-                    child: Text(
-                      photo.gpsLocation,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(dialogContext).size.height * 0.82,
+                  minHeight: 320,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 5,
+                    child: Center(
+                      child: Image.file(
+                        File(photo.filePath),
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Text(
+                              'Unable to preview this photo.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          );
+                        },
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
+                ),
               ),
-              Text(
-                photo.timestamp,
-                style: const TextStyle(
-                  fontSize: 8,
-                  color: Colors.white70,
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton.filled(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ),
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        photo.fileName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${photo.source} • ${photo.readableFileSize} • ${photo.timestamp}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  void _showPhotoPickerSourceSheet(BuildContext context, TaskCompletionController controller) {
-    showModalBottomSheet(
+  void _showPhotoPickerSourceSheet(
+      BuildContext context,
+      TaskCompletionController controller,
+      ) {
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Upload Photo Proof",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "Photos will be geo-tagged and timestamped automatically.",
-                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    shape: BoxShape.circle,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add Photo Proof',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
                   ),
-                  child: const Icon(Icons.camera_alt_rounded, color: Color(0xFF2563EB)),
                 ),
-                title: const Text("Take Photo with Camera", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                subtitle: const Text("Snap instant field progress", style: TextStyle(fontSize: 11)),
-                onTap: () {
-                  Navigator.pop(context);
-                  controller.simulateAddPhoto('Camera');
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.purple.shade50,
-                    shape: BoxShape.circle,
+                const SizedBox(height: 4),
+                const Text(
+                  'You can preview and confirm the photo before it is attached. It will upload only after you submit the task.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                    height: 1.4,
                   ),
-                  child: const Icon(Icons.photo_library_rounded, color: Colors.purple),
                 ),
-                title: const Text("Choose from Device Gallery", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                subtitle: const Text("Select existing inspection photos", style: TextStyle(fontSize: 11)),
-                onTap: () {
-                  Navigator.pop(context);
-                  controller.simulateAddPhoto('Gallery');
-                },
-              ),
-            ],
+                const SizedBox(height: 16),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  title: const Text(
+                    'Take Photo with Camera',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Capture a new work-completion photo',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await controller.pickPhoto(context, ImageSource.camera);
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.photo_library_rounded,
+                      color: Colors.purple,
+                    ),
+                  ),
+                  title: const Text(
+                    'Choose Image from Device',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Select an existing image from the gallery',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(sheetContext);
+                    await controller.pickPhoto(context, ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -452,7 +648,7 @@ class TaskCompletionScreen extends StatelessWidget {
       children: [
         const Row(
           children: [
-            Icon(Icons.fact_check_outlined, size: 18, color: Color(0xFF2563EB)),
+            Icon(Icons.fact_check_outlined, size: 18, color: AppColors.primary),
             SizedBox(width: 6),
             Text(
               "Completion Checklist",
@@ -467,28 +663,33 @@ class TaskCompletionScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            // color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFF1F5F9)),
+            border: Border.all(color: AppColors.textWhite),
           ),
           child: Obx(
-                () => ListView.separated(
+            () => ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: controller.checklist.length,
-              separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              separatorBuilder: (context, index) =>
+                  const Divider(height: 1, color: AppColors.textWhite),
               itemBuilder: (context, index) {
                 final item = controller.checklist[index];
                 return CheckboxListTile(
                   value: item.isChecked,
-                  activeColor: const Color(0xFF2563EB),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  activeColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                   title: Text(
                     item.title,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: item.isChecked ? const Color(0xFF1E293B) : const Color(0xFF64748B),
+                      color: item.isChecked
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
                       decoration: item.isChecked ? TextDecoration.none : null,
                     ),
                   ),
@@ -508,7 +709,7 @@ class TaskCompletionScreen extends StatelessWidget {
       children: [
         const Row(
           children: [
-            Icon(Icons.edit_note_rounded, size: 18, color: Color(0xFF2563EB)),
+            Icon(Icons.edit_note_rounded, size: 18, color: AppColors.primary),
             SizedBox(width: 6),
             Text(
               "Resolution Remarks & Notes",
@@ -534,10 +735,16 @@ class TaskCompletionScreen extends StatelessWidget {
               final note = controller.quickNotes[index];
               return ActionChip(
                 label: Text(note),
-                labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                labelStyle: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
                 backgroundColor: Colors.blue.shade50,
                 side: BorderSide.none,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 onPressed: () => controller.addQuickNote(note),
               );
             },
@@ -551,21 +758,25 @@ class TaskCompletionScreen extends StatelessWidget {
           maxLines: 3,
           style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
           decoration: InputDecoration(
-            hintText: "Enter summary of work performed, tools used, or client notes...",
+            hintText:
+                "Enter summary of work performed, tools used, or client notes...",
             hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFF1F5F9)),
+              borderSide: const BorderSide(color: AppColors.textWhite),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: const BorderSide(color: AppColors.textWhite),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -573,81 +784,60 @@ class TaskCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSignoffSection(TaskCompletionController controller) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildSubmitButton(
+      BuildContext context,
+      TaskCompletionController controller,
+      ) {
+    return Obx(
+          () => Column(
         children: [
-          const Row(
-            children: [
-              Icon(Icons.verified_user_outlined, color: Color(0xFF2563EB), size: 20),
-              SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Supervisor Sign-off",
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                  ),
-                  Text(
-                    "Require manager verification",
-                    style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                  ),
-                ],
+          if (controller.isSubmitting.value) ...[
+            LinearProgressIndicator(
+              value: controller.uploadProgress.value,
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                controller.uploadProgressText.value,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ],
-          ),
-          Obx(
-                () => Switch(
-              value: controller.requiresSupervisorSignoff.value,
-              activeColor: const Color(0xFF2563EB),
-              onChanged: (val) => controller.requiresSupervisorSignoff.value = val,
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton.icon(
+              onPressed: controller.isSubmitting.value
+                  ? null
+                  : () => controller.submitTaskCompletion(context),
+              icon: controller.isSubmitting.value
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+                  : const Icon(
+                Icons.check_circle_outline,
+              ),
+              label: Text(
+                controller.isSubmitting.value
+                    ? 'Uploading Report...'
+                    : 'Submit Task Completion',
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton(BuildContext context, TaskCompletionController controller) {
-    return Obx(
-          () => SizedBox(
-        width: double.infinity,
-        height: 54,
-        child: ElevatedButton.icon(
-          onPressed: controller.isSubmitting.value
-              ? null
-              : () => controller.submitTaskCompletion(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2563EB),
-            elevation: 2,
-            shadowColor: const Color(0xFF2563EB).withOpacity(0.4),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          icon: controller.isSubmitting.value
-              ? const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-          )
-              : const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-          label: Text(
-            controller.isSubmitting.value ? "Uploading Report..." : "Submit Task Completion",
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
       ),
     );
   }

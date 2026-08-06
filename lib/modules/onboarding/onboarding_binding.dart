@@ -1,11 +1,9 @@
+
 import 'package:get/get.dart';
 import 'package:taskpro/modules/onboarding/onboarding_controller.dart';
-import 'package:taskpro/modules/splash/splash_controller.dart';
-
-class SplashBinding extends Bindings {
+class OnboardingBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put(SplashController());
     Get.put(OnboardingController());
   }
 }
