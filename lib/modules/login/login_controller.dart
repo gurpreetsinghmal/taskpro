@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:taskpro/common/helpers/api_routes.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
+import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
@@ -19,11 +21,25 @@ class LoginController extends GetxController {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email.trim());
+  }
+
   void login() async {
     if (usernameController.text.trim().isEmpty) {
       Get.snackbar(
         'Required',
-        'Please enter username number',
+        'Please enter user email',
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    if (!isValidEmail(usernameController.text.trim())) {
+      Get.snackbar(
+        'Invalid Email',
+        'Please enter a valid email address',
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(16),
       );
@@ -39,28 +55,70 @@ class LoginController extends GetxController {
       );
       return;
     }
+    if (passwordController.text.trim().length < 8) {
+      Get.snackbar(
+        'Required',
+        'The password must be at least 8 characters.',
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
 
     isLoading.value = true;
 
-    // Simulate network authentication API call
-    await Future.delayed(const Duration(seconds: 2));
 
-    isLoading.value = false;
+      var formData = dio.FormData.fromMap({
+        'email': usernameController.text,
+        'password': passwordController.text,
+      });
 
-    Get.snackbar(
-      'Success',
-      'Logged in successfully!',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.success,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-    );
+      final _apiService = ApiService();
+      await _apiService.post(ApiRoutes.loginEndpoint, data: formData).then((
+        value,
+      ) async {
+        isLoading.value = false;
 
-    final storage = SecureStorageService.instance;
-    await storage.write(StorageKeys.accessToken, 'your_access_token');
-    var data={"name":usernameController.text,"role":"worker","email":"test@gmail.com"};
-    await storage.write(StorageKeys.empname, jsonEncode(data));
-    Get.offAll(() => WorkerDashboardScreen());
+        if (value.data['success']) {
+          Get.snackbar(
+            'Success',
+            'Logged in successfully!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.success,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+          Get.snackbar(
+            'Success',
+            'Logged in successfully!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.success,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+
+          final storage = SecureStorageService.instance;
+          await storage.write(StorageKeys.accessToken, value.data['token']);
+          var data = {
+            "name": value.data['user']['name'],
+            "role": value.data['user']['roles'][0],
+            "email":  value.data['user']['email'],
+          };
+          await storage.write(StorageKeys.empname, jsonEncode(data));
+          Get.offAll(() => WorkerDashboardScreen());
+        } else {
+          Get.snackbar(
+            'Failed',
+            value.data['message'],
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        }
+
+      });
+
   }
 
   @override

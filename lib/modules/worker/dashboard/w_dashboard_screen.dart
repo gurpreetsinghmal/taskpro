@@ -171,9 +171,11 @@ class BottomNavigationBarStyleItem extends BottomNavigationBarItem {
 class DashboardTabScreen extends StatelessWidget {
   const DashboardTabScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<WorkerDashboardController>();
+  final controller = Get.put(WorkerDashboardController());
+    final cont1 = Get.find<WorkerDashboardController>();
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -184,14 +186,14 @@ class DashboardTabScreen extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Section Title: Today's Overview
-          const Text(
+          Obx(()=>Text(
             "Today's Overview",
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
               color: AppColors.primary,
             ),
-          ),
+          )),
           const SizedBox(height: 12),
 
           // 3 Column Grid: Pending, In Progress, Completed

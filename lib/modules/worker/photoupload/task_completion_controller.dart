@@ -402,11 +402,8 @@ class TaskCompletionController extends GetxController {
         onSendProgress: (sent, total) {
           if (total > 0) {
             final percentage = ((sent / total) * 100).round();
-
             uploadProgress.value = percentage / 100;
-
-            uploadProgressText.value =
-            'Uploading photos... $percentage%';
+            uploadProgressText.value = 'Uploading photos... $percentage%';
           }
         },
       );

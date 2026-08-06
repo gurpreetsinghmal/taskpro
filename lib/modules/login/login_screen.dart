@@ -76,9 +76,9 @@ class LoginScreen extends StatelessWidget {
                     // Mobile Number Input Field
                     _buildTextField(
                       controller: controller.usernameController,
-                      hintText: 'User Name',
+                      hintText: 'User Email',
                       icon: Icons.person_outline_rounded,
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.emailAddress,
                     ),
 
                     const SizedBox(height: 16),

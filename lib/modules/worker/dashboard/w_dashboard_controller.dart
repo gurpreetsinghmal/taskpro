@@ -14,6 +14,7 @@ class WorkerDashboardController extends GetxController {
   RxString name="".obs;
   RxString role="".obs;
   RxString email="".obs;
+  RxString accesstoken="".obs;
 
   final selectedIndex = 0.obs;
   final walletBalance = 320.00.obs;
@@ -112,6 +113,12 @@ class WorkerDashboardController extends GetxController {
       role.value=x["role"];
       email.value=x["email"];
     });
+
+    storage.read(StorageKeys.accessToken).then((v){
+      accesstoken.value=v!;
+    });
+
+
   }
 
 }

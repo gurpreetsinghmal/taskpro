@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 
@@ -17,7 +18,7 @@ class DioClient {
   DioClient._internal() {
     dio = Dio(
       BaseOptions(
-        baseUrl: 'https://api.taskpro.com/api/',
+        baseUrl: ApiRoutes.baseURL,
         connectTimeout: const Duration(seconds: 15),
         sendTimeout: const Duration(seconds: 90),
         receiveTimeout: const Duration(seconds: 90),
@@ -51,11 +52,28 @@ class DioClient {
         },
 
         onResponse: (response, handler) {
+          print("===================================================");
+          print("||URL: ${response.requestOptions.uri}");
+          print("||METHOD:  ${response.requestOptions.method}");
+          print("||HEADERS: ${response.requestOptions.headers}");
+          print("||BODY: ${response.requestOptions.data}");
+          print("||✅ RESPONSE");
+          print("||DATA: ${response.data}");
+          print("===================================================");
           handler.next(response);
         },
 
-        onError: (DioException error, handler) {
-          handler.next(error);
+        onError: (DioException e, handler) {
+          print("❌ ERROR");
+          print("URL: ${e.requestOptions.uri}");
+          print("MESSAGE: ${e.message}");
+
+          /// 🔥 Handle Token Expired (401)
+          if (e.response?.statusCode == 401) {
+            // TODO: refresh token or logout
+            print("⚠️ Unauthorized - Token expired");
+          }
+          handler.next(e);
         },
       ),
     );
