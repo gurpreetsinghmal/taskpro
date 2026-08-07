@@ -10,7 +10,7 @@ import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
 class WorkerDashboardScreen extends StatelessWidget {
-  WorkerDashboardScreen({super.key});
+  const WorkerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class WorkerDashboardScreen extends StatelessWidget {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 16,
                 offset: const Offset(0, -4),
               ),
@@ -174,8 +174,7 @@ class DashboardTabScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final controller = Get.put(WorkerDashboardController());
-    final cont1 = Get.find<WorkerDashboardController>();
+    final controller = Get.find<WorkerDashboardController>();
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -186,14 +185,14 @@ class DashboardTabScreen extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Section Title: Today's Overview
-          Obx(()=>Text(
+          const Text(
             "Today's Overview",
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
               color: AppColors.primary,
             ),
-          )),
+          ),
           const SizedBox(height: 12),
 
           // 3 Column Grid: Pending, In Progress, Completed
@@ -257,7 +256,7 @@ class DashboardTabScreen extends StatelessWidget {
               border: Border.all(color: AppColors.textWhite),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -309,7 +308,7 @@ class DashboardTabScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     elevation: 2,
-                    shadowColor: AppColors.primary.withOpacity(0.3),
+                    shadowColor: AppColors.primary.withValues(alpha: 0.3),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
@@ -441,7 +440,7 @@ class DashboardTabScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
       decoration: BoxDecoration(
-        color: AppColors.textWhite.withOpacity(0.8),
+        color: AppColors.textWhite.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.textWhite),
       ),
@@ -477,7 +476,7 @@ class DashboardTabScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.textWhite.withOpacity(0.6),
+        color: AppColors.textWhite.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.textWhite),
       ),
@@ -618,7 +617,7 @@ class TasksTabScreen extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 "${task.category} • ${task.worker}",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
                                 ),
@@ -640,7 +639,7 @@ class TasksTabScreen extends StatelessWidget {
                             ),
                             child: Text(
                               task.status,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textWhite,
@@ -709,16 +708,16 @@ class TasksTabScreen extends StatelessWidget {
           initialChildSize: .85,
           maxChildSize: .95,
           minChildSize: .55,
-          builder: (_, controller) {
+          builder: (_, scrollController) {
             return Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.textWhite,
-                borderRadius: const BorderRadius.vertical(
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(28),
                 ),
               ),
               child: ListView(
-                controller: controller,
+                controller: scrollController,
                 padding: const EdgeInsets.all(20),
                 children: [
                   /// Drag Handle
@@ -740,8 +739,8 @@ class TasksTabScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primary.withOpacity(.12),
-                        child: Icon(
+                        backgroundColor: AppColors.primary.withValues(alpha: .12),
+                        child: const Icon(
                           Icons.assignment_outlined,
                           color: AppColors.primary,
                           size: 28,
@@ -853,7 +852,7 @@ class TasksTabScreen extends StatelessWidget {
                             controller.changeTab(2);
                           },
                           backgroundColor: AppColors.primaryDark,
-                          icon: Icon(Icons.edit, color: AppColors.textWhite),
+                          icon: const Icon(Icons.edit, color: AppColors.textWhite),
                         ),
                       ),
 
@@ -866,7 +865,7 @@ class TasksTabScreen extends StatelessWidget {
                             Get.back();
                           },
                           backgroundColor: AppColors.error,
-                          icon: Icon(Icons.close, color: AppColors.textWhite),
+                          icon: const Icon(Icons.close, color: AppColors.textWhite),
                         ),
                       ),
                     ],
@@ -899,13 +898,13 @@ class _InfoTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(.12),
+        color: AppColors.primary.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppColors.primary.withOpacity(.12),
+            backgroundColor: AppColors.primary.withValues(alpha: .12),
             child: Icon(icon, color: AppColors.primary),
           ),
 
@@ -1186,7 +1185,7 @@ class RightProfileDrawer extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -1231,7 +1230,7 @@ class RightProfileDrawer extends StatelessWidget {
                         ),
                         Obx(
                           () => Text(
-                            "${controller.role.value}",
+                            controller.role.value,
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -1239,7 +1238,7 @@ class RightProfileDrawer extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "${controller.email.value}",
+                          controller.email.value,
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 12,

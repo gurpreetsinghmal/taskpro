@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
@@ -68,9 +69,9 @@ class OnboardingController extends GetxController {
     try {
       isSaving.value = true;
 
-      final preferences = await SecureStorageService.instance;
+      final preferences = await SharedPreferences.getInstance();
 
-      await preferences.write(StorageKeys.taskpro_onboarding_completed,"1");
+      await preferences.setBool(StorageKeys.taskpro_onboarding_completed,true);
 
       // Remove onboarding from navigation history.
       Get.offAllNamed(AppRoutes.login);

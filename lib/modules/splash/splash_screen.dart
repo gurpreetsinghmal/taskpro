@@ -155,7 +155,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
             },
           ),
 
-          const SizedBox(height: 36),
+          const SizedBox(height: 26),
 
           // Animated Branding Text & Subtitles
           AnimatedBuilder(
@@ -316,19 +316,12 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
     final double pulseGlow = 15 + (pulseValue * 12);
 
     return Container(
-      width: 120,
-      height: 120,
+      width: 150,
+      height: 150,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        gradient: const LinearGradient(
-          colors: [
-            Colors.white,
-            Color(0xFFF8FAFC),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+
         boxShadow: [
           // Soft Primary Tint Outer Glow
           BoxShadow(
@@ -348,22 +341,29 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Subtle decorative inner gradient circle
+          // Main Icon
           Container(
-            width: 80,
-            height: 80,
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primary.withOpacity(0.06),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/prosat.gif',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
 
-          // Main Icon
-          const Icon(
-            Icons.task_alt_rounded,
-            size: 64,
-            color: AppColors.primary,
-          ),
         ],
       ),
     );

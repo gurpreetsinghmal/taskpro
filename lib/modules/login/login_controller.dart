@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
+import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
@@ -74,20 +75,10 @@ class LoginController extends GetxController {
       });
 
       final _apiService = ApiService();
-      await _apiService.post(ApiRoutes.loginEndpoint, data: formData).then((
-        value,
-      ) async {
+      await _apiService.post(ApiRoutes.loginEndpoint, data: formData).then((value) async {
         isLoading.value = false;
 
         if (value.data['success']) {
-          Get.snackbar(
-            'Success',
-            'Logged in successfully!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.success,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-          );
           Get.snackbar(
             'Success',
             'Logged in successfully!',
