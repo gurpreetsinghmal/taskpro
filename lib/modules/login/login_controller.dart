@@ -108,6 +108,16 @@ class LoginController extends GetxController {
           );
         }
 
+      }).catchError((error) {
+        isLoading.value = false;
+        Get.snackbar(
+          'Failed',
+          "Something Went Wrong",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
       });
 
   }
