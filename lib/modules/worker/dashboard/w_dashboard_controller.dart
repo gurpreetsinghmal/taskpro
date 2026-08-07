@@ -1,13 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:taskpro/common/models/task_model.dart';
 import 'package:taskpro/common/models/worker_model.dart';
+import 'package:taskpro/network/api_service.dart';
 
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
-
+import 'package:dio/dio.dart' as dio;
+import 'package:taskpro/theme/app_colors.dart';
 class WorkerDashboardController extends GetxController {
   final storage = SecureStorageService.instance;
 
@@ -105,6 +108,57 @@ class WorkerDashboardController extends GetxController {
     super.onInit();
 
     getprofile();
+    getDashboardData();
+  }
+
+  getDashboardData() async{
+
+    final _apiService = ApiService();
+    await _apiService.get('auth/dashboard',headers: {
+      'Authorization': 'Bearer jt9PTiqnd5MpFYyiCSyycLhHFFyBHaHCgPnVuCOi2Gw9aflr7NEcBPQzfR3N'
+    } ).then((value) async {
+      print(value.data);
+      if (value.data['success']) {
+        Get.snackbar(
+          'Success',
+          value.data['message'],
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.success,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
+
+        final stats=value.data['data'];
+      //   "assigned_work_orders_count": 13,
+      // "completed_work_orders_count": 8,
+      // "in_progress_work_orders_count": 5,
+      pendingCount.value=stats["pending_approval_count"];// 3,
+      // "overdue_work_orders_count": 2,
+      // "upcoming_appointments_count": 4,
+      // "open_tickets_count": 6,
+
+      } else {
+        Get.snackbar(
+          'Failed',
+          value.data['message'],
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
+      }
+
+    }).catchError((error) {
+
+      Get.snackbar(
+        'Failed',
+        "Something Went Wrong",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+    });
   }
   getprofile() async{
     storage.read(StorageKeys.empname).then((value) {

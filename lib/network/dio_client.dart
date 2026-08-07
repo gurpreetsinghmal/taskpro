@@ -40,7 +40,7 @@ class DioClient {
               options.extra['requiresAuth'] ?? true;
 
           if (requiresAuth) {
-            final token = await _tokenStorage.getAccessToken();
+            final token = 'jt9PTiqnd5MpFYyiCSyycLhHFFyBHaHCgPnVuCOi2Gw9aflr7NEcBPQzfR3N';//await _tokenStorage.getAccessToken();
 
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] =
