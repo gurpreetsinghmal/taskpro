@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 class WorkerDashboardBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put(WorkerDashboardController());
+    Get.lazyPut<WorkerDashboardController>(
+          () => WorkerDashboardController(),
+    );
   }
 }

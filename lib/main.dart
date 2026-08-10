@@ -6,7 +6,7 @@ import 'package:taskpro/modules/splash/splash_bindings.dart';
 import 'package:taskpro/modules/splash/splash_screen.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
-void main() {
+void main(){
   runApp(const MyApp());
 }
 

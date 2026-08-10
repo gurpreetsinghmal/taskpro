@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:taskpro/modules/login/login_controller.dart';
 
 import 'package:taskpro/theme/app_colors.dart';
@@ -105,27 +106,22 @@ class LoginScreen extends StatelessWidget {
 
                     const SizedBox(height: 16),
 
-                    // Align(
-                    //   alignment: Alignment.centerRight,
-                    //   child: GestureDetector(
-                    //     onTap: () {
-                    //       Get.snackbar(
-                    //         'Reset Password',
-                    //         'New Password will sent to registered email.',
-                    //         snackPosition: SnackPosition.BOTTOM,
-                    //         margin: const EdgeInsets.all(16),
-                    //       );
-                    //     },
-                    //     child: const Text(
-                    //       'Forget Password?',
-                    //       style: TextStyle(
-                    //         fontSize: 14,
-                    //         fontWeight: FontWeight.w600,
-                    //         color: AppColors.primary,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          Get.toNamed(AppRoutes.forget_password);
+                        },
+                        child: const Text(
+                          'Forget Password?',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

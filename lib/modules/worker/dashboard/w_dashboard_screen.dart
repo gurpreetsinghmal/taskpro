@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taskpro/common/helpers/app_helper.dart';
 import 'package:taskpro/common/models/task_model.dart';
+import 'package:taskpro/modules/changepassword/change_password_screen.dart';
 
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_screen.dart';
 
 import 'package:get/get.dart';
+import 'package:taskpro/modules/worker/profile/profile_screen.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
 class WorkerDashboardScreen extends StatelessWidget {
-  const WorkerDashboardScreen({super.key});
+   WorkerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,135 +28,215 @@ class WorkerDashboardScreen extends StatelessWidget {
       const MoreTabScreen(),
     ];
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      // 1. END DRAWER for right-side profile slide out
-      endDrawer: RightProfileDrawer(),
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        title: // Greeting Header
-        Obx(
-          () => Row(
-            children: [
-              Text(
-                "Hello, ${controller.name.value}",
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text("👋", style: TextStyle(fontSize: 22)),
-            ],
-          ),
-        ),
-        actions: [
-          // 2. AVATAR BUTTON IN APPBAR RIGHT SIDE TO OPEN DRAWER
-          Builder(
-            builder: (context) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: GestureDetector(
-                  onTap: () => Scaffold.of(context).openEndDrawer(),
-                  child: Stack(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primary,
-                            width: 2,
-                          ),
-                        ),
-                        child: const CircleAvatar(
-                          radius: 18,
-                          backgroundImage: NetworkImage(
-                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 2,
-                        bottom: 2,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.amber,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Obx(
-        () => AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: screens[controller.selectedIndex.value],
-        ),
-      ),
-      bottomNavigationBar: Obx(
-        () => Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: BottomNavigationBar(
-            currentIndex: controller.selectedIndex.value,
-            onTap: controller.changeTab,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: AppColors.textSecondary,
-            selectedFontSize: 11,
-            unselectedFontSize: 11,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.background,
+          // 1. END DRAWER for right-side profile slide out
+          endDrawer: RightProfileDrawer(),
+          appBar: AppBar(
+            backgroundColor: AppColors.background,
             elevation: 0,
-            items: [
-              BottomNavigationBarStyleItem(
-                icon: Icons.grid_view_rounded,
-                label: "Dashboard",
+            surfaceTintColor: Colors.transparent,
+            automaticallyImplyLeading: false,
+            title: // Greeting Header
+            Obx(() {
+              final user = controller.user.value;
+              final name = user?.name;
+
+              return Row(
+                children: [
+                  const Text(
+                    "Hello, ",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  if (name == null || name.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: LoadingAnimationWidget.progressiveDots(
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                    )
+                  else
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  const Text("👋", style: TextStyle(fontSize: 22)),
+                ],
+              );
+            }),
+            actions: [
+              // 2. AVATAR BUTTON IN APPBAR RIGHT SIDE TO OPEN DRAWER
+              Builder(
+                builder: (context) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: GestureDetector(
+                      onTap: () => Scaffold.of(context).openEndDrawer(),
+                      child: Stack(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 2,
+                              ),
+                            ),
+                            child:
+                            // 1. Avatar with Reactive Null Check
+                            Obx(() {
+                              final user = controller.user.value;
+
+                              if (user == null) {
+                                return const CircleAvatar(
+                                  radius: 28,
+                                  backgroundColor: AppColors.infoLight,
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final initial = user.firstName.isNotEmpty
+                                  ? user.firstName[0].toUpperCase()
+                                  : '?';
+                              final hasPhoto = user.photo != null && user.photo!.isNotEmpty;
+
+                              return CircleAvatar(
+                                radius: 20,
+                                backgroundColor: AppColors.infoLight,
+                                backgroundImage: hasPhoto ? NetworkImage(user.photo!) : null,
+                                child: !hasPhoto
+                                    ? Text(
+                                  initial,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                )
+                                    : null,
+                              );
+                            }),
+                          ),
+                          Positioned(
+                            right: 2,
+                            bottom: 2,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: Colors.amber,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-              BottomNavigationBarStyleItem(
-                icon: Icons.check_box_outlined,
-                label: "All Tasks",
-              ),
-              BottomNavigationBarStyleItem(
-                icon: Icons.people_outline_rounded,
-                label: "Task Completion",
-              ),
-              // BottomNavigationBarStyleItem(
-              //   icon: Icons.bar_chart_rounded,
-              //   label: "Reports",
-              // ),
-              // BottomNavigationBarStyleItem(
-              //   icon: Icons.more_horiz_rounded,
-              //   label: "More",
-              // ),
             ],
           ),
+          body: Obx(
+            () => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: screens[controller.selectedIndex.value],
+            ),
+          ),
+          bottomNavigationBar: Obx(
+            () => Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: controller.selectedIndex.value,
+                onTap: controller.changeTab,
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.white,
+                selectedItemColor: AppColors.primary,
+                unselectedItemColor: AppColors.textSecondary,
+                selectedFontSize: 11,
+                unselectedFontSize: 11,
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                ),
+                elevation: 0,
+                items: [
+                  BottomNavigationBarStyleItem(
+                    icon: Icons.grid_view_rounded,
+                    label: "Dashboard",
+                  ),
+                  BottomNavigationBarStyleItem(
+                    icon: Icons.check_box_outlined,
+                    label: "All Tasks",
+                  ),
+                  BottomNavigationBarStyleItem(
+                    icon: Icons.people_outline_rounded,
+                    label: "Task Completion",
+                  ),
+                  // BottomNavigationBarStyleItem(
+                  //   icon: Icons.bar_chart_rounded,
+                  //   label: "Reports",
+                  // ),
+                  // BottomNavigationBarStyleItem(
+                  //   icon: Icons.more_horiz_rounded,
+                  //   label: "More",
+                  // ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+        // Overlay Progress Indicator
+        Obx(
+          () => controller.isApiLoading.value
+              ? Container(
+                  color: Colors.black.withOpacity(
+                    0.3,
+                  ), // Semi-transparent backdrop
+                  child: const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }
@@ -170,7 +253,6 @@ class BottomNavigationBarStyleItem extends BottomNavigationBarItem {
 
 class DashboardTabScreen extends StatelessWidget {
   const DashboardTabScreen({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +297,7 @@ class DashboardTabScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildOverviewCard(
-                    title: "Completed",
+                    title: "Submitted",
                     value: controller.completedCount.value,
                   ),
                 ),
@@ -712,9 +794,7 @@ class TasksTabScreen extends StatelessWidget {
             return Container(
               decoration: const BoxDecoration(
                 color: AppColors.textWhite,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(28),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
               child: ListView(
                 controller: scrollController,
@@ -739,7 +819,9 @@ class TasksTabScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primary.withValues(alpha: .12),
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: .12,
+                        ),
                         child: const Icon(
                           Icons.assignment_outlined,
                           color: AppColors.primary,
@@ -848,11 +930,15 @@ class TasksTabScreen extends StatelessWidget {
                           title: "Edit",
                           onPressed: () {
                             Get.back();
-                            final controller = Get.find<WorkerDashboardController>();
+                            final controller =
+                                Get.find<WorkerDashboardController>();
                             controller.changeTab(2);
                           },
                           backgroundColor: AppColors.primaryDark,
-                          icon: const Icon(Icons.edit, color: AppColors.textWhite),
+                          icon: const Icon(
+                            Icons.edit,
+                            color: AppColors.textWhite,
+                          ),
                         ),
                       ),
 
@@ -865,7 +951,10 @@ class TasksTabScreen extends StatelessWidget {
                             Get.back();
                           },
                           backgroundColor: AppColors.error,
-                          icon: const Icon(Icons.close, color: AppColors.textWhite),
+                          icon: const Icon(
+                            Icons.close,
+                            color: AppColors.textWhite,
+                          ),
                         ),
                       ),
                     ],
@@ -1004,6 +1093,13 @@ class WorkersTabScreen extends StatelessWidget {
                                   color: AppColors.textSecondary,
                                 ),
                               ),
+                              Text(
+                                "0987654321",
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -1131,6 +1227,7 @@ class MoreTabScreen extends StatelessWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => Scaffold.of(context).openEndDrawer(),
         ),
+
         ListTile(
           leading: const Icon(Icons.notifications, color: AppColors.primary),
           title: const Text("Notification Preferences"),
@@ -1210,44 +1307,105 @@ class RightProfileDrawer extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const CircleAvatar(
-                      radius: 28,
-                      backgroundImage: NetworkImage(
-                        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          controller.name.value,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Obx(
-                          () => Text(
-                            controller.role.value,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
+                    // 1. Avatar with Reactive Null Check
+                    Obx(() {
+                      final user = controller.user.value;
+
+                      if (user == null) {
+                        return const CircleAvatar(
+                          radius: 28,
+                          backgroundColor: AppColors.infoLight,
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primary,
                             ),
                           ),
-                        ),
-                        Text(
-                          controller.email.value,
+                        );
+                      }
+
+                      final initial = user.firstName.isNotEmpty
+                          ? user.firstName[0].toUpperCase()
+                          : '?';
+                      final hasPhoto = user.photo != null && user.photo!.isNotEmpty;
+
+                      return CircleAvatar(
+                        radius: 28,
+                        backgroundColor: AppColors.infoLight,
+                        backgroundImage: hasPhoto ? NetworkImage(user.photo!) : null,
+                        child: !hasPhoto
+                            ? Text(
+                          initial,
                           style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
                           ),
-                        ),
-                      ],
+                        )
+                            : null,
+                      );
+                    }),
+
+                    const SizedBox(width: 12),
+
+                    // 2. User Info Column Wrapped in Obx & Expanded
+                    Expanded(
+                      child: Obx(() {
+                        final user = controller.user.value;
+
+                        if (user == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (user.currentRole.isNotEmpty)
+                              Text(
+                                user.currentRole,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            Text(
+                              user.email,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              user.phoneNumber,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
                     ),
                   ],
-                ),
+                )
               ],
             ),
           ),
@@ -1271,12 +1429,12 @@ class RightProfileDrawer extends StatelessWidget {
                 _buildDrawerItem(
                   icon: Icons.person_outline,
                   title: "My Profile",
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Get.to(() => WorkerProfileScreen()),
                 ),
                 _buildDrawerItem(
                   icon: Icons.edit_note,
-                  title: "Edit Details & Skills",
-                  onTap: () => Navigator.pop(context),
+                  title: "Change Password",
+                  onTap: () => Get.to(() => ChangePasswordScreen()),
                 ),
                 _buildDrawerItem(
                   icon: Icons.account_balance_wallet_outlined,
@@ -1326,15 +1484,7 @@ class RightProfileDrawer extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context);
                 final storage = SecureStorageService.instance;
-                storage.deleteAll();
-                Get.snackbar(
-                  "Logged Out",
-                  "Successfully logged out.",
-                  backgroundColor: AppColors.error,
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-                Get.offAllNamed('/login');
+                storage.loggedOut();
               },
               icon: Icon(Icons.logout, color: Colors.red.shade700, size: 18),
               label: Text(

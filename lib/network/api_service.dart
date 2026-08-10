@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:taskpro/services/data_loading_service.dart';
 
 import 'api_exception.dart';
 import 'dio_client.dart';
@@ -16,8 +17,14 @@ class ApiService {
         Map<String, dynamic>? headers,
         Options? options,
         CancelToken? cancelToken,
+        bool isLoaderShow = false,
       }) async {
+    bool showedLoader = false;
     try {
+      if (isLoaderShow) {
+        LoadingService.show("Fetching data...");
+        showedLoader = true;
+      }
       final response = await _dio.get<T>(
         endpoint,
         queryParameters: queryParameters,
@@ -31,6 +38,10 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       throw _handleDioException(e);
+    } finally {
+      if (showedLoader) {
+        LoadingService.hide();
+      }
     }
   }
 
@@ -45,8 +56,14 @@ class ApiService {
         Map<String, dynamic>? headers,
         Options? options,
         CancelToken? cancelToken,
+        bool isLoaderShow = false,
       }) async {
+    bool showedLoader = false;
     try {
+      if (isLoaderShow) {
+        LoadingService.show("Processing...");
+        showedLoader = true;
+      }
       final response = await _dio.post<T>(
         endpoint,
         data: data,
@@ -61,6 +78,10 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       throw _handleDioException(e);
+    } finally {
+      if (showedLoader) {
+        LoadingService.hide();
+      }
     }
   }
 
@@ -76,8 +97,14 @@ class ApiService {
         CancelToken? cancelToken,
         ProgressCallback? onSendProgress,
         ProgressCallback? onReceiveProgress,
+        bool isLoaderShow = false,
       }) async {
+    bool showedLoader = false;
     try {
+      if (isLoaderShow) {
+        LoadingService.show("Uploading...");
+        showedLoader = true;
+      }
       final response = await _dio.post<T>(
         endpoint,
         data: data,
@@ -96,6 +123,10 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       throw _handleDioException(e);
+    } finally {
+      if (showedLoader) {
+        LoadingService.hide();
+      }
     }
   }
 
@@ -110,8 +141,14 @@ class ApiService {
         Map<String, dynamic>? headers,
         Options? options,
         CancelToken? cancelToken,
+        bool isLoaderShow = false,
       }) async {
+    bool showedLoader = false;
     try {
+      if (isLoaderShow) {
+        LoadingService.show("Updating...");
+        showedLoader = true;
+      }
       final response = await _dio.put<T>(
         endpoint,
         data: data,
@@ -126,6 +163,10 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       throw _handleDioException(e);
+    } finally {
+      if (showedLoader) {
+        LoadingService.hide();
+      }
     }
   }
 
@@ -140,8 +181,14 @@ class ApiService {
         Map<String, dynamic>? headers,
         Options? options,
         CancelToken? cancelToken,
+        bool isLoaderShow = false,
       }) async {
+    bool showedLoader = false;
     try {
+      if (isLoaderShow) {
+        LoadingService.show("Deleting...");
+        showedLoader = true;
+      }
       final response = await _dio.delete<T>(
         endpoint,
         data: data,
@@ -156,6 +203,10 @@ class ApiService {
       return response;
     } on DioException catch (e) {
       throw _handleDioException(e);
+    } finally {
+      if (showedLoader) {
+        LoadingService.hide();
+      }
     }
   }
 

@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
@@ -28,6 +32,13 @@ class DioClient {
       ),
     );
 
+      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final client = HttpClient();
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+        return client;
+      };
+
     _configureInterceptors();
   }
 
@@ -40,7 +51,7 @@ class DioClient {
               options.extra['requiresAuth'] ?? true;
 
           if (requiresAuth) {
-            final token = 'jt9PTiqnd5MpFYyiCSyycLhHFFyBHaHCgPnVuCOi2Gw9aflr7NEcBPQzfR3N';//await _tokenStorage.getAccessToken();
+            final token = await _tokenStorage.getAccessToken();
 
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] =
@@ -60,6 +71,11 @@ class DioClient {
           print("||✅ RESPONSE");
           print("||DATA: ${response.data}");
           print("===================================================");
+
+          if(response.statusCode == 200 && response.data["status_code"].toString()=="999"){
+            final storage = SecureStorageService.instance;
+            storage.loggedOut();
+          }
           handler.next(response);
         },
 

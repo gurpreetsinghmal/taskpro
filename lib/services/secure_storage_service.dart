@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
+import 'package:taskpro/modules/login/login_screen.dart';
 import 'package:taskpro/services/storage_keys.dart';
+import 'package:taskpro/theme/app_colors.dart';
 
 class SecureStorageService {
   SecureStorageService._();
@@ -31,6 +35,18 @@ class SecureStorageService {
     await _storage.deleteAll();
   }
 
+  Future<void> loggedOut()async{
+    _storage.deleteAll();
+    Get.snackbar(
+      "Logged Out",
+      "Successfully logged out.",
+      backgroundColor: AppColors.error,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+    Get.offAll(() => LoginScreen());
+  }
+
   Future<bool> isLoggedIn() async {
     final token = await read(StorageKeys.accessToken);
     return token != null && token.isNotEmpty;
@@ -40,3 +56,4 @@ class SecureStorageService {
     return token;
   }
 }
+

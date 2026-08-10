@@ -67,12 +67,11 @@ class LoginController extends GetxController {
     }
 
     isLoading.value = true;
-
-
       var formData = dio.FormData.fromMap({
         'email': usernameController.text,
         'password': passwordController.text,
       });
+    final storage = SecureStorageService.instance;
 
       final _apiService = ApiService();
       await _apiService.post(ApiRoutes.loginEndpoint, data: formData).then((value) async {
@@ -88,14 +87,8 @@ class LoginController extends GetxController {
             margin: const EdgeInsets.all(16),
           );
 
-          final storage = SecureStorageService.instance;
+
           await storage.write(StorageKeys.accessToken, value.data['token']);
-          var data = {
-            "name": value.data['user']['name'],
-            "role": value.data['user']['roles'][0],
-            "email":  value.data['user']['email'],
-          };
-          await storage.write(StorageKeys.empname, jsonEncode(data));
           Get.offAll(() => WorkerDashboardScreen());
         } else {
           Get.snackbar(
@@ -112,7 +105,7 @@ class LoginController extends GetxController {
         isLoading.value = false;
         Get.snackbar(
           'Failed',
-          "Something Went Wrong",
+          error.message,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.error,
           colorText: Colors.white,
@@ -124,8 +117,8 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    usernameController.dispose();
-    passwordController.dispose();
+    usernameController.clear();
+    passwordController.clear();
     super.onClose();
   }
 }

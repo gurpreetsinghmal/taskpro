@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'task_completion_models.dart';
@@ -397,7 +398,7 @@ class TaskCompletionController extends GetxController {
 
       // Call common API service
       final response = await _apiService.postMultipart(
-        '/tasks/complete',
+        ApiRoutes.taskSubmitted,
         data: formData,
         onSendProgress: (sent, total) {
           if (total > 0) {
