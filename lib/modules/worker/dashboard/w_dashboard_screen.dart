@@ -215,7 +215,7 @@ class DashboardTabScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildOverviewCard(
-                    title: "Completed",
+                    title: "Submitted",
                     value: controller.completedCount.value,
                   ),
                 ),

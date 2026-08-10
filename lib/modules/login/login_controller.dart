@@ -67,8 +67,25 @@ class LoginController extends GetxController {
     }
 
     isLoading.value = true;
-
-
+  //   Get.snackbar(
+  //     'Success',
+  //     'Logged in successfully!',
+  //     snackPosition: SnackPosition.BOTTOM,
+  //     backgroundColor: AppColors.success,
+  //     colorText: Colors.white,
+  //     margin: const EdgeInsets.all(16),
+  //   );
+  //
+  //   final storage = SecureStorageService.instance;
+  //   await storage.write(StorageKeys.accessToken, "token");
+  //   var data = {
+  //     "name":"Super Admin",
+  //     "role": "Admin",
+  //     "email":  "admin@admin.com",
+  //   };
+  //   await storage.write(StorageKeys.empname, jsonEncode(data));
+  //   Get.offAll(() => WorkerDashboardScreen());
+  // return;
       var formData = dio.FormData.fromMap({
         'email': usernameController.text,
         'password': passwordController.text,
@@ -112,7 +129,7 @@ class LoginController extends GetxController {
         isLoading.value = false;
         Get.snackbar(
           'Failed',
-          "Something Went Wrong",
+          error.message,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.error,
           colorText: Colors.white,

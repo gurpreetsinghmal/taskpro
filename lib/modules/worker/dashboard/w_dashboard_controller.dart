@@ -11,22 +11,23 @@ import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:taskpro/theme/app_colors.dart';
+
 class WorkerDashboardController extends GetxController {
   final storage = SecureStorageService.instance;
 
-  RxString name="".obs;
-  RxString role="".obs;
-  RxString email="".obs;
-  RxString accesstoken="".obs;
+  RxString name = "".obs;
+  RxString role = "".obs;
+  RxString email = "".obs;
+  RxString accesstoken = "".obs;
 
   final selectedIndex = 0.obs;
   final walletBalance = 320.00.obs;
 
   // Overview Metrics State
-  final pendingCount = 10.obs;
-  final inProgressCount = 8.obs;
-  final completedCount = 45.obs;
-  final assignedCount = 12.obs;
+  final pendingCount = 0.obs;
+  final inProgressCount = 0.obs;
+  final completedCount = 0.obs;
+  final assignedCount = 0.obs;
   final todayCompletedCount = 7.obs;
 
   // Tasks List State
@@ -67,16 +68,35 @@ class WorkerDashboardController extends GetxController {
 
   // Workers List State
   final workers = <WorkerModel>[
-    WorkerModel(name: 'Alex Morgan', role: 'Senior Technician', status: 'On Field', activeTasks: 4),
-    WorkerModel(name: 'David Chen', role: 'Electrical Specialist', status: 'Available', activeTasks: 2),
-    WorkerModel(name: 'Sarah Jenkins', role: 'Safety Inspector', status: 'On Break', activeTasks: 1),
-    WorkerModel(name: 'Robert Fox', role: 'HVAC Specialist', status: 'On Field', activeTasks: 5),
+    WorkerModel(
+      name: 'Alex Morgan',
+      role: 'Senior Technician',
+      status: 'On Field',
+      activeTasks: 4,
+    ),
+    WorkerModel(
+      name: 'David Chen',
+      role: 'Electrical Specialist',
+      status: 'Available',
+      activeTasks: 2,
+    ),
+    WorkerModel(
+      name: 'Sarah Jenkins',
+      role: 'Safety Inspector',
+      status: 'On Break',
+      activeTasks: 1,
+    ),
+    WorkerModel(
+      name: 'Robert Fox',
+      role: 'HVAC Specialist',
+      status: 'On Field',
+      activeTasks: 5,
+    ),
   ].obs;
 
   void changeTab(int index) {
     selectedIndex.value = index;
   }
-
 
   void addTask(String title, String category) {
     if (title.trim().isEmpty) return;
@@ -101,7 +121,6 @@ class WorkerDashboardController extends GetxController {
     }
   }
 
-
   @override
   void onInit() {
     // TODO: implement onInit
@@ -111,70 +130,61 @@ class WorkerDashboardController extends GetxController {
     getDashboardData();
   }
 
-  getDashboardData() async{
-
+  getDashboardData() async {
     final _apiService = ApiService();
-    await _apiService.get('auth/dashboard',headers: {
-      'Authorization': 'Bearer jt9PTiqnd5MpFYyiCSyycLhHFFyBHaHCgPnVuCOi2Gw9aflr7NEcBPQzfR3N'
-    } ).then((value) async {
-      print(value.data);
-      if (value.data['success']) {
-        Get.snackbar(
-          'Success',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.success,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
+    await _apiService
+        .get('auth/dashboard')
+        .then((value) async {
+          if (value.data['success']) {
+            Get.snackbar(
+              'Success',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.success,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
 
-        final stats=value.data['data'];
-      //   "assigned_work_orders_count": 13,
-      // "completed_work_orders_count": 8,
-      // "in_progress_work_orders_count": 5,
-      pendingCount.value=stats["pending_approval_count"];// 3,
-      // "overdue_work_orders_count": 2,
-      // "upcoming_appointments_count": 4,
-      // "open_tickets_count": 6,
+            final stats = value.data['data'];
 
-      } else {
-        Get.snackbar(
-          'Failed',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-      }
+            completedCount.value = stats["completed_work_orders_count"];
+            assignedCount.value = stats["assigned_work_orders_count"];
+            inProgressCount.value = stats["in_progress_work_orders_count"];
+            pendingCount.value = stats["pending_approval_count"];
 
-    }).catchError((error) {
-
-      Get.snackbar(
-        'Failed',
-        "Something Went Wrong",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    });
+          } else {
+            Get.snackbar(
+              'Failed',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+        })
+        .catchError((error) {
+          Get.snackbar(
+            'Failed',
+            "Something Went Wrong",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        });
   }
-  getprofile() async{
+
+  getprofile() async {
     storage.read(StorageKeys.empname).then((value) {
-      var x=jsonDecode(value!);
-      name.value=x["name"];
-      role.value=x["role"];
-      email.value=x["email"];
+      var x = jsonDecode(value!);
+      name.value = x["name"];
+      role.value = x["role"];
+      email.value = x["email"];
     });
 
-    storage.read(StorageKeys.accessToken).then((v){
-      accesstoken.value=v!;
+    storage.read(StorageKeys.accessToken).then((v) {
+      accesstoken.value = v!;
     });
-
-
   }
-
 }
-
-
