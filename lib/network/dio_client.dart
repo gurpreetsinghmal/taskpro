@@ -70,6 +70,10 @@ class DioClient {
           print("||✅ RESPONSE");
           print("||DATA: ${response.data}");
           print("===================================================");
+          if(response.data['success'] == false && response.data["status_code"].toString()=='999'){
+            final storage=SecureStorageService.instance;
+            storage.loggedOut();
+          }
           handler.next(response);
         },
 
