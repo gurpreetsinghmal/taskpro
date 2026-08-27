@@ -8,5 +8,5 @@ class StorageKeys {
   static const deviceId = "device_id";
   static const language = "language";
   static const workerProfile = "workerProfile";
-  static const taskpro_onboarding_completed = "taskpro_onboarding_completed";
+  static const onboardingCompleted = "onboardingCompleted";
 }

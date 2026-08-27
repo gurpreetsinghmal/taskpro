@@ -27,7 +27,7 @@ class SplashController extends GetxController {
 
     final loggedIn = await _storage.isLoggedIn();
     final pref=await SharedPreferences.getInstance();
-    final  bool onboardingCompleted = await pref.getBool(StorageKeys.taskpro_onboarding_completed)??false;
+    final  bool onboardingCompleted = await pref.getBool(StorageKeys.onboardingCompleted)??false;
     if(!onboardingCompleted){
       Get.offAll(()=>OnboardingScreen());
       return;
