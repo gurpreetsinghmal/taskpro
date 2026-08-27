@@ -29,32 +29,32 @@ class WorkerProfileModel {
 
   factory WorkerProfileModel.fromJson(Map<String, dynamic> json) {
     return WorkerProfileModel(
-      id: json['id'],
+      id: json['id']??-1,
       name: json['name'] ?? '',
-      email: json['email'] ?? '',
       firstName: json['first_name'] ?? '',
-      middleName: json['middle_name'],
+      middleName: json['middle_name']??'',
       lastName: json['last_name'] ?? '',
       phoneNumber: json['phone_number'] ?? '',
-      otherPhone: json['other_phone'],
-      otherEmail: json['other_email'],
+      otherPhone: json['other_phone']??'',
+      email: json['email'] ?? '',
+      otherEmail: json['other_email']??'',
       roles: List<String>.from(json['roles'] ?? []),
       currentRole: json['current_role'] ?? '',
-      photo: json['photo'],
+      photo: json['photo']??'',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
+      'name': name,
       'first_name': firstName,
       'middle_name': middleName,
       'last_name': lastName,
       'phone_number': phoneNumber,
       'other_phone': otherPhone,
-      'other_email': otherEmail,
-      'id': id,
-      'name': name,
       'email': email,
+      'other_email': otherEmail,
       'roles': roles,
       'currentRole': currentRole,
       'photo': photo,

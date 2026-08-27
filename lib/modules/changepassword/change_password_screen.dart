@@ -49,6 +49,9 @@ class ChangePasswordScreen extends GetView<ChangePasswordController> {
                     if (val == null || val.trim().isEmpty) {
                       return "Current password is required";
                     }
+                    if (!controller.isPasswordPolicyValid) {
+                      return "Password does not meet Policy Standards";
+                    }
                     return null;
                   },
                 )),

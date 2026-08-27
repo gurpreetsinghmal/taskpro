@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:taskpro/services/data_loading_service.dart';
 
@@ -6,6 +9,28 @@ import 'dio_client.dart';
 
 class ApiService {
   final Dio _dio = DioClient().dio;
+
+  Future<bool> checkInternet() async {
+    try {
+      // 1. checkConnectivity() now returns List<ConnectivityResult>
+      final List<ConnectivityResult> connectivityResult =
+      await Connectivity().checkConnectivity();
+
+      // 2. Check if the list contains 'none' or is empty
+      if (connectivityResult.contains(ConnectivityResult.none) ||
+          connectivityResult.isEmpty) {
+        return false;
+      }
+
+      // 3. Perform DNS lookup
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
+
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
 
   // ============================================================
   // GET
@@ -351,3 +376,5 @@ class ApiService {
     return fallback;
   }
 }
+
+

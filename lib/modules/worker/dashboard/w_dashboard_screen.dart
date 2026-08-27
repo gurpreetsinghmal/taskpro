@@ -258,261 +258,268 @@ class DashboardTabScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<WorkerDashboardController>();
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20),
-
-          // Section Title: Today's Overview
-          const Text(
-            "Today's Overview",
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+    return RefreshIndicator(
+      onRefresh: controller.getdata,
+      color: Colors.white,
+      backgroundColor: Colors.blue,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 8,
+        ),
+          children: [
+            const SizedBox(height: 20),
+      
+            // Section Title: Today's Overview
+            const Text(
+              "Today's Overview",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-
-          // 3 Column Grid: Pending, In Progress, Completed
-          Obx(
-            () => Row(
-              children: [
-                Expanded(
-                  child: _buildOverviewCard(
-                    title: "Pending",
-                    value: controller.pendingCount.value,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildOverviewCard(
-                    title: "In Progress",
-                    value: controller.inProgressCount.value,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildOverviewCard(
-                    title: "Submitted",
-                    value: controller.completedCount.value,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // 2 Column Grid: Tasks Assigned & Tasks Completed
-          Obx(
-            () => Row(
-              children: [
-                Expanded(
-                  child: _buildSecondaryCard(
-                    title: "Tasks Assigned",
-                    value: controller.assignedCount.value,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildSecondaryCard(
-                    title: "Tasks Completed",
-                    value: controller.todayCompletedCount.value,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Wallet Balance Card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.textWhite),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Wallet Balance",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
+            const SizedBox(height: 12),
+      
+            // 3 Column Grid: Pending, In Progress, Completed
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: _buildOverviewCard(
+                      title: "Pending",
+                      value: controller.pendingCount.value,
                     ),
-                    const SizedBox(height: 6),
-                    Obx(
-                      () => Text(
-                        "\$${controller.walletBalance.value.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          fontSize: 30,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildOverviewCard(
+                      title: "In Progress",
+                      value: controller.inProgressCount.value,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildOverviewCard(
+                      title: "Submitted",
+                      value: controller.completedCount.value,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+      
+            // 2 Column Grid: Tasks Assigned & Tasks Completed
+            Obx(
+              () => Row(
+                children: [
+                  Expanded(
+                    child: _buildSecondaryCard(
+                      title: "Tasks Assigned",
+                      value: controller.assignedCount.value,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildSecondaryCard(
+                      title: "Tasks Completed",
+                      value: controller.todayCompletedCount.value,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+      
+            // Wallet Balance Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.textWhite),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Wallet Balance",
+                        style: TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
-                          letterSpacing: -0.5,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () => _showWithdrawDialog(context, controller),
-                  icon: const Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 16,
-                    color: Colors.white,
+                      const SizedBox(height: 6),
+                      Obx(
+                        () => Text(
+                          "\$${controller.walletBalance.value.toStringAsFixed(2)}",
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  label: const Text(
-                    "Withdraw",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                  ElevatedButton.icon(
+                    onPressed: () => _showWithdrawDialog(context, controller),
+                    icon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      size: 16,
                       color: Colors.white,
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    elevation: 2,
-                    shadowColor: AppColors.primary.withValues(alpha: 0.3),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                    label: const Text(
+                      "Withdraw",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      elevation: 2,
+                      shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Urgent Job Card Preview
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.textWhite),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 16,
-                          color: AppColors.primary,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          "Priority Job",
+      
+            const SizedBox(height: 20),
+      
+            // Urgent Job Card Preview
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.textWhite),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            "Priority Job",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      GestureDetector(
+                        onTap: () => controller.changeTab(1),
+                        child: const Text(
+                          "View All >",
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
                           ),
                         ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () => controller.changeTab(1),
-                      child: const Text(
-                        "View All >",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Obx(
-                  () => controller.tasks.isNotEmpty
-                      ? Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.textWhite,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    controller.tasks.first.title,
-                                    style: const TextStyle(
-                                      fontSize: 13,
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Obx(
+                    () => controller.tasks.isNotEmpty
+                        ? Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.textWhite,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      controller.tasks.first.title,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "${controller.tasks.first.category} • ${controller.tasks.first.worker}",
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    controller.tasks.first.status,
+                                    style: TextStyle(
+                                      fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                                      color: Colors.amber.shade900,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    "${controller.tasks.first.category} • ${controller.tasks.first.worker}",
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  controller.tasks.first.status,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber.shade900,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
+            const SizedBox(height: 24),
+          ],
+        ),
     );
   }
 

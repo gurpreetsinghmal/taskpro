@@ -122,12 +122,22 @@ class WorkerDashboardController extends GetxController {
   }
 
   @override
-  void onInit() {
+  onInit()  {
     super.onInit();
-    fetchapis();
+   getdata();
   }
 
-  Future<void> fetchapis() async {
+  Future<void> getdata() async{
+    if(await _apiService.checkInternet()){
+      fetchOnlineApis();
+    }
+    else{
+      fetchOfflineData();
+    }
+  }
+
+  Future<void> fetchOnlineApis() async {
+    debugPrint("Fetching Online data...");
     isApiLoading.value = true;
     try {
       // Executes both API calls simultaneously
@@ -151,7 +161,7 @@ class WorkerDashboardController extends GetxController {
       final dynamic responseData = value.data;
       
       // Save to storage as a string
-      await storage.write(StorageKeys.workerProfile, jsonEncode(responseData));
+      await storage.write(StorageKeys.workerProfile, jsonEncode(responseData["user"]));
       
       if (responseData != null && responseData['user'] != null) {
         user.value = WorkerProfileModel.fromJson(responseData['user'] as Map<String, dynamic>);
@@ -202,5 +212,13 @@ class WorkerDashboardController extends GetxController {
         margin: const EdgeInsets.all(16),
       );
     }
+  }
+
+  Future<void> fetchOfflineData() async {
+    debugPrint("⚠ Fetching offline data...");
+    final profileData = await storage.read(StorageKeys.workerProfile);
+    debugPrint(profileData);
+    user.value = WorkerProfileModel.fromJson(jsonDecode(profileData.toString()) as Map<String, dynamic>);
+    user.value!.photo=null;
   }
 }
