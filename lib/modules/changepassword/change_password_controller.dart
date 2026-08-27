@@ -18,6 +18,12 @@ class ChangePasswordController extends GetxController {
   final isLoading = false.obs;
 
   // Password Policy Reactive Tracking
+  final ohasMinLength = false.obs;
+  final ohasUppercase = false.obs;
+  final ohasLowercase = false.obs;
+  final ohasNumber = false.obs;
+  final ohasSpecialChar = false.obs;
+
   final hasMinLength = false.obs;
   final hasUppercase = false.obs;
   final hasLowercase = false.obs;
@@ -28,10 +34,19 @@ class ChangePasswordController extends GetxController {
   void onInit() {
     super.onInit();
     // Listen to new password changes for real-time policy checks
-    newPasswordController.addListener(_validatePasswordPolicy);
+    oldPasswordController.addListener(_validateOldPasswordPolicy);
+    newPasswordController.addListener(_validateNewPasswordPolicy);
   }
 
-  void _validatePasswordPolicy() {
+  void _validateOldPasswordPolicy() {
+    final text = oldPasswordController.text;
+    ohasMinLength.value = text.length >= 8;
+    ohasUppercase.value = text.contains(RegExp(r'[A-Z]'));
+    ohasLowercase.value = text.contains(RegExp(r'[a-z]'));
+    ohasNumber.value = text.contains(RegExp(r'[0-9]'));
+    ohasSpecialChar.value = text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+  }
+  void _validateNewPasswordPolicy() {
     final text = newPasswordController.text;
     hasMinLength.value = text.length >= 8;
     hasUppercase.value = text.contains(RegExp(r'[A-Z]'));
@@ -39,6 +54,13 @@ class ChangePasswordController extends GetxController {
     hasNumber.value = text.contains(RegExp(r'[0-9]'));
     hasSpecialChar.value = text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
   }
+
+  bool get isOldPasswordPolicyValid =>
+      ohasMinLength.value &&
+          ohasUppercase.value &&
+          ohasLowercase.value &&
+          ohasNumber.value &&
+          ohasSpecialChar.value;
 
   bool get isPasswordPolicyValid =>
       hasMinLength.value &&
@@ -128,7 +150,8 @@ class ChangePasswordController extends GetxController {
 
   @override
   void onClose() {
-    newPasswordController.removeListener(_validatePasswordPolicy);
+    oldPasswordController.removeListener(_validateOldPasswordPolicy);
+    newPasswordController.removeListener(_validateNewPasswordPolicy);
     oldPasswordController.dispose();
     newPasswordController.dispose();
     confirmPasswordController.dispose();
