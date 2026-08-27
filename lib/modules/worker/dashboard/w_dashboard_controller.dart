@@ -216,9 +216,13 @@ class WorkerDashboardController extends GetxController {
 
   Future<void> fetchOfflineData() async {
     debugPrint("⚠ Fetching offline data...");
-    final profileData = await storage.read(StorageKeys.workerProfile);
-    debugPrint(profileData);
-    user.value = WorkerProfileModel.fromJson(jsonDecode(profileData.toString()) as Map<String, dynamic>);
-    user.value!.photo=null;
+    final String? profileData = await storage.read(StorageKeys.workerProfile);
+    if (profileData != null) {
+      final userjson=jsonDecode(profileData.toString());
+      //forcefully remove pic for offline
+      userjson["photo"]=null;
+      await storage.write(StorageKeys.workerProfile, jsonEncode(userjson));
+      user.value = WorkerProfileModel.fromJson(userjson);
+    }
   }
 }

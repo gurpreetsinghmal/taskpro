@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/modules/worker/profile/profile_model.dart';
-import 'package:taskpro/modules/worker/profile/profile_screen.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
@@ -46,9 +45,9 @@ class WorkerProfileController extends GetxController {
 
   void loadProfileFromStorage() async{
     final storage = SecureStorageService.instance;
-    storage.read(StorageKeys.workerProfile).then((value) {
+    storage.read(StorageKeys.workerProfile).then((value) async {
       var x = jsonDecode(value!);
-      user.value = WorkerProfileModel.fromJson(x['user'] as Map<String, dynamic>);
+      user.value = WorkerProfileModel.fromJson(x as Map<String, dynamic>);
       populateControllers();
     }).catchError((error) {
       Get.snackbar(
@@ -60,6 +59,7 @@ class WorkerProfileController extends GetxController {
         margin: const EdgeInsets.all(16),
       );
     });
+
 
   }
 
