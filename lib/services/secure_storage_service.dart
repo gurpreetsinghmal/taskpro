@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/login/login_screen.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
@@ -44,6 +45,7 @@ class SecureStorageService {
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
     );
+    await LocationService.stop();
     Get.offAll(() => LoginScreen());
   }
 

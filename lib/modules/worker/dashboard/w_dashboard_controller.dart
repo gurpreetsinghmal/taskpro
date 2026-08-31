@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/models/task_model.dart';
 import 'package:taskpro/common/models/worker_model.dart';
+import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/worker/profile/profile_model.dart';
 
 import 'package:taskpro/network/api_service.dart';
@@ -124,10 +125,12 @@ class WorkerDashboardController extends GetxController {
   @override
   onInit()  {
     super.onInit();
+
    getdata();
   }
 
   Future<void> getdata() async{
+    await LocationService.start();
     if(await _apiService.checkInternet()){
       fetchOnlineApis();
     }

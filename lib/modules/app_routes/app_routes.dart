@@ -5,5 +5,6 @@ abstract class AppRoutes {
   static const workerdashboard = '/workerdashboard';
   static const onboarding = '/onboarding';
   static const workerProfile = '/workerProfile';
+
 }
 

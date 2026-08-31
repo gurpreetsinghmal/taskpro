@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
@@ -86,7 +87,6 @@ class LoginController extends GetxController {
             colorText: Colors.white,
             margin: const EdgeInsets.all(16),
           );
-
 
           await storage.write(StorageKeys.accessToken, value.data['token']);
           Get.offAll(() => WorkerDashboardScreen());
