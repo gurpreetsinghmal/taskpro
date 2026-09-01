@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
-
-import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -311,13 +310,14 @@ Future<void> sendLocation() async {
     final latitude = position.latitude;
     final longitude = position.longitude;
 
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc().toIso8601String();
 
     print('----------------------------------------');
     print('TaskPro Location');
     print('Latitude  : $latitude');
     print('Longitude : $longitude');
-    print('DateTime  : $now');
+    print('Global DateTime  : $now');
+    print('Local time  : ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.parse(now).toLocal())}');
     print('----------------------------------------');
 
     // -------------------------------------------------------------
@@ -331,7 +331,7 @@ Future<void> sendLocation() async {
       data: {
         'latitude': latitude,
         'longitude': longitude,
-        'datetime': now.toIso8601String(),
+        'datetime': DateTime.now().toUtc().toIso8601String(),
       },
     );
 
