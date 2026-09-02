@@ -14,7 +14,7 @@ class LocationService {
   static const int notificationId = 888;
 
   // Send location every 10 minutes.
-  static const Duration locationInterval = Duration(minutes: 1);
+  static const Duration locationInterval = Duration(minutes: 10);
 
   static final FlutterLocalNotificationsPlugin notifications =
       FlutterLocalNotificationsPlugin();
@@ -317,7 +317,9 @@ Future<void> sendLocation() async {
     print('Latitude  : $latitude');
     print('Longitude : $longitude');
     print('Global DateTime  : $now');
-    print('Local time  : ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.parse(now).toLocal())}');
+    print(
+      'Local time  : ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.parse(now).toLocal())}',
+    );
     print('----------------------------------------');
 
     // -------------------------------------------------------------
