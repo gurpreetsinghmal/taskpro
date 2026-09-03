@@ -331,13 +331,15 @@ Future<void> sendLocation() async {
     final response = await apiService.post(
       ApiRoutes.locationMonitoring,
       data: {
+        'job_id': 1,
         'latitude': latitude,
         'longitude': longitude,
-        'datetime': DateTime.now().toUtc().toIso8601String(),
+        'tracked_at': now,
+        "speed": null,
       },
     );
 
-    print('Location API response: ${response.statusCode}');
+    print('Location API response: ${response.data}');
   } catch (e, stackTrace) {
     print('Location error: $e');
     print(stackTrace);

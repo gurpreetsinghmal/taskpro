@@ -9,7 +9,7 @@ class ApiRoutes {
   static const String updateProfile="auth/profile/update";
   static const String changePassword="auth/change-password";
 
-  static const String locationMonitoring = '/location';
+  static const String locationMonitoring = 'auth/gps-tracking';
   static const String fetchProfile="auth/profile";
   static const String taskSubmitted="tasks/submitted";
 }
