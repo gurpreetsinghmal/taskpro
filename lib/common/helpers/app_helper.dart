@@ -14,7 +14,7 @@ findButton({
     width: double.infinity,
     decoration: BoxDecoration(
       gradient: AppColors.primaryGradient,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(30),
     ),
     child: ElevatedButton(
         style: ElevatedButton.styleFrom(
@@ -33,6 +33,7 @@ findButton({
               title,
               style: TextStyle(
                 color: textColor ?? colorScheme.onPrimary,
+                backgroundColor: Colors.transparent,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),

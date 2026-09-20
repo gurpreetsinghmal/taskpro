@@ -95,12 +95,12 @@ class DioClient {
     // Add LogInterceptor only in development.
     dio.interceptors.add(
       LogInterceptor(
-        request: true,
-        requestHeader: true,
-        requestBody: true,
+        request: false,
+        requestHeader: false,
+        requestBody: false,
         responseHeader: false,
-        responseBody: true,
-        error: true,
+        responseBody: false,
+        error: false,
       ),
     );
   }

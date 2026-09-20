@@ -6,7 +6,7 @@ import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/models/task_model.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/common/models/worker_model.dart';
-import 'package:taskpro/location/location_service.dart';
+// import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/worker/profile/profile_model.dart';
 
 import 'package:taskpro/network/api_service.dart';
@@ -138,6 +138,7 @@ class WorkerDashboardController extends GetxController {
     }
     else{
       fetchOfflineData();
+
     }
   }
 
@@ -261,6 +262,13 @@ class WorkerDashboardController extends GetxController {
       userjson["photo"]=null;
       await storage.write(StorageKeys.workerProfile, jsonEncode(userjson));
       user.value = WorkerProfileModel.fromJson(userjson);
+    }
+    final String? workOrderListString = await storage.read(StorageKeys.workOrderList);
+    if (workOrderListString != null) {
+      final workOrderListJson=jsonDecode(workOrderListString.toString());
+      workOrderList.value = (workOrderListJson as List)
+          .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+          .toList();
     }
   }
 }

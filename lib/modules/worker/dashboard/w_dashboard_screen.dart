@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:taskpro/common/helpers/app_helper.dart';
-import 'package:taskpro/common/models/task_model.dart';
+
 import 'package:taskpro/modules/changepassword/change_password_screen.dart';
 
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_controller.dart';
@@ -11,6 +11,8 @@ import 'package:get/get.dart';
 import 'package:taskpro/modules/worker/profile/profile_screen.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
+
+import '../../../common/models/work_order_model.dart';
 
 class WorkerDashboardScreen extends StatelessWidget {
    WorkerDashboardScreen({super.key});
@@ -227,9 +229,7 @@ class WorkerDashboardScreen extends StatelessWidget {
         Obx(
           () => controller.isApiLoading.value
               ? Container(
-                  color: Colors.black.withOpacity(
-                    0.3,
-                  ), // Semi-transparent backdrop
+                  color: Colors.black.withValues(alpha: 0.3), // Semi-transparent backdrop
                   child: const Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   ),
@@ -672,13 +672,13 @@ class TasksTabScreen extends StatelessWidget {
             child: Obx(
               () => ListView.separated(
                 physics: const BouncingScrollPhysics(),
-                itemCount: controller.tasks.length,
+                itemCount: controller.workOrderList.length,
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 10),
                 itemBuilder: (context, index) {
-                  final task = controller.tasks[index];
-                  final isCompleted = task.status == 'Completed';
-                  final isInProgress = task.status == 'In Progress';
+                  final task = controller.workOrderList[index];
+                  final isCompleted=false;
+                  final isInProgress=false;
 
                   return GestureDetector(
                     onTap: () => showTaskDetails(context, task),
@@ -696,7 +696,7 @@ class TasksTabScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                task.title,
+                                task.workOrderTitle,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -705,7 +705,7 @@ class TasksTabScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "${task.category} • ${task.worker}",
+                                "${task.serviceTypeName} • ${task.managerFirstName}",
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
@@ -727,7 +727,7 @@ class TasksTabScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              task.status,
+                              task.statusName??"Pending",
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -748,9 +748,9 @@ class TasksTabScreen extends StatelessWidget {
     );
   }
 
-  void showTaskDetails(BuildContext context, TaskModel task) {
+  void showTaskDetails(BuildContext context, WorkOrderModel task) {
     Color getStatusColor() {
-      switch (task.status) {
+      switch (task.statusName) {
         case "Completed":
           return Colors.green;
         case "In Progress":
@@ -772,7 +772,7 @@ class TasksTabScreen extends StatelessWidget {
     }
 
     IconData getStatusIcon() {
-      switch (task.status) {
+      switch (task.statusName) {
         case "Completed":
           return Icons.check_circle;
         case "In Progress":
@@ -843,7 +843,7 @@ class TasksTabScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              task.title,
+                              task.workOrderTitle,
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -853,7 +853,7 @@ class TasksTabScreen extends StatelessWidget {
                             const SizedBox(height: 4),
 
                             Text(
-                              "Task ID : ${task.id}",
+                              "Task ID : ${task.workOrderNo}",
                               style: TextStyle(color: Colors.grey.shade600),
                             ),
                           ],
@@ -873,7 +873,7 @@ class TasksTabScreen extends StatelessWidget {
                           color: Colors.white,
                           size: 18,
                         ),
-                        label: Text(task.status),
+                        label: Text(task.statusName??"Pending"),
                         backgroundColor: getStatusColor(),
                         labelStyle: const TextStyle(color: Colors.white),
                       ),
@@ -898,7 +898,7 @@ class TasksTabScreen extends StatelessWidget {
                   _InfoTile(
                     icon: Icons.category_outlined,
                     title: "Category",
-                    value: task.category,
+                    value: task.serviceTypeName,
                   ),
 
                   const SizedBox(height: 14),
@@ -906,7 +906,7 @@ class TasksTabScreen extends StatelessWidget {
                   _InfoTile(
                     icon: Icons.person_outline,
                     title: "Assigned Worker",
-                    value: task.worker,
+                    value: task.technicianFirstName,
                   ),
 
                   const SizedBox(height: 14),
@@ -914,7 +914,7 @@ class TasksTabScreen extends StatelessWidget {
                   _InfoTile(
                     icon: Icons.info_outline,
                     title: "Current Status",
-                    value: task.status,
+                    value: task.statusName??"Pending",
                   ),
 
                   const SizedBox(height: 30),
@@ -930,11 +930,11 @@ class TasksTabScreen extends StatelessWidget {
 
                   const SizedBox(height: 15),
 
-                  Row(
+                  task.statusId==null?Row(
                     children: [
                       Expanded(
                         child: findButton(
-                          title: "Edit",
+                          title: "Accept",
                           onPressed: () {
                             Get.back();
                             final controller =
@@ -943,7 +943,7 @@ class TasksTabScreen extends StatelessWidget {
                           },
                           backgroundColor: AppColors.primaryDark,
                           icon: const Icon(
-                            Icons.edit,
+                            Icons.thumb_up,
                             color: AppColors.textWhite,
                           ),
                         ),
@@ -965,7 +965,7 @@ class TasksTabScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
+                  ):Text(task.statusName??"-"),
 
                   const SizedBox(height: 30),
                 ],
