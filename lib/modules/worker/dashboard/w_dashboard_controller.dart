@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/models/task_model.dart';
+import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/common/models/worker_model.dart';
 import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/worker/profile/profile_model.dart';
@@ -18,6 +19,7 @@ class WorkerDashboardController extends GetxController {
   final storage = SecureStorageService.instance;
 
   final Rxn<WorkerProfileModel> user = Rxn<WorkerProfileModel>();
+  final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
 
   final selectedIndex = 0.obs;
   final isApiLoading = false.obs;
@@ -146,6 +148,7 @@ class WorkerDashboardController extends GetxController {
       // Executes both API calls simultaneously
       await Future.wait([
         loadProfileFromApi(),
+        loadWorkOrderListFromApi(),
         getDashboardData(),
       ]);
     } catch (error) {
@@ -170,7 +173,39 @@ class WorkerDashboardController extends GetxController {
         user.value = WorkerProfileModel.fromJson(responseData['user'] as Map<String, dynamic>);
        }
     } catch (error) {
-      debugPrint("Profile Error: $error");
+      debugPrint("❌Profile Error: $error");
+      Get.snackbar(
+        'Failed',
+        'Something went wrong',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+    }
+  }
+
+  Future<void> loadWorkOrderListFromApi() async {
+    try {
+      final value = await _apiService.post(ApiRoutes.workOrderList, isLoaderShow: false);
+
+      // Dio's response data is already parsed if it's JSON
+      final dynamic responseData = value.data;
+
+      print(responseData);
+
+      // Save to storage as a string
+      await storage.write(StorageKeys.workOrderList, jsonEncode(responseData["data"]));
+
+
+      if (responseData != null && responseData['user'] != null) {
+        workOrderList.value = (responseData['user'] as List)
+            .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+
+    } catch (error) {
+      debugPrint("❌WorkOrderList Error: $error");
       Get.snackbar(
         'Failed',
         'Something went wrong',
@@ -205,7 +240,7 @@ class WorkerDashboardController extends GetxController {
         );
       }
     } catch (error) {
-      debugPrint("Dashboard Error: $error");
+      debugPrint("❌Dashboard Error: $error");
       Get.snackbar(
         'Failed',
         "Something Went Wrong",

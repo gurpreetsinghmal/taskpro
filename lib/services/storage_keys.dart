@@ -9,4 +9,8 @@ class StorageKeys {
   static const language = "language";
   static const workerProfile = "workerProfile";
   static const onboardingCompleted = "onboardingCompleted";
+
+  static const workOrderList = "workOrderList";
+
+
 }

@@ -13,6 +13,8 @@ class ApiRoutes {
   static const String fetchProfile="auth/profile";
   static const String taskSubmitted="tasks/submitted";
 
-  static const String workOrder="auth/work-order";
-  static const String workOrderHours="auth/work-order-hours";
+  static const String workOrderList="auth/work-order-list";
+  static const String workOrderStatusesList="auth/work-order-statuses-list";
+  static const String workOrderHoursList="auth/work-order-hours-list";
+  static const String workOrderStatus="auth/work-order-status";
 }
