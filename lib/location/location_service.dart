@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:intl/intl.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -33,7 +34,7 @@ class LocationService {
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(android: androidSettings);
+        InitializationSettings(android: androidSettings,iOS: DarwinInitializationSettings(),macOS: DarwinInitializationSettings(),);
 
     await notifications.initialize(settings: initializationSettings);
 
@@ -57,40 +58,44 @@ class LocationService {
     // ------------------------------------------------------------
     // Background service
     // ------------------------------------------------------------
+    if (Platform.isAndroid || Platform.isIOS) {
+      final service = FlutterBackgroundService();
+      await service.configure(
+        androidConfiguration: AndroidConfiguration(
+          onStart: onStart,
 
-    final service = FlutterBackgroundService();
+          // IMPORTANT:
+          // Run as Android foreground service.
+          isForegroundMode: true,
 
-    await service.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: onStart,
+          // Do not start automatically when configure() is called.
+          autoStart: false,
 
-        // IMPORTANT:
-        // Run as Android foreground service.
-        isForegroundMode: true,
+          // Restart service after Android device reboot.
+          autoStartOnBoot: true,
 
-        // Do not start automatically when configure() is called.
-        autoStart: false,
+          notificationChannelId: notificationChannelId,
 
-        // Restart service after Android device reboot.
-        autoStartOnBoot: true,
+          initialNotificationTitle: 'TaskPro Location',
 
-        notificationChannelId: notificationChannelId,
+          initialNotificationContent: 'Location tracking is active',
 
-        initialNotificationTitle: 'TaskPro Location',
+          foregroundServiceNotificationId: notificationId,
+        ),
 
-        initialNotificationContent: 'Location tracking is active',
+        iosConfiguration: IosConfiguration(
+          autoStart: true,
 
-        foregroundServiceNotificationId: notificationId,
-      ),
+          onForeground: onStart,
 
-      iosConfiguration: IosConfiguration(
-        autoStart: false,
+          onBackground: onIosBackground,
+        ),
+      );
 
-        onForeground: onStart,
+    }
 
-        onBackground: onIosBackground,
-      ),
-    );
+
+
   }
 
   // ============================================================

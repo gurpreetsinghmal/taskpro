@@ -12,4 +12,7 @@ class ApiRoutes {
   static const String locationMonitoring = 'auth/gps-tracking';
   static const String fetchProfile="auth/profile";
   static const String taskSubmitted="tasks/submitted";
+
+  static const String workOrder="auth/work-order";
+  static const String workOrderHours="auth/work-order-hours";
 }

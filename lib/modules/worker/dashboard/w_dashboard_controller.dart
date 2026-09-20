@@ -130,7 +130,7 @@ class WorkerDashboardController extends GetxController {
   }
 
   Future<void> getdata() async{
-    await LocationService.start();
+    //await LocationService.start();
     if(await _apiService.checkInternet()){
       fetchOnlineApis();
     }
