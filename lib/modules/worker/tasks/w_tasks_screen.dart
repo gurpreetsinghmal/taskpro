@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:taskpro/common/helpers/app_helper.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_screen.dart';
 import 'package:taskpro/modules/worker/tasks/w_tasks_controller.dart';
 import 'package:taskpro/theme/app_colors.dart';
@@ -42,12 +44,9 @@ class WorkerTasksScreen extends StatelessWidget {
                         physics: const BouncingScrollPhysics(),
                         itemCount: controller.workOrderList.length,
                         separatorBuilder: (context, index) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
+                        itemBuilder: (context, index)  {
                           final task = controller.workOrderList[index];
-                          // Keeping original logic where these were false in the list builder
-                          final isCompleted = false;
-                          final isInProgress = false;
-
+                          controller.fetchWorkOrderHoursList(task.id);
                           return GestureDetector(
                             onTap: () => _showTaskDetails(context, task, controller),
                             child: Container(
@@ -87,11 +86,7 @@ class WorkerTasksScreen extends StatelessWidget {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: isCompleted
-                                          ? AppColors.completed
-                                          : isInProgress
-                                              ? AppColors.inProgress
-                                              : AppColors.pending,
+                                      color: Common.getStatusColor(Common.getStatusColorName(task.statusId, controller.workOrderStatusList)),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -170,7 +165,7 @@ class WorkerTasksScreen extends StatelessWidget {
                           children: [
                             Text(task.workOrderTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
-                            Text("Task ID : ${task.workOrderNo}", style: TextStyle(color: Colors.grey.shade600)),
+                            Text("Work Order No : ${task.workOrderNo}", style: TextStyle(color: Colors.grey.shade600)),
                           ],
                         ),
                       ),
@@ -200,35 +195,105 @@ class WorkerTasksScreen extends StatelessWidget {
                   _InfoTile(icon: Icons.person_outline, title: "Assigned Worker", value: task.technicianFirstName),
                   const SizedBox(height: 14),
                   _InfoTile(icon: Icons.info_outline, title: "Current Status", value: Common.getStatusText(task.statusId, controller.workOrderStatusList)),
-                  const SizedBox(height: 30),
-                  Text("Actions", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
-                  const SizedBox(height: 15),
-                  task.statusId == null
-                      ? Row(
+                  const SizedBox(height: 25),
+                  
+                  Text(
+                    "Timing Details",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Obx(() {
+                    final timing = controller.workorder_hour_timing.value;
+                    if (timing == null) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+
+                    final dateFormat = DateFormat('MMM dd, yyyy - hh:mm a');
+                    
+                    return Column(
+                      children: [
+                        _InfoTile(
+                          icon: Icons.calendar_today_outlined,
+                          title: "Scheduled Range",
+                          value: "${timing.scheduledStart != null ? dateFormat.format(timing.scheduledStart!) : 'N/A'} \nto ${timing.scheduledEnd != null ? dateFormat.format(timing.scheduledEnd!) : 'N/A'}",
+                        ),
+                        const SizedBox(height: 14),
+                        _InfoTile(
+                          icon: Icons.timer_outlined,
+                          title: "Actual Timing",
+                          value: "Started: ${timing.actualStartAt != null ? dateFormat.format(timing.actualStartAt!) : 'Not Started'}\nCompleted: ${timing.actualCompletedAt != null ? dateFormat.format(timing.actualCompletedAt!) : 'Pending'}",
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
                           children: [
                             Expanded(
-                              child: findButton(
-                                title: "Accept",
-                                onPressed: () {
-                                  Get.back();
-                                  Get.to(() => const TaskCompletionScreen());
-                                },
-                                backgroundColor: AppColors.primaryDark,
-                                icon: const Icon(Icons.thumb_up, color: AppColors.textWhite),
+                              child: _InfoTile(
+                                icon: Icons.more_time,
+                                title: "Est. Hours",
+                                value: timing.estimatedHours ?? "0",
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Expanded(
-                              child: findButton(
-                                title: "Close",
-                                onPressed: () => Get.back(),
-                                backgroundColor: AppColors.error,
-                                icon: const Icon(Icons.close, color: AppColors.textWhite),
+                              child: _InfoTile(
+                                icon: Icons.history_toggle_off,
+                                title: "Actual Hours",
+                                value: timing.actualHours ?? "0",
                               ),
                             ),
                           ],
-                        )
-                      : Text(task.statusName ?? "-"),
+                        ),
+                      ],
+                    );
+                  }),
+
+                  const SizedBox(height: 25),
+                  task.statusId == 13?
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Text("Actions", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: findButton(
+                            title: "Accept",
+                            onPressed: () async{
+                              Get.back();
+                              await controller.acceptWorkOrderApi(task.id,task.workOrderNo);
+                              Get.offAll(() => const WorkerDashboardScreen());
+                            },
+                            backgroundColor: AppColors.primaryDark,
+                            icon: const Icon(Icons.thumb_up, color: AppColors.textWhite),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: findButton(
+                            title: "Close",
+                            onPressed: () => Get.back(),
+                            backgroundColor: AppColors.error,
+                            icon: const Icon(Icons.close, color: AppColors.textWhite),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],):findButton(title: "Proceed",backgroundColor: AppColors.primary,
+                      onPressed: (){
+                        Get.back();
+                        Get.to(() => const TaskCompletionScreen());
+                      }),
+
                   const SizedBox(height: 30),
                 ],
               ),
@@ -267,7 +332,7 @@ class _InfoTile extends StatelessWidget {
               children: [
                 Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                 const SizedBox(height: 3),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               ],
             ),
           ),

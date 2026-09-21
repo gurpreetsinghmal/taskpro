@@ -15,12 +15,12 @@ class WorkOrderModel {
   final String serviceTypeName;
   final int priorityId;
   final String priority;
-  final int? statusId;
+   int? statusId;
   final String? statusName;
   final String workOrderTitle;
   final String? scopeOfWork;
 
-  const WorkOrderModel({
+   WorkOrderModel({
     required this.id,
     required this.workOrderNo,
     required this.leadId,
