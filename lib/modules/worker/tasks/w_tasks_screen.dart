@@ -236,7 +236,7 @@ class WorkerTasksScreen extends StatelessWidget {
                             Expanded(
                               child: _InfoTile(
                                 icon: Icons.more_time,
-                                title: "Est. Hours",
+                                title: "Est. Hrs",
                                 value: timing.estimatedHours ?? "0",
                               ),
                             ),
@@ -244,7 +244,7 @@ class WorkerTasksScreen extends StatelessWidget {
                             Expanded(
                               child: _InfoTile(
                                 icon: Icons.history_toggle_off,
-                                title: "Actual Hours",
+                                title: "Actual Hrs",
                                 value: timing.actualHours ?? "0",
                               ),
                             ),
