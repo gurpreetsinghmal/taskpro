@@ -1,27 +1,21 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
-import 'package:taskpro/common/models/task_model.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
-import 'package:taskpro/common/models/worker_model.dart';
-// import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/worker/profile/profile_model.dart';
-
 import 'package:taskpro/network/api_service.dart';
-
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
+
+import '../../../common/models/work_order_status.dart';
+import '../../../location/location_service.dart';
 
 class WorkerDashboardController extends GetxController {
   final storage = SecureStorageService.instance;
 
   final Rxn<WorkerProfileModel> user = Rxn<WorkerProfileModel>();
-  final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
-
-  final selectedIndex = 0.obs;
   final isApiLoading = false.obs;
   final walletBalance = 320.00.obs;
 
@@ -33,90 +27,9 @@ class WorkerDashboardController extends GetxController {
   final todayCompletedCount = 7.obs;
   final _apiService = ApiService();
 
-  // Tasks List State
-  final tasks = <TaskModel>[
-    TaskModel(
-      id: '1',
-      title: 'HVAC Maintenance Unit B',
-      category: 'Maintenance',
-      status: 'In Progress',
-      priority: 'High',
-      worker: 'Alex Morgan',
-    ),
-    TaskModel(
-      id: '2',
-      title: 'Electrical Safety Inspection',
-      category: 'Inspection',
-      status: 'Pending',
-      priority: 'Medium',
-      worker: 'Alex Morgan',
-    ),
-    TaskModel(
-      id: '3',
-      title: 'Plumbing System Leak Repair',
-      category: 'Plumbing',
-      status: 'Completed',
-      priority: 'Urgent',
-      worker: 'David Chen',
-    ),
-    TaskModel(
-      id: '4',
-      title: 'Solar Panel Array Cleaning',
-      category: 'Cleaning',
-      status: 'Pending',
-      priority: 'Low',
-      worker: 'Sarah Jenkins',
-    ),
-  ].obs;
-
-  // Workers List State
-  final workers = <WorkerModel>[
-    WorkerModel(
-      name: 'Alex Morgan',
-      role: 'Senior Technician',
-      status: 'On Field',
-      activeTasks: 4,
-    ),
-    WorkerModel(
-      name: 'David Chen',
-      role: 'Electrical Specialist',
-      status: 'Available',
-      activeTasks: 2,
-    ),
-    WorkerModel(
-      name: 'Sarah Jenkins',
-      role: 'Safety Inspector',
-      status: 'On Break',
-      activeTasks: 1,
-    ),
-    WorkerModel(
-      name: 'Robert Fox',
-      role: 'HVAC Specialist',
-      status: 'On Field',
-      activeTasks: 5,
-    ),
-  ].obs;
-
-  void changeTab(int index) {
-    selectedIndex.value = index;
-  }
-
-  void addTask(String title, String category) {
-    if (title.trim().isEmpty) return;
-    tasks.insert(
-      0,
-      TaskModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: title,
-        category: category,
-        status: 'Pending',
-        priority: 'Medium',
-        worker: 'Alex Morgan',
-      ),
-    );
-    pendingCount.value++;
-    assignedCount.value++;
-  }
+  final workOrders = <WorkOrderModel>[].obs;
+  final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
+  final RxList<WorkOrderStatusModel> workOrderStatusList = <WorkOrderStatusModel>[].obs;
 
   void withdrawWallet(double amount) {
     if (walletBalance.value >= amount) {
@@ -125,20 +38,25 @@ class WorkerDashboardController extends GetxController {
   }
 
   @override
-  onInit()  {
+  void onInit() {
     super.onInit();
-
-   getdata();
+    getdata();
   }
 
   Future<void> getdata() async{
     //await LocationService.start();
     if(await _apiService.checkInternet()){
       fetchOnlineApis();
-    }
-    else{
+    } else {
       fetchOfflineData();
+    }
 
+    final String? workOrderListString = await storage.read(StorageKeys.workOrderList);
+    if (workOrderListString != null) {
+      final workOrderListJson = jsonDecode(workOrderListString.toString());
+      workOrders.value = (workOrderListJson as List)
+          .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+          .toList();
     }
   }
 
@@ -149,13 +67,13 @@ class WorkerDashboardController extends GetxController {
       // Executes both API calls simultaneously
       await Future.wait([
         loadProfileFromApi(),
+        loadWorkOrderStatusListFromApi(),
         loadWorkOrderListFromApi(),
         getDashboardData(),
       ]);
     } catch (error) {
-      debugPrint("Error fetching initial data: $error");
-    }
-    finally {
+      debugPrint("Error fetching initial dashboard data: $error");
+    } finally {
       isApiLoading.value = false;
     }
   }
@@ -163,65 +81,49 @@ class WorkerDashboardController extends GetxController {
   Future<void> loadProfileFromApi() async {
     try {
       final value = await _apiService.get(ApiRoutes.fetchProfile, isLoaderShow: false);
-      
-      // Dio's response data is already parsed if it's JSON
       final dynamic responseData = value.data;
-      
-      // Save to storage as a string
       await storage.write(StorageKeys.workerProfile, jsonEncode(responseData["user"]));
-      
       if (responseData != null && responseData['user'] != null) {
         user.value = WorkerProfileModel.fromJson(responseData['user'] as Map<String, dynamic>);
-       }
+      }
     } catch (error) {
       debugPrint("❌Profile Error: $error");
-      Get.snackbar(
-        'Failed',
-        'Something went wrong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
+    }
+  }
+
+  Future<void> loadWorkOrderStatusListFromApi() async {
+    try {
+      final value = await _apiService.post(ApiRoutes.workOrderStatusesList, isLoaderShow: false);
+      final dynamic responseData = value.data;
+      await storage.write(StorageKeys.workOrderStatusesList, jsonEncode(responseData["data"]));
+      if (responseData != null && responseData['data'] != null) {
+        workOrderStatusList.value = (responseData['data'] as List)
+            .map((item) => WorkOrderStatusModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (error) {
+      debugPrint("❌WorkOrderStatusList Error: $error");
     }
   }
 
   Future<void> loadWorkOrderListFromApi() async {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderList, isLoaderShow: false);
-
-      // Dio's response data is already parsed if it's JSON
       final dynamic responseData = value.data;
-
-      print(responseData);
-
-      // Save to storage as a string
       await storage.write(StorageKeys.workOrderList, jsonEncode(responseData["data"]));
-
-
-      if (responseData != null && responseData['user'] != null) {
-        workOrderList.value = (responseData['user'] as List)
+      if (responseData != null && responseData['data'] != null) {
+        workOrderList.value = (responseData['data'] as List)
             .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
             .toList();
       }
-
     } catch (error) {
       debugPrint("❌WorkOrderList Error: $error");
-      Get.snackbar(
-        'Failed',
-        'Something went wrong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
     }
   }
 
   Future<void> getDashboardData() async {
     try {
       final value = await _apiService.get('auth/dashboard');
-      
       if (value.data['success'] == true) {
         final stats = value.data['data'];
         if (stats != null) {
@@ -242,14 +144,6 @@ class WorkerDashboardController extends GetxController {
       }
     } catch (error) {
       debugPrint("❌Dashboard Error: $error");
-      Get.snackbar(
-        'Failed',
-        "Something Went Wrong",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
     }
   }
 
@@ -262,13 +156,6 @@ class WorkerDashboardController extends GetxController {
       userjson["photo"]=null;
       await storage.write(StorageKeys.workerProfile, jsonEncode(userjson));
       user.value = WorkerProfileModel.fromJson(userjson);
-    }
-    final String? workOrderListString = await storage.read(StorageKeys.workOrderList);
-    if (workOrderListString != null) {
-      final workOrderListJson=jsonDecode(workOrderListString.toString());
-      workOrderList.value = (workOrderListJson as List)
-          .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
-          .toList();
     }
   }
 }

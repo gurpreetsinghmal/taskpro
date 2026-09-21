@@ -11,6 +11,7 @@ class StorageKeys {
   static const onboardingCompleted = "onboardingCompleted";
 
   static const workOrderList = "workOrderList";
+  static const workOrderStatusesList = "workOrderStatusesList";
 
 
 }
