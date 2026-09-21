@@ -44,7 +44,7 @@ class WorkerTasksScreen extends StatelessWidget {
                         physics: const BouncingScrollPhysics(),
                         itemCount: controller.workOrderList.length,
                         separatorBuilder: (context, index) => const SizedBox(height: 10),
-                        itemBuilder: (context, index)  {
+                        itemBuilder: (context, index) {
                           final task = controller.workOrderList[index];
                           controller.fetchWorkOrderHoursList(task.id);
                           return GestureDetector(
@@ -113,8 +113,6 @@ class WorkerTasksScreen extends StatelessWidget {
   }
 
   void _showTaskDetails(BuildContext context, WorkOrderModel task, WorkerTasksController controller) {
-
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -205,13 +203,13 @@ class WorkerTasksScreen extends StatelessWidget {
                       color: Colors.grey.shade600,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Obx(() {
                     final timing = controller.workorder_hour_timing.value;
                     if (timing == null) {
                       return const Center(
                         child: Padding(
-                          padding: EdgeInsets.all(8.0),
+                          padding: EdgeInsets.symmetric(vertical: 20),
                           child: CircularProgressIndicator(),
                         ),
                       );
@@ -229,8 +227,8 @@ class WorkerTasksScreen extends StatelessWidget {
                         const SizedBox(height: 14),
                         _InfoTile(
                           icon: Icons.timer_outlined,
-                          title: "Actual Timing",
-                          value: "Started: ${timing.actualStartAt != null ? dateFormat.format(timing.actualStartAt!) : 'Not Started'}\nCompleted: ${timing.actualCompletedAt != null ? dateFormat.format(timing.actualCompletedAt!) : 'Pending'}",
+                          title: "Actual Execution",
+                          value: "Start: ${timing.actualStartAt != null ? dateFormat.format(timing.actualStartAt!) : 'Not Started'}\nEnd: ${timing.actualCompletedAt != null ? dateFormat.format(timing.actualCompletedAt!) : 'Pending'}",
                         ),
                         const SizedBox(height: 14),
                         Row(
