@@ -236,81 +236,7 @@ class DashboardTabScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.textWhite),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Wallet Balance",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Obx(
-                      () => Text(
-                        "\$${controller.walletBalance.value.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton.icon(
-                  onPressed: () => _showWithdrawDialog(context, controller),
-                  icon: const Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 16,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
-                    "Withdraw",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    elevation: 2,
-                    shadowColor: AppColors.primary.withValues(alpha: 0.3),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),
@@ -334,7 +260,7 @@ class DashboardTabScreen extends StatelessWidget {
                         ),
                         SizedBox(width: 6),
                         Text(
-                          "Priority Job",
+                          "Assigned Jobs",
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -358,61 +284,228 @@ class DashboardTabScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Obx(
-                  () => controller.workOrders.isNotEmpty
-                      ? Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.textWhite,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    controller.workOrders.first.workOrderTitle,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    "${controller.workOrders.first.serviceTypeName} • ${controller.workOrders.first.managerFirstName}",
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  Common.getStatusText(controller.workOrders.first.statusId, controller.workOrderStatusList),
+                      () => controller.workOrderList.isNotEmpty
+                      ? ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: controller.workOrderList.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final workOrder = controller.workOrderList[index];
 
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color:Common.getStatusColor(Common.getStatusColorName(controller.workOrders.first.statusId, controller.workOrderStatusList)),
-                                     ),
+                      if(workOrder.statusId!=13) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final statusName = Common.getStatusColorName(
+                        workOrder.statusId,
+                        controller.workOrderStatusList,
+                      );
+
+                      final statusText = Common.getStatusText(
+                        workOrder.statusId,
+                        controller.workOrderStatusList,
+                      );
+
+                      final statusColor = Common.getStatusColor(statusName);
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.textWhite,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              // Status Accent Line
+                              Container(
+                                width: 5,
+                                decoration: BoxDecoration(
+                                  color: statusColor,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(18),
+                                    bottomLeft: Radius.circular(18),
+                                  ),
+                                ),
+                              ),
+
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      // Header
+                                      Row(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                        children: [
+                                          // Work Order Icon
+                                          Container(
+                                            height: 44,
+                                            width: 44,
+                                            decoration: BoxDecoration(
+                                              color: statusColor.withOpacity(0.10),
+                                              borderRadius:
+                                              BorderRadius.circular(12),
+                                            ),
+                                            child: Icon(
+                                              Icons.assignment_outlined,
+                                              color: statusColor,
+                                              size: 24,
+                                            ),
+                                          ),
+
+                                          const SizedBox(width: 12),
+
+                                          // Title and Manager
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  workOrder.workOrderTitle,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                  TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+
+                                                const SizedBox(height: 5),
+
+                                                Text(
+                                                  "${workOrder.serviceTypeName} • "
+                                                      "${workOrder.managerFirstName}",
+                                                  maxLines: 1,
+                                                  overflow:
+                                                  TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color:
+                                                    AppColors.textSecondary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          const SizedBox(width: 8),
+
+                                          // Arrow
+                                    if(workOrder.statusId!=13)
+                                          Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Colors.grey.shade500,
+                                            size: 22,
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 14),
+
+                                      // Status Badge
+                                      Row(
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(0.10),
+                                                borderRadius:
+                                                BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Container(
+                                                    height: 7,
+                                                    width: 7,
+                                                    decoration: BoxDecoration(
+                                                      color: statusColor,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    statusText,
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: statusColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Align(                                        alignment: Alignment.centerLeft,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(0.10),
+                                                borderRadius:
+                                                BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Container(
+                                                    height: 7,
+                                                    width: 7,
+                                                    decoration: BoxDecoration(
+                                                      color: statusColor,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    "WO No: ${workOrder.workOrderNo}",
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: statusColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      )
+
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        )
+                        ),
+                      );
+                    },
+                  )
                       : const SizedBox.shrink(),
-                ),
+                )
               ],
             ),
           ),
@@ -486,67 +579,6 @@ class DashboardTabScreen extends StatelessWidget {
               color: AppColors.primary,
               letterSpacing: -0.5,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showWithdrawDialog(
-    BuildContext context,
-    WorkerDashboardController controller,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Icon(Icons.account_balance_wallet, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text(
-              "Withdraw Funds",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Available Balance: \$${controller.walletBalance.value.toStringAsFixed(2)}",
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Amount (\$)",
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () {
-              controller.withdrawWallet(50.0);
-              Navigator.pop(context);
-              Get.snackbar(
-                "Payout Initiated",
-                "Successfully transferred \$50.00 to your bank.",
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            child: const Text("Confirm", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

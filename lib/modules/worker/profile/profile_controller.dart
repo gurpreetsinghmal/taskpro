@@ -46,10 +46,11 @@ class WorkerProfileController extends GetxController {
   void loadProfileFromStorage() async{
     final storage = SecureStorageService.instance;
     storage.read(StorageKeys.workerProfile).then((value) async {
-      var x = jsonDecode(value!);
-      user.value = WorkerProfileModel.fromJson(x as Map<String, dynamic>);
+      final Map<String, dynamic> profileJson = jsonDecode(value!);
+      user.value = WorkerProfileModel.fromJson(profileJson);
       populateControllers();
     }).catchError((error) {
+      print(error.toString());
       Get.snackbar(
         'Failed',
         'something went wrong',

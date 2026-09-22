@@ -56,7 +56,7 @@ class WorkerProfileModel {
       'email': email,
       'other_email': otherEmail,
       'roles': roles,
-      'currentRole': currentRole,
+      'current_role': currentRole,
       'photo': photo,
     };
   }

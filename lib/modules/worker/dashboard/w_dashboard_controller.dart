@@ -9,6 +9,7 @@ import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
+import '../../../common/helpers/helper_methods.dart';
 import '../../../common/models/work_order_status.dart';
 import '../../../location/location_service.dart';
 
@@ -27,7 +28,6 @@ class WorkerDashboardController extends GetxController {
   final todayCompletedCount = 7.obs;
   final _apiService = ApiService();
 
-  final workOrders = <WorkOrderModel>[].obs;
   final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
   final RxList<WorkOrderStatusModel> workOrderStatusList = <WorkOrderStatusModel>[].obs;
 
@@ -54,7 +54,7 @@ class WorkerDashboardController extends GetxController {
     final String? workOrderListString = await storage.read(StorageKeys.workOrderList);
     if (workOrderListString != null) {
       final workOrderListJson = jsonDecode(workOrderListString.toString());
-      workOrders.value = (workOrderListJson as List)
+      workOrderList.value = (workOrderListJson as List)
           .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
           .toList();
     }
@@ -70,6 +70,7 @@ class WorkerDashboardController extends GetxController {
         loadWorkOrderStatusListFromApi(),
         loadWorkOrderListFromApi(),
         getDashboardData(),
+        Common.printAllSecureStorage(),
       ]);
     } catch (error) {
       debugPrint("Error fetching initial dashboard data: $error");
@@ -82,10 +83,12 @@ class WorkerDashboardController extends GetxController {
     try {
       final value = await _apiService.get(ApiRoutes.fetchProfile, isLoaderShow: false);
       final dynamic responseData = value.data;
-      await storage.write(StorageKeys.workerProfile, jsonEncode(responseData["user"]));
-      if (responseData != null && responseData['user'] != null) {
+
+      if (responseData != null && responseData['user'] != null && responseData['success'].toString()=="true") {
         user.value = WorkerProfileModel.fromJson(responseData['user'] as Map<String, dynamic>);
+        await storage.write(StorageKeys.workerProfile, jsonEncode(user.value!.toJson()));
       }
+
     } catch (error) {
       debugPrint("❌Profile Error: $error");
     }
@@ -95,11 +98,15 @@ class WorkerDashboardController extends GetxController {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderStatusesList, isLoaderShow: false);
       final dynamic responseData = value.data;
-      await storage.write(StorageKeys.workOrderStatusesList, jsonEncode(responseData["data"]));
-      if (responseData != null && responseData['data'] != null) {
+      if (responseData != null && responseData['data'] != null && responseData['status'].toString()=="true") {
         workOrderStatusList.value = (responseData['data'] as List)
             .map((item) => WorkOrderStatusModel.fromJson(item as Map<String, dynamic>))
             .toList();
+        await storage.write(StorageKeys.workOrderStatusesList, jsonEncode(
+          workOrderStatusList.value
+              .map((item) => item.toJson())
+              .toList(),
+        ));
       }
     } catch (error) {
       debugPrint("❌WorkOrderStatusList Error: $error");
@@ -110,14 +117,17 @@ class WorkerDashboardController extends GetxController {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderList, isLoaderShow: false);
       final dynamic responseData = value.data;
-      await storage.write(StorageKeys.workOrderList, jsonEncode(responseData["data"]));
-      if (responseData != null && responseData['data'] != null) {
+      if (responseData != null && responseData['data'] != null && responseData['status'].toString()=="success") {
         workOrderList.value = (responseData['data'] as List)
             .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
             .toList();
+        await storage.write(StorageKeys.workOrderList, jsonEncode(
+          workOrderList.value.map((item) => item.toJson())
+              .toList(),
+        ));
       }
-    } catch (error) {
-      debugPrint("❌WorkOrderList Error: $error");
+    } catch (error,stack) {
+      debugPrint("❌WorkOrderList Error: $error $stack");
     }
   }
 

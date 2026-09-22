@@ -1,3 +1,5 @@
+import 'package:taskpro/common/models/work_order_hour_list_model.dart';
+
 class WorkOrderModel {
   final int id;
   final String workOrderNo;
@@ -19,6 +21,7 @@ class WorkOrderModel {
   final String? statusName;
   final String workOrderTitle;
   final String? scopeOfWork;
+  List<WorkOrderHourListModel>? workOrderHours;
 
    WorkOrderModel({
     required this.id,
@@ -41,6 +44,7 @@ class WorkOrderModel {
     this.statusName,
     required this.workOrderTitle,
     this.scopeOfWork,
+     this.workOrderHours,
   });
 
   // Read from API with explicit null-safe casting
@@ -66,6 +70,9 @@ class WorkOrderModel {
       statusName: json['status_name'] as String?,
       workOrderTitle: json['work_order_title'] as String,
       scopeOfWork: json['scope_of_work'] as String?,
+      workOrderHours: (json['work_order_hours'] as List?)
+          ?.map((item) => WorkOrderHourListModel.fromJson(item as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -92,6 +99,7 @@ class WorkOrderModel {
       'status_name': statusName,
       'work_order_title': workOrderTitle,
       'scope_of_work': scopeOfWork,
+      'work_order_hours': workOrderHours?.map((item) => item.toJson()).toList(),
     };
   }
 }

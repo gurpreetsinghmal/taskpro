@@ -15,7 +15,7 @@ class WorkerTasksController extends GetxController {
   final storage = SecureStorageService.instance;
   final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
   final RxList<WorkOrderStatusModel> workOrderStatusList = <WorkOrderStatusModel>[].obs;
-  final Rxn<WorkOrderHourListModel> workorder_hour_timing = Rxn<WorkOrderHourListModel>();
+  final RxList<WorkOrderHourListModel> workorder_hour_timing = <WorkOrderHourListModel>[].obs;
   final isApiLoading = false.obs;
   final _apiService = ApiService();
 
@@ -35,8 +35,40 @@ class WorkerTasksController extends GetxController {
         "work_order_id": id,
       }, isLoaderShow: false);
       final dynamic responseData = value.data;
-      if (responseData != null && responseData['status'] =="success") {
-        workorder_hour_timing.value = WorkOrderHourListModel.fromJson(responseData['data'][0]);
+      if (responseData != null && responseData['status'] =="success" && responseData['data'] != null) {
+
+       var hours = (responseData['data'] as List)
+            .map((e) => WorkOrderHourListModel.fromJson(e))
+            .toList();
+
+        workorder_hour_timing.value = hours;
+
+        final storedData = await storage.read(StorageKeys.workOrderList);
+
+        if (storedData != null && storedData.isNotEmpty) {
+          final List<dynamic> jsonList = jsonDecode(storedData);
+
+          final workOrderList = jsonList
+              .map((e) => WorkOrderModel.fromJson(e))
+              .toList();
+
+          final index = workOrderList.indexWhere(
+                (element) => element.id == id,
+          );
+
+          if (index != -1) {
+            // Update work_order_hours
+            workOrderList[index].workOrderHours = hours;
+
+            // Save updated list
+            await storage.write(
+              StorageKeys.workOrderList,
+              jsonEncode(
+                workOrderList.map((e) => e.toJson()).toList(),
+              ),
+            );
+          }
+        }
       }
     } catch (error) {
       debugPrint("❌workorder_hour_timing Error: $error");
@@ -64,7 +96,7 @@ class WorkerTasksController extends GetxController {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderStatusUpdate,data: {
         "work_order_id": workOrderId,
-        "status_id": 16,
+        "status_id": 59,
       }, isLoaderShow: true);
       final dynamic responseData = value.data;
 

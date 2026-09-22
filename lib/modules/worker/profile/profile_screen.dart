@@ -210,7 +210,7 @@ class WorkerProfileScreen extends GetView<WorkerProfileController> {
             userData.email,
             style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(

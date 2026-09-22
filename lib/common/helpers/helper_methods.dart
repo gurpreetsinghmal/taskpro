@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:taskpro/common/models/work_order_status.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
@@ -30,6 +31,8 @@ class Common {
     switch (colorName) {
       case "LightBlue":
         return AppColors.info;
+      case "Accepted":
+        return AppColors.chartOrange;
       case "Red":
         return AppColors.error;
       case "Green":
@@ -59,6 +62,8 @@ class Common {
     switch (statusName) {
       case "New":
         return Icons.fiber_new;
+      case "Accepted":
+        return Icons.check;
       case "Assigned":
         return Icons.assignment_ind;
       case "In Progress":
@@ -88,5 +93,16 @@ class Common {
       default:
         return Colors.green;
     }
+  }
+  static Future<void> printAllSecureStorage() async {
+    const storage = FlutterSecureStorage();
+
+    // Read all key-value pairs from secure storage
+    Map<String, String> allValues = await storage.readAll();
+
+    // Loop through the map to see each key and value
+    allValues.forEach((key, value) {
+      print('Key: $key, Value: $value');
+    });
   }
 }

@@ -37,74 +37,297 @@ class WorkerTasksScreen extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: Obx(
-                () => controller.isApiLoading.value
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.separated(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: controller.workOrderList.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final task = controller.workOrderList[index];
-                          controller.fetchWorkOrderHoursList(task.id);
-                          return GestureDetector(
-                            onTap: () => _showTaskDetails(context, task, controller),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppColors.textWhite),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        task.workOrderTitle,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "${task.serviceTypeName} • ${task.managerFirstName}",
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Common.getStatusColor(Common.getStatusColorName(task.statusId, controller.workOrderStatusList)),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      Common.getStatusText(task.statusId, controller.workOrderStatusList),
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textWhite,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
+              child: Obx(() {
+                if (controller.isApiLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.workOrderList.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.assignment_outlined,
+                          size: 60,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "No Work Orders Found",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: controller.workOrderList.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+
+                  itemBuilder: (context, index) {
+                    final task = controller.workOrderList[index];
+
+                    final statusName = Common.getStatusColorName(
+                      task.statusId,
+                      controller.workOrderStatusList,
+                    );
+
+                    final statusText = Common.getStatusText(
+                      task.statusId,
+                      controller.workOrderStatusList,
+                    );
+
+                    final statusColor = Common.getStatusColor(statusName);
+
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+
+                        onTap: () async {
+                          await controller.fetchWorkOrderHoursList(task.id);
+                          _showTaskDetails(context, task, controller);
                         },
+
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 14,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                // Status Accent
+                                Container(
+                                  width: 5,
+                                  decoration: BoxDecoration(
+                                    color: statusColor,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(18),
+                                      bottomLeft: Radius.circular(18),
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+
+                                      children: [
+                                        // Header Row
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+
+                                          children: [
+                                            // Work Order Icon
+                                            Container(
+                                              height: 44,
+                                              width: 44,
+
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(
+                                                  0.10,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(13),
+                                              ),
+
+                                              child: Icon(
+                                                Icons.assignment_rounded,
+                                                color: statusColor,
+                                                size: 23,
+                                              ),
+                                            ),
+
+                                            const SizedBox(width: 12),
+
+                                            // Title + Details
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+
+                                                children: [
+                                                  Text(
+                                                    task.workOrderTitle,
+
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: AppColors.primary,
+                                                    ),
+                                                  ),
+
+                                                  const SizedBox(height: 5),
+
+                                                  Text(
+                                                    "${task.serviceTypeName} • "
+                                                    "${task.managerFirstName}",
+
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            const SizedBox(width: 8),
+
+                                            // Arrow
+                                            Icon(
+                                              Icons.chevron_right_rounded,
+                                              color: Colors.grey.shade400,
+                                              size: 24,
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 14),
+
+                                        // Bottom Row
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+
+                                          children: [
+                                            // Status Badge
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 6,
+                                                  ),
+
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(
+                                                  0.10,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+
+                                                children: [
+                                                  Container(
+                                                    height: 7,
+                                                    width: 7,
+
+                                                    decoration: BoxDecoration(
+                                                      color: statusColor,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+
+                                                  const SizedBox(width: 6),
+
+                                                  Text(
+                                                    statusText,
+
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: statusColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 6,
+                                                  ),
+
+                                              decoration: BoxDecoration(
+                                                color: statusColor.withOpacity(
+                                                  0.10,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+
+                                                children: [
+                                                  Container(
+                                                    height: 7,
+                                                    width: 7,
+
+                                                    decoration: BoxDecoration(
+                                                      color: statusColor,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+
+                                                  const SizedBox(width: 6),
+
+                                                  Text(
+                                                    "WO No : ${task.workOrderNo}",
+
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: statusColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-              ),
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -112,7 +335,11 @@ class WorkerTasksScreen extends StatelessWidget {
     );
   }
 
-  void _showTaskDetails(BuildContext context, WorkOrderModel task, WorkerTasksController controller) {
+  void _showTaskDetails(
+    BuildContext context,
+    WorkOrderModel task,
+    WorkerTasksController controller,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -153,17 +380,32 @@ class WorkerTasksScreen extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primary.withValues(alpha: .12),
-                        child: const Icon(Icons.assignment_outlined, color: AppColors.primary, size: 28),
+                        backgroundColor: AppColors.primary.withValues(
+                          alpha: .12,
+                        ),
+                        child: const Icon(
+                          Icons.assignment_outlined,
+                          color: AppColors.primary,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(task.workOrderTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(
+                              task.workOrderTitle,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text("Work Order No : ${task.workOrderNo}", style: TextStyle(color: Colors.grey.shade600)),
+                            Text(
+                              "Work Order No : ${task.workOrderNo}",
+                              style: TextStyle(color: Colors.grey.shade600),
+                            ),
                           ],
                         ),
                       ),
@@ -173,14 +415,37 @@ class WorkerTasksScreen extends StatelessWidget {
                   Row(
                     children: [
                       Chip(
-                        avatar: Icon(Common.getStatusIcon(Common.getStatusText(task.statusId, controller.workOrderStatusList)), color: Colors.white, size: 18),
-                        label: Text(Common.getStatusText(task.statusId, controller.workOrderStatusList)),
-                        backgroundColor: Common.getStatusColor(Common.getStatusColorName(task.statusId, controller.workOrderStatusList)),
+                        avatar: Icon(
+                          Common.getStatusIcon(
+                            Common.getStatusText(
+                              task.statusId,
+                              controller.workOrderStatusList,
+                            ),
+                          ),
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        label: Text(
+                          Common.getStatusText(
+                            task.statusId,
+                            controller.workOrderStatusList,
+                          ),
+                        ),
+                        backgroundColor: Common.getStatusColor(
+                          Common.getStatusColorName(
+                            task.statusId,
+                            controller.workOrderStatusList,
+                          ),
+                        ),
                         labelStyle: const TextStyle(color: Colors.white),
                       ),
                       const SizedBox(width: 10),
                       Chip(
-                        avatar: const Icon(Icons.flag, color: Colors.white, size: 18),
+                        avatar: const Icon(
+                          Icons.flag,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         label: Text(task.priority),
                         backgroundColor: Common.getPriorityColor(task.priority),
                         labelStyle: const TextStyle(color: Colors.white),
@@ -188,13 +453,38 @@ class WorkerTasksScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 25),
-                  _InfoTile(icon: Icons.category_outlined, title: "Category", value: task.serviceTypeName),
+                  _InfoTile(
+                    icon: Icons.category_outlined,
+                    title: "Category",
+                    value: task.serviceTypeName,
+                  ),
                   const SizedBox(height: 14),
-                  _InfoTile(icon: Icons.person_outline, title: "Assigned Worker", value: task.technicianFirstName),
+                  _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Assigned Worker",
+                    value: task.technicianFirstName+" "+task.technicianLastName,
+                  ),
                   const SizedBox(height: 14),
-                  _InfoTile(icon: Icons.info_outline, title: "Current Status", value: Common.getStatusText(task.statusId, controller.workOrderStatusList)),
+                  _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Lead Title",
+                    value: task.leadTitle,
+                  ),
+                  const SizedBox(height: 14),
+                   _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Manager",
+                    value: task.managerFirstName+" "+task.managerLastName,
+                  ),
+                  const SizedBox(height: 14),
+                  _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Scope of Work",
+                    value: task.scopeOfWork??"-",
+                  ),
+
                   const SizedBox(height: 25),
-                  
+
                   Text(
                     "Timing Details",
                     style: TextStyle(
@@ -205,92 +495,151 @@ class WorkerTasksScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Obx(() {
-                    final timing = controller.workorder_hour_timing.value;
-                    if (timing == null) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: CircularProgressIndicator(),
+                    final timings = controller.workorder_hour_timing;
+
+                    if (timings.isEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.access_time_outlined,
+                              color: Colors.grey.shade500,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              "No timing details available",
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }
 
                     final dateFormat = DateFormat('MMM dd, yyyy - hh:mm a');
-                    
+
                     return Column(
-                      children: [
-                        _InfoTile(
-                          icon: Icons.calendar_today_outlined,
-                          title: "Scheduled Range",
-                          value: "${timing.scheduledStart != null ? dateFormat.format(timing.scheduledStart!) : 'N/A'} \nto ${timing.scheduledEnd != null ? dateFormat.format(timing.scheduledEnd!) : 'N/A'}",
-                        ),
-                        const SizedBox(height: 14),
-                        _InfoTile(
-                          icon: Icons.timer_outlined,
-                          title: "Actual Execution",
-                          value: "Start: ${timing.actualStartAt != null ? dateFormat.format(timing.actualStartAt!) : 'Not Started'}\nEnd: ${timing.actualCompletedAt != null ? dateFormat.format(timing.actualCompletedAt!) : 'Pending'}",
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _InfoTile(
-                                icon: Icons.more_time,
-                                title: "Est. Hrs",
-                                value: timing.estimatedHours ?? "0",
+                      children: timings.map((timing) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: Column(
+                            children: [
+                              _InfoTile(
+                                icon: Icons.calendar_today_outlined,
+                                title: "Scheduled Range",
+                                value:
+                                    "${timing.scheduledStart != null ? dateFormat.format(timing.scheduledStart!) : 'N/A'}"
+                                    "\nto "
+                                    "${timing.scheduledEnd != null ? dateFormat.format(timing.scheduledEnd!) : 'N/A'}",
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _InfoTile(
-                                icon: Icons.history_toggle_off,
-                                title: "Actual Hrs",
-                                value: timing.actualHours ?? "0",
+
+                              const SizedBox(height: 14),
+
+                              _InfoTile(
+                                icon: Icons.timer_outlined,
+                                title: "Actual Execution",
+                                value:
+                                    "Start: ${timing.actualStartAt != null ? dateFormat.format(timing.actualStartAt!) : 'Not Started'}"
+                                    "\nEnd: ${timing.actualCompletedAt != null ? dateFormat.format(timing.actualCompletedAt!) : 'Pending'}",
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+
+                              const SizedBox(height: 14),
+
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _InfoTile(
+                                      icon: Icons.more_time,
+                                      title: "Est. Hrs",
+                                      value: timing.estimatedHours ?? "0",
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 10),
+
+                                  Expanded(
+                                    child: _InfoTile(
+                                      icon: Icons.history_toggle_off,
+                                      title: "Actual Hrs",
+                                      value: timing.actualHours ?? "0",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
                     );
                   }),
 
                   const SizedBox(height: 25),
-                  task.statusId == 13?
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    Text("Actions", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
-                    const SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: findButton(
-                            title: "Accept",
-                            onPressed: () async{
-                              Get.back();
-                              await controller.acceptWorkOrderApi(task.id,task.workOrderNo);
-                              Get.offAll(() => const WorkerDashboardScreen());
-                            },
-                            backgroundColor: AppColors.primaryDark,
-                            icon: const Icon(Icons.thumb_up, color: AppColors.textWhite),
-                          ),
+                  task.statusId == 13
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Actions",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: findButton(
+                                    title: "Accept",
+                                    onPressed: () async {
+                                      Get.back();
+                                      await controller.acceptWorkOrderApi(
+                                        task.id,
+                                        task.workOrderNo,
+                                      );
+                                      Get.offAll(
+                                        () => const WorkerDashboardScreen(),
+                                      );
+                                    },
+                                    backgroundColor: AppColors.primaryDark,
+                                    icon: const Icon(
+                                      Icons.thumb_up,
+                                      color: AppColors.textWhite,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: findButton(
+                                    title: "Close",
+                                    onPressed: () => Get.back(),
+                                    backgroundColor: AppColors.error,
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: AppColors.textWhite,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      : findButton(
+                          title: "Proceed",
+                          backgroundColor: AppColors.primary,
+                          onPressed: () {
+                            Get.back();
+                            Get.to(() => const TaskCompletionScreen());
+                          },
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: findButton(
-                            title: "Close",
-                            onPressed: () => Get.back(),
-                            backgroundColor: AppColors.error,
-                            icon: const Icon(Icons.close, color: AppColors.textWhite),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],):findButton(title: "Proceed",backgroundColor: AppColors.primary,
-                      onPressed: (){
-                        Get.back();
-                        Get.to(() => const TaskCompletionScreen());
-                      }),
 
                   const SizedBox(height: 30),
                 ],
@@ -307,7 +656,11 @@ class _InfoTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
-  const _InfoTile({required this.icon, required this.title, required this.value});
+  const _InfoTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -328,9 +681,18 @@ class _InfoTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                Text(
+                  title,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                ),
                 const SizedBox(height: 3),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
