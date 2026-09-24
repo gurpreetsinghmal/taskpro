@@ -8,14 +8,12 @@ import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 
-import '../../../common/models/work_order_hour_list_model.dart';
 import '../../../theme/app_colors.dart';
 
 class WorkerTasksController extends GetxController {
   final storage = SecureStorageService.instance;
   final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
   final RxList<WorkOrderStatusModel> workOrderStatusList = <WorkOrderStatusModel>[].obs;
-  final RxList<WorkOrderHourListModel> workorder_hour_timing = <WorkOrderHourListModel>[].obs;
   final isApiLoading = false.obs;
   final _apiService = ApiService();
 
@@ -29,51 +27,6 @@ class WorkerTasksController extends GetxController {
    await fetchOfflineTasks();
   }
 
-  Future<void> fetchWorkOrderHoursList(int id) async {
-    try {
-      final value = await _apiService.post(ApiRoutes.workOrderHoursList,data: {
-        "work_order_id": id,
-      }, isLoaderShow: false);
-      final dynamic responseData = value.data;
-      if (responseData != null && responseData['status'] =="success" && responseData['data'] != null) {
-
-       var hours = (responseData['data'] as List)
-            .map((e) => WorkOrderHourListModel.fromJson(e))
-            .toList();
-
-        workorder_hour_timing.value = hours;
-
-        final storedData = await storage.read(StorageKeys.workOrderList);
-
-        if (storedData != null && storedData.isNotEmpty) {
-          final List<dynamic> jsonList = jsonDecode(storedData);
-
-          final workOrderList = jsonList
-              .map((e) => WorkOrderModel.fromJson(e))
-              .toList();
-
-          final index = workOrderList.indexWhere(
-                (element) => element.id == id,
-          );
-
-          if (index != -1) {
-            // Update work_order_hours
-            workOrderList[index].workOrderHours = hours;
-
-            // Save updated list
-            await storage.write(
-              StorageKeys.workOrderList,
-              jsonEncode(
-                workOrderList.map((e) => e.toJson()).toList(),
-              ),
-            );
-          }
-        }
-      }
-    } catch (error) {
-      debugPrint("❌workorder_hour_timing Error: $error");
-    }
-  }
 
   Future<void> fetchOfflineTasks() async {
     final String? workOrderStatusListString = await storage.read(StorageKeys.workOrderStatusesList);

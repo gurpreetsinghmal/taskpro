@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:taskpro/common/helpers/api_routes.dart';
+import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/network/api_service.dart';
 
 class LocationService {
@@ -323,7 +324,9 @@ Future<void> sendLocation() async {
     print('Longitude : $longitude');
     print('Global DateTime  : $now');
     print(
-      'Local time  : ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.parse(now).toLocal())}',
+
+      'Local time  : ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.parse(now).toLocal())} \n'
+      'Local time  : ${Common.formatToLocalUS(now)}',
     );
     print('----------------------------------------');
 

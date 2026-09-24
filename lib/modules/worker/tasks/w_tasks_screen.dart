@@ -93,7 +93,6 @@ class WorkerTasksScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(18),
 
                         onTap: () async {
-                          await controller.fetchWorkOrderHoursList(task.id);
                           _showTaskDetails(context, task, controller);
                         },
 
@@ -474,7 +473,13 @@ class WorkerTasksScreen extends StatelessWidget {
                    _InfoTile(
                     icon: Icons.person_outline,
                     title: "Manager",
-                    value: task.managerFirstName+" "+task.managerLastName,
+                    value: '${task.managerFirstName} ${task.managerLastName}',
+                  ),
+                  const SizedBox(height: 14),
+                  _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Manager Contact",
+                    value: '${task.managerEmail} ${task.managerPhoneNumber}',
                   ),
                   const SizedBox(height: 14),
                   _InfoTile(
@@ -486,7 +491,7 @@ class WorkerTasksScreen extends StatelessWidget {
                   const SizedBox(height: 25),
 
                   Text(
-                    "Timing Details",
+                    "Work Estimation Details",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -494,91 +499,43 @@ class WorkerTasksScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Obx(() {
-                    final timings = controller.workorder_hour_timing;
+                  _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Rate Type",
+                    value: task.rateType == null ? '-' : task.rateType.toString() == '1' ? 'Hourly rate' : task.rateType.toString() == '2' ? 'Flat rate' : 'NA',
+                  ),
+                  const SizedBox(height: 12),
+                  _InfoTile(
+                    icon: Icons.person_outline,
+                    title: "Rate Value (in \$)",
+                    value:task.rateValue),
+                  const SizedBox(height: 12),
+                  _InfoTile(
+                      icon: Icons.person_outline,
+                      title: "Max Hours",
+                      value:task.maxHours),
+                  const SizedBox(height: 12),
+                  _InfoTile(
+                      icon: Icons.person_outline,
+                      title: "Approximate Hours To Complete",
+                      value:task.approximateHoursToComplete),
+                  const SizedBox(height: 12),
+                  _InfoTile(
+                      icon: Icons.person_outline,
+                      title: "Scheduled ETA From",
+                      value:Common.formatToLocalUS(task.scheduledEtaFrom)),
+                  const SizedBox(height: 12),
+                  _InfoTile(
+                      icon: Icons.person_outline,
+                      title: "Scheduled ETA To",
+                      value:Common.formatToLocalUS(task.scheduledEtaTo)),
+                  const SizedBox(height: 12),
+                  _InfoTile(
+                      icon: Icons.person_outline,
+                      title: "Hard Start Time",
+                      value:Common.formatToLocalUS(task.hardStartTime)),
+                  const SizedBox(height: 25),
 
-                    if (timings.isEmpty) {
-                      return Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.access_time_outlined,
-                              color: Colors.grey.shade500,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              "No timing details available",
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    final dateFormat = DateFormat('MMM dd, yyyy - hh:mm a');
-
-                    return Column(
-                      children: timings.map((timing) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: Column(
-                            children: [
-                              _InfoTile(
-                                icon: Icons.calendar_today_outlined,
-                                title: "Scheduled Range",
-                                value:
-                                    "${timing.scheduledStart != null ? dateFormat.format(timing.scheduledStart!) : 'N/A'}"
-                                    "\nto "
-                                    "${timing.scheduledEnd != null ? dateFormat.format(timing.scheduledEnd!) : 'N/A'}",
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              _InfoTile(
-                                icon: Icons.timer_outlined,
-                                title: "Actual Execution",
-                                value:
-                                    "Start: ${timing.actualStartAt != null ? dateFormat.format(timing.actualStartAt!) : 'Not Started'}"
-                                    "\nEnd: ${timing.actualCompletedAt != null ? dateFormat.format(timing.actualCompletedAt!) : 'Pending'}",
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _InfoTile(
-                                      icon: Icons.more_time,
-                                      title: "Est. Hrs",
-                                      value: timing.estimatedHours ?? "0",
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 10),
-
-                                  Expanded(
-                                    child: _InfoTile(
-                                      icon: Icons.history_toggle_off,
-                                      title: "Actual Hrs",
-                                      value: timing.actualHours ?? "0",
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  }),
 
                   const SizedBox(height: 25),
                   task.statusId == 13
