@@ -9,20 +9,153 @@ import 'package:image_picker/image_picker.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
+import '../../../common/models/work_order_model.dart';
+import '../../../common/models/work_session_model.dart';
 import 'task_completion_models.dart';
 
 class TaskCompletionController extends GetxController {
+  final WorkOrderModel task;
+
   TaskCompletionController({
-    this.apiEndpoint = 'https://your-domain.com/api/tasks/complete',
-    this.bearerToken,
+    required this.task
   });
+
+  /// All check-in/check-out sessions
+  final RxList<WorkSessionModel> workSessions =<WorkSessionModel>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    /// Load sessions received from API
+    workSessions.assignAll(task.checkins);
+  }
+
+  // ------------------------------------------------------------
+  // CURRENT SESSION
+  // ------------------------------------------------------------
+
+  WorkSessionModel? get activeSession {
+    for (final session in workSessions.reversed) {
+      if (session.isActive) {
+        return session;
+      }
+    }
+
+    return null;
+  }
+  // ------------------------------------------------------------
+  // STATUS
+  // ------------------------------------------------------------
+
+  bool get isCheckedIn {
+    return activeSession != null;
+  }
+
+  bool get isCheckedOut {
+    return workSessions.isNotEmpty && activeSession == null;
+  }
+  // ------------------------------------------------------------
+  // SESSION COUNTS
+  // ------------------------------------------------------------
+
+  int get totalSessions {
+    return workSessions.length;
+  }
+
+  int get completedSessions {
+    return workSessions.where((session) {
+      return !session.isActive;
+    }).length;
+  }
+  // ------------------------------------------------------------
+  // TOTAL WORKING TIME
+  // ------------------------------------------------------------
+
+  Duration get totalWorkedDuration {
+    Duration total = Duration.zero;
+
+    for (final session in workSessions) {
+      final duration = session.duration;
+
+      if (duration != null) {
+        total += duration;
+      }
+    }
+
+    return total;
+  }
+  // ------------------------------------------------------------
+  // CHECK IN
+  // ------------------------------------------------------------
+
+  void checkIn() {
+    if (activeSession != null) {
+      Get.snackbar(
+        'Already Checked In',
+        'Please check out from the current session first.',
+      );
+      return;
+    }
+    /// Don't allow another session while one is active
+    if (isCheckedIn) {
+      return;
+    }
+
+    final session = WorkSessionModel(
+      id: 0,
+      workOrderId: task.id,
+      checkInDateTime: DateTime.now(),
+      checkOutDateTime: null,
+      createdBy: null,
+      updatedBy: null,
+      deletedBy: null,
+      createdAt: null,
+      updatedAt: null,
+      deletedAt: null,
+    );
+
+    workSessions.add(session);
+  }
+  // ------------------------------------------------------------
+  // CHECK OUT
+  // ------------------------------------------------------------
+  void checkOut() {
+
+    final currentSession = activeSession;
+
+    if (currentSession == null) {
+      Get.snackbar(
+        'currentSession',
+        'Please check out from the current session first.',
+      );
+      return;
+    }
+
+    final index = workSessions.indexWhere(
+          (session) => session.id == currentSession.id,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    workSessions[index] = currentSession.copyWith(
+      checkOutDateTime: DateTime.now(),
+    );
+
+    workSessions.refresh();
+  }
+
+  final Rxn<DateTime> checkInTime = Rxn<DateTime>();
+  final Rxn<DateTime> checkOutTime = Rxn<DateTime>();
 
   /// Replace this with your real task-completion API URL, preferably through
   /// an environment/configuration class rather than hard-coding it here.
-  final String apiEndpoint;
+
   final ApiService _apiService = ApiService();
   /// Pass the logged-in user's access token when your API uses JWT auth.
-  final String? bearerToken;
+
 
   static const int maxPhotos = 4;
   static const int maxPhotoSizeBytes = 5 * 1024 * 1024;
@@ -102,7 +235,8 @@ class TaskCompletionController extends GetxController {
   Future<void> pickPhoto(
       BuildContext context,
       ImageSource source,
-      ) async {
+      ) async
+  {
     if (isPickingPhoto.value || isSubmitting.value) return;
 
     if (uploadedPhotos.length >= maxPhotos) {
@@ -208,7 +342,8 @@ class TaskCompletionController extends GetxController {
     required String fileName,
     required int fileSize,
     required ImageSource source,
-  }) {
+  })
+  {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -335,7 +470,8 @@ class TaskCompletionController extends GetxController {
 
   Future<void> submitTaskCompletion(
       BuildContext context,
-      ) async {
+      ) async
+  {
     if (uploadedPhotos.isEmpty) {
       Get.snackbar(
         'Proof Required',
@@ -460,6 +596,7 @@ class TaskCompletionController extends GetxController {
       );
     }
   }
+
   String? _readApiMessage(String responseBody) {
     if (responseBody.trim().isEmpty) return null;
 
@@ -482,7 +619,8 @@ class TaskCompletionController extends GetxController {
   void _showSuccessDialog(
       BuildContext context,
       String? serverMessage,
-      ) {
+      )
+  {
     showModalBottomSheet<void>(
       context: context,
       isDismissible: false,

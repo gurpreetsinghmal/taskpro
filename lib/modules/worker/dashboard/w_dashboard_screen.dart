@@ -239,7 +239,7 @@ class DashboardTabScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -262,7 +262,7 @@ class DashboardTabScreen extends StatelessWidget {
                         Text(
                           "Assigned Jobs",
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
                           ),
@@ -274,7 +274,7 @@ class DashboardTabScreen extends StatelessWidget {
                       child: const Text(
                         "View All >",
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                         ),
@@ -418,6 +418,7 @@ class DashboardTabScreen extends StatelessWidget {
 
                                       // Status Badge
                                       Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Align(
                                             alignment: Alignment.centerLeft,
@@ -456,7 +457,7 @@ class DashboardTabScreen extends StatelessWidget {
                                             ),
                                           ),
                                           const SizedBox(width: 12),
-                                          Align(                                        alignment: Alignment.centerLeft,
+                                          Align(  alignment: Alignment.centerLeft,
                                             child: Container(
                                               padding: const EdgeInsets.symmetric(
                                                 horizontal: 10,
@@ -530,7 +531,7 @@ class DashboardTabScreen extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),

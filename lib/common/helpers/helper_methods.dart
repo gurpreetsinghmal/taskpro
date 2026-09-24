@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:taskpro/common/models/work_order_status.dart';
@@ -42,7 +44,7 @@ class Common {
     switch (colorName) {
       case "LightBlue":
         return AppColors.info;
-      case "Accepted":
+      case "#ff8000":
         return AppColors.chartOrange;
       case "Red":
         return AppColors.error;
@@ -113,6 +115,8 @@ class Common {
 
     // Loop through the map to see each key and value
     allValues.forEach((key, value) {
+      if(key=="workOrderList")
+        log(value);
       print('Key: $key, Value: $value');
     });
   }

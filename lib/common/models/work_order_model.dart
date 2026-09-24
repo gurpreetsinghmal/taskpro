@@ -1,3 +1,5 @@
+import 'package:taskpro/common/models/work_session_model.dart';
+
 class WorkOrderModel {
   final int id;
   final String workOrderNo;
@@ -30,6 +32,9 @@ class WorkOrderModel {
   final String? hardStartTime;
   final dynamic maxHours;
   final dynamic approximateHoursToComplete;
+  // Multiple check-in / check-out sessions
+  final List<WorkSessionModel> checkins;
+
 
 
   WorkOrderModel({
@@ -64,6 +69,8 @@ class WorkOrderModel {
     this.hardStartTime,
     this.maxHours,
     this.approximateHoursToComplete,
+    this.checkins = const [],
+
 
   });
 
@@ -100,6 +107,14 @@ class WorkOrderModel {
       hardStartTime: json['hard_start_time'] as String?,
       maxHours: json['max_hours'],
       approximateHoursToComplete: json['approximate_hours_to_complete'],
+      checkins: (json['checkins'] as List<dynamic>?)
+          ?.map(
+            (item) => WorkSessionModel.fromJson(
+          item as Map<String, dynamic>,
+        ),
+      )
+          .toList() ??
+          [],
 
     );
   }
@@ -137,7 +152,46 @@ class WorkOrderModel {
       'hard_start_time': hardStartTime,
       'max_hours': maxHours,
       'approximate_hours_to_complete': approximateHoursToComplete,
-
+      'checkins': checkins
+          .map((session) => session.toJson())
+          .toList(),
     };
+  }
+  // ------------------------------------------------------------
+  // Helpful getters
+  // ------------------------------------------------------------
+
+  WorkSessionModel? get activeSession {
+    for (final session in checkins.reversed) {
+      if (session.isActive) {
+        return session;
+      }
+    }
+
+    return null;
+  }
+
+  bool get isCheckedIn => activeSession != null;
+
+  bool get isCheckedOut =>
+      checkins.isNotEmpty && activeSession == null;
+
+  int get totalSessions => checkins.length;
+
+  int get completedSessions =>
+      checkins.where((session) => !session.isActive).length;
+
+  Duration get totalWorkedDuration {
+    Duration total = Duration.zero;
+
+    for (final session in checkins) {
+      final duration = session.duration;
+
+      if (duration != null) {
+        total += duration;
+      }
+    }
+
+    return total;
   }
 }

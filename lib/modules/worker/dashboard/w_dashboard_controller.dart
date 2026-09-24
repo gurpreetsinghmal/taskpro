@@ -44,7 +44,7 @@ class WorkerDashboardController extends GetxController {
   }
 
   Future<void> getdata() async{
-    await LocationService.start();
+    //await LocationService.start();
     if(await _apiService.checkInternet()){
       fetchOnlineApis();
     } else {
@@ -67,11 +67,15 @@ class WorkerDashboardController extends GetxController {
       // Executes both API calls simultaneously
       await Future.wait([
         loadProfileFromApi(),
-        loadWorkOrderStatusListFromApi(),
-        loadWorkOrderListFromApi(),
+
         getDashboardData(),
         Common.printAllSecureStorage(),
       ]);
+      // Executes both API calls InOrder
+      await loadWorkOrderStatusListFromApi();
+      await loadWorkOrderListFromApi();
+
+
     } catch (error) {
       debugPrint("Error fetching initial dashboard data: $error");
     } finally {

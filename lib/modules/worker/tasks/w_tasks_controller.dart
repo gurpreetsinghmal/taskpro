@@ -14,6 +14,7 @@ class WorkerTasksController extends GetxController {
   final storage = SecureStorageService.instance;
   final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
   final RxList<WorkOrderStatusModel> workOrderStatusList = <WorkOrderStatusModel>[].obs;
+
   final isApiLoading = false.obs;
   final _apiService = ApiService();
 
@@ -26,6 +27,8 @@ class WorkerTasksController extends GetxController {
   Future<void> getTasksData() async {
    await fetchOfflineTasks();
   }
+
+
 
 
   Future<void> fetchOfflineTasks() async {
