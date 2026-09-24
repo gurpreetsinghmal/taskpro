@@ -19,5 +19,5 @@ class ApiRoutes {
 
   static const String workOrderHoursList="auth/work-order-hours-list";
   static const String workOrderHoursCreate="auth/work-order-hours-create";
-  static const String workOrderHoursUpdate="auth/work-order-hours-update";
+  static const String workOrderHoursUpdate="auth/work-order-hours-update"; 
 }
