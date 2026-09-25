@@ -47,8 +47,10 @@ class WorkerDashboardController extends GetxController {
 
   Future<void> getdata() async{
     //await LocationService.start();
-    await fetchSyncStatus();
+
+
     if(await _apiService.checkInternet()){
+      await fetchSyncStatus();
       fetchOnlineApis();
     } else {
       fetchOfflineData();
@@ -82,11 +84,16 @@ class WorkerDashboardController extends GetxController {
 
   Future<bool> hitOnlineSyncApi(WorkOrderModel task) async {
     try {
-      final value = await _apiService.post(ApiRoutes.syncWorkOrder,data:{
-        "object":task.checkins
+
+      final value = await _apiService.post(ApiRoutes.workOrderCheckinSync,data:{
+        "checkins":task.checkins.map((e)=>e.toJson()).toList()
       }, isLoaderShow: false);
       final dynamic responseData = value.data;
-      return true;
+      if(task.checkins.length==responseData["synced_count"]) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (error) {
       debugPrint("❌Sync WorkOrder Error: $error");
       return false;

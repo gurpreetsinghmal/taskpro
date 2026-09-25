@@ -108,10 +108,8 @@ class WorkSessionModel {
     return {
       'id': id,
       'work_order_id': workOrderId,
-      'checkin_datetime':
-      checkInDateTime?.toIso8601String(),
-      'checkout_datetime':
-      checkOutDateTime?.toIso8601String(),
+      'checkin_datetime': checkInDateTime?.toIso8601String(),
+      'checkout_datetime':checkOutDateTime?.toIso8601String(),
       'created_by': createdBy,
       'updated_by': updatedBy,
       'deleted_by': deletedBy,

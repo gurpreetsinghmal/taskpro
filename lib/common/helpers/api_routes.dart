@@ -17,7 +17,7 @@ class ApiRoutes {
   static const String workOrderStatusesList="auth/work-order-statuses-list";
   static const String workOrderStatusUpdate="auth/work-order-status-update";
 
-  static const String syncWorkOrder="auth/syncWorkOrder";
+  static const String workOrderCheckinSync="auth/work-order-checkin-sync";
 
 
 
