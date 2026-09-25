@@ -180,6 +180,7 @@ class DashboardTabScreen extends StatelessWidget {
           vertical: 8,
         ),
         children: [
+          Obx(()=>Text(controller.syncStatus.toString())),
           const SizedBox(height: 20),
           const Text(
             "Today's Overview",

@@ -115,9 +115,9 @@ class Common {
 
     // Loop through the map to see each key and value
     allValues.forEach((key, value) {
-      if(key=="workOrderList")
-        log(value);
-      print('Key: $key, Value: $value');
+      // if(key=="workOrderStatusesList")
+      //   log(value);
+      print('Key: $key');
     });
   }
 }

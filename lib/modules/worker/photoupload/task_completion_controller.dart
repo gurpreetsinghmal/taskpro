@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer' ;
 import 'dart:io';
+import 'dart:math' hide log;
 
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/work_session_model.dart';
+import '../../../services/secure_storage_service.dart';
 import 'task_completion_models.dart';
 
 class TaskCompletionController extends GetxController {
@@ -22,11 +25,12 @@ class TaskCompletionController extends GetxController {
 
   /// All check-in/check-out sessions
   final RxList<WorkSessionModel> workSessions =<WorkSessionModel>[].obs;
+  final storage = SecureStorageService.instance;
 
   @override
   void onInit() {
     super.onInit();
-
+    log(task.toJson().toString());
     /// Load sessions received from API
     workSessions.assignAll(task.checkins);
   }
@@ -89,7 +93,7 @@ class TaskCompletionController extends GetxController {
   // CHECK IN
   // ------------------------------------------------------------
 
-  void checkIn() {
+  Future<void> checkIn() async {
     if (activeSession != null) {
       Get.snackbar(
         'Already Checked In',
@@ -101,9 +105,9 @@ class TaskCompletionController extends GetxController {
     if (isCheckedIn) {
       return;
     }
-
+    final random = Random();
     final session = WorkSessionModel(
-      id: 0,
+      id: random.nextInt(10000),
       workOrderId: task.id,
       checkInDateTime: DateTime.now(),
       checkOutDateTime: null,
@@ -116,14 +120,24 @@ class TaskCompletionController extends GetxController {
     );
 
     workSessions.add(session);
+
+    final updatedWorkOrder = task.copyWith(
+      checkins: workSessions,
+      sync: 0,
+    );
+
+    await storage.updateWorkOrderData(updatedWorkOrder);
+
+
+    final x=await storage.getWorkOrderList();
+    log(x.toString());
   }
   // ------------------------------------------------------------
   // CHECK OUT
   // ------------------------------------------------------------
-  void checkOut() {
+  Future<void> checkOut() async {
 
     final currentSession = activeSession;
-
     if (currentSession == null) {
       Get.snackbar(
         'currentSession',
@@ -145,6 +159,16 @@ class TaskCompletionController extends GetxController {
     );
 
     workSessions.refresh();
+    final updatedWorkOrder = task.copyWith(
+      checkins: workSessions,
+      sync: 0,
+    );
+
+    await storage.updateWorkOrderData(updatedWorkOrder);
+
+
+    List<WorkOrderModel>? x=await storage.getWorkOrderList();
+    log(x!.map((e) => e.toJson()).toString());
   }
 
   final Rxn<DateTime> checkInTime = Rxn<DateTime>();

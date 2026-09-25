@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
@@ -21,11 +22,12 @@ class WorkerDashboardController extends GetxController {
   final walletBalance = 320.00.obs;
 
   // Overview Metrics State
+  final syncStatus = true.obs;
   final pendingCount = 0.obs;
   final inProgressCount = 0.obs;
   final completedCount = 0.obs;
   final assignedCount = 0.obs;
-  final todayCompletedCount = 7.obs;
+  final todayCompletedCount = 0.obs;
   final _apiService = ApiService();
 
   final RxList<WorkOrderModel> workOrderList = <WorkOrderModel>[].obs;
@@ -45,18 +47,49 @@ class WorkerDashboardController extends GetxController {
 
   Future<void> getdata() async{
     //await LocationService.start();
+    await fetchSyncStatus();
     if(await _apiService.checkInternet()){
       fetchOnlineApis();
     } else {
       fetchOfflineData();
     }
+    Common.printAllSecureStorage();
+  }
 
-    final String? workOrderListString = await storage.read(StorageKeys.workOrderList);
-    if (workOrderListString != null) {
-      final workOrderListJson = jsonDecode(workOrderListString.toString());
-      workOrderList.value = (workOrderListJson as List)
-          .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
-          .toList();
+  Future<void> fetchSyncStatus() async {
+    print('fetchSyncStatus');
+    List<WorkOrderModel>? wlist= await storage.getWorkOrderList();
+    //pre check status after sync
+    if (wlist != null) {
+      syncStatus.value = !wlist.any((e) => e.sync == 0);
+    }
+    if(await _apiService.checkInternet() && wlist!=null){
+      for (final task in wlist) {
+        if (task.sync == 0) {
+          if(await hitOnlineSyncApi(task))
+              {
+                task.sync=1;
+                await storage.updateWorkOrderData(task);
+              }
+        }
+      }
+    }
+    //post check status after sync
+    if (wlist != null) {
+      syncStatus.value = !wlist.any((e) => e.sync == 0);
+    }
+  }
+
+  Future<bool> hitOnlineSyncApi(WorkOrderModel task) async {
+    try {
+      final value = await _apiService.post(ApiRoutes.syncWorkOrder,data:{
+        "object":task.checkins
+      }, isLoaderShow: false);
+      final dynamic responseData = value.data;
+      return true;
+    } catch (error) {
+      debugPrint("❌Sync WorkOrder Error: $error");
+      return false;
     }
   }
 
@@ -69,7 +102,7 @@ class WorkerDashboardController extends GetxController {
         loadProfileFromApi(),
 
         getDashboardData(),
-        Common.printAllSecureStorage(),
+
       ]);
       // Executes both API calls InOrder
       await loadWorkOrderStatusListFromApi();
@@ -170,6 +203,24 @@ class WorkerDashboardController extends GetxController {
       userjson["photo"]=null;
       await storage.write(StorageKeys.workerProfile, jsonEncode(userjson));
       user.value = WorkerProfileModel.fromJson(userjson);
+    }
+
+    // fetching Status List for Work Order
+    final String? statusMaster = await storage.read(StorageKeys.workOrderStatusesList);
+    if (statusMaster != null) {
+      final data=jsonDecode(statusMaster.toString());
+      workOrderStatusList.value = (data as List)
+          .map((item) =>
+          WorkOrderStatusModel.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+    // fetching Details of All Work Order of Technician
+    final String? workOrderListString = await storage.read(StorageKeys.workOrderList);
+    if (workOrderListString != null) {
+      final workOrderListJson = jsonDecode(workOrderListString.toString());
+      workOrderList.value = (workOrderListJson as List)
+          .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+          .toList();
     }
   }
 }

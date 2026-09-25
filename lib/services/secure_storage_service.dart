@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -5,6 +7,8 @@ import 'package:taskpro/location/location_service.dart';
 import 'package:taskpro/modules/login/login_screen.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
+
+import '../common/models/work_order_model.dart';
 
 class SecureStorageService {
   SecureStorageService._();
@@ -57,5 +61,47 @@ class SecureStorageService {
     final token = await read(StorageKeys.accessToken);
     return token;
   }
+
+  Future<List<WorkOrderModel>?> getWorkOrderList() async {
+    final workOrderList = await read(StorageKeys.workOrderList);
+    if (workOrderList == null) {
+      return null;
+    }
+    final List<WorkOrderModel> list = (jsonDecode(workOrderList) as List)
+        .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+    return list;
+  }
+
+
+
+
+  Future<void> updateWorkOrderData(WorkOrderModel updatedWorkOrder) async {
+    final workOrderList = await read(StorageKeys.workOrderList);
+
+    if (workOrderList == null) {
+      return;
+    }
+
+    final List<WorkOrderModel> list = (jsonDecode(workOrderList) as List)
+        .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    final index = list.indexWhere(
+          (item) => item.id == updatedWorkOrder.id,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    list[index] = updatedWorkOrder;
+
+    await write(StorageKeys.workOrderList, jsonEncode(
+      list.map((item) => item.toJson())
+          .toList(),
+    ));
+  }
+
 }
 

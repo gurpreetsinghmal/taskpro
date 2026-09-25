@@ -34,6 +34,7 @@ class WorkOrderModel {
   final dynamic approximateHoursToComplete;
   // Multiple check-in / check-out sessions
   final List<WorkSessionModel> checkins;
+  int sync;
 
 
 
@@ -70,7 +71,7 @@ class WorkOrderModel {
     this.maxHours,
     this.approximateHoursToComplete,
     this.checkins = const [],
-
+    this.sync=1
 
   });
 
@@ -115,6 +116,7 @@ class WorkOrderModel {
       )
           .toList() ??
           [],
+      sync: json['sync'] as int? ?? 1,
 
     );
   }
@@ -155,7 +157,91 @@ class WorkOrderModel {
       'checkins': checkins
           .map((session) => session.toJson())
           .toList(),
+      'sync': sync,
     };
+  }
+  WorkOrderModel copyWith({
+    int? id,
+    String? workOrderNo,
+    int? leadId,
+    String? leadTitle,
+    int? managerId,
+    String? managerFirstName,
+    String? managerMiddleName,
+    String? managerLastName,
+    String? managerEmail,
+    String? managerPhoneNumber,
+    String? managerOtherEmail,
+    String? managerOtherPhone,
+    String? technicianId,
+    String? technicianFirstName,
+    String? technicianMiddleName,
+    String? technicianLastName,
+    int? serviceTypeId,
+    String? serviceTypeName,
+    int? priorityId,
+    String? priority,
+    int? statusId,
+    String? statusName,
+    String? workOrderTitle,
+    String? scopeOfWork,
+    int? rateType,
+    dynamic rateValue,
+    String? scheduledEtaFrom,
+    String? scheduledEtaTo,
+    String? hardStartTime,
+    dynamic maxHours,
+    dynamic approximateHoursToComplete,
+    List<WorkSessionModel>? checkins,
+    int? sync,
+  }) {
+    return WorkOrderModel(
+      id: id ?? this.id,
+      workOrderNo: workOrderNo ?? this.workOrderNo,
+      leadId: leadId ?? this.leadId,
+      leadTitle: leadTitle ?? this.leadTitle,
+
+      managerId: managerId ?? this.managerId,
+      managerFirstName: managerFirstName ?? this.managerFirstName,
+      managerMiddleName: managerMiddleName ?? this.managerMiddleName,
+      managerLastName: managerLastName ?? this.managerLastName,
+      managerEmail: managerEmail ?? this.managerEmail,
+      managerPhoneNumber: managerPhoneNumber ?? this.managerPhoneNumber,
+      managerOtherEmail: managerOtherEmail ?? this.managerOtherEmail,
+      managerOtherPhone: managerOtherPhone ?? this.managerOtherPhone,
+
+      technicianId: technicianId ?? this.technicianId,
+      technicianFirstName: technicianFirstName ?? this.technicianFirstName,
+      technicianMiddleName: technicianMiddleName ?? this.technicianMiddleName,
+      technicianLastName: technicianLastName ?? this.technicianLastName,
+
+      serviceTypeId: serviceTypeId ?? this.serviceTypeId,
+      serviceTypeName: serviceTypeName ?? this.serviceTypeName,
+
+      priorityId: priorityId ?? this.priorityId,
+      priority: priority ?? this.priority,
+
+      statusId: statusId ?? this.statusId,
+      statusName: statusName ?? this.statusName,
+
+      workOrderTitle: workOrderTitle ?? this.workOrderTitle,
+      scopeOfWork: scopeOfWork ?? this.scopeOfWork,
+
+      rateType: rateType ?? this.rateType,
+      rateValue: rateValue ?? this.rateValue,
+
+      scheduledEtaFrom: scheduledEtaFrom ?? this.scheduledEtaFrom,
+      scheduledEtaTo: scheduledEtaTo ?? this.scheduledEtaTo,
+      hardStartTime: hardStartTime ?? this.hardStartTime,
+
+      maxHours: maxHours ?? this.maxHours,
+      approximateHoursToComplete:
+      approximateHoursToComplete ?? this.approximateHoursToComplete,
+
+      checkins: checkins ?? this.checkins,
+
+      sync: sync ?? this.sync,
+    );
   }
   // ------------------------------------------------------------
   // Helpful getters

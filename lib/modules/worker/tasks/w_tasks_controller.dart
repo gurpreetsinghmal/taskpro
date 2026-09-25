@@ -28,9 +28,6 @@ class WorkerTasksController extends GetxController {
    await fetchOfflineTasks();
   }
 
-
-
-
   Future<void> fetchOfflineTasks() async {
     final String? workOrderStatusListString = await storage.read(StorageKeys.workOrderStatusesList);
     if (workOrderStatusListString != null) {
