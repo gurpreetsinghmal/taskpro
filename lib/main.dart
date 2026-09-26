@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       getPages: AppPages.routes,
       initialBinding: SplashBinding(),
       initialRoute: AppRoutes.splash,
-      title: 'Task Pro',
+      title: 'PSN Task Pro',
       theme: ThemeData(colorSchemeSeed: AppColors.primaryDark),
       home: const SplashScreen(),
     );
