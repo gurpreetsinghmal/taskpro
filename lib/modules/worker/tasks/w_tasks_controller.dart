@@ -46,7 +46,7 @@ class WorkerTasksController extends GetxController {
     }
   }
 
-  Future<void> acceptWorkOrderApi(int workOrderId,String work_order_no) async {
+  Future<void> acceptWorkOrderApi(int workOrderId,String wno) async {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderStatusUpdate,data: {
         "work_order_id": workOrderId,
@@ -57,7 +57,7 @@ class WorkerTasksController extends GetxController {
       if (responseData != null && responseData['status'].toString() == "true") {
         Get.snackbar(
           'Success',
-          'WorK Order No. :  $work_order_no Accepted Successfully!',
+          'WorK Order No. :  $wno Accepted Successfully!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.success,
           colorText: Colors.white,
@@ -82,7 +82,7 @@ class WorkerTasksController extends GetxController {
     }
   }
 
-  Future<void> rejectWorkOrderApi(int workOrderId,String work_order_no) async {
+  Future<void> rejectWorkOrderApi(int workOrderId,String wno) async {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderStatusUpdate,data: {
         "work_order_id": workOrderId,
@@ -93,7 +93,7 @@ class WorkerTasksController extends GetxController {
       if (responseData != null && responseData['status'].toString() == "true") {
         Get.snackbar(
           'Success',
-          'WorK Order No. :  $work_order_no Rejected Successfully!',
+          'WorK Order No. :  $wno Rejected Successfully!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.success,
           colorText: Colors.white,
@@ -118,7 +118,8 @@ class WorkerTasksController extends GetxController {
     }
   }
 
-  Future<void> loadMap() async {
+  Future<void> loadMap(String? loc) async {
+
     const String address = "742 Evergreen Terrace, Springfield, OR 97477";
     final Uri googleMapsUrl = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',

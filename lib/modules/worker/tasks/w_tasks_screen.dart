@@ -516,7 +516,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                                   "742 Evergreen Terrace, Springfield, OR 97477",
                             ),
 
-                            _modernLocationButton(onTap: controller.loadMap),
+                            _modernLocationButton(onTap: ()=>controller.loadMap(null)),
                           ],
                         ),
 
