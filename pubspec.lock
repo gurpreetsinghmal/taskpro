@@ -853,6 +853,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  syncfusion_flutter_core:
+    dependency: transitive
+    description:
+      name: syncfusion_flutter_core
+      sha256: "85c1d4be09cfa5b74a026cd1b4c5c7c1a2b2bf709e5e61d4c2feee989ebb1da4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "34.2.9"
+  syncfusion_flutter_signaturepad:
+    dependency: "direct main"
+    description:
+      name: syncfusion_flutter_signaturepad
+      sha256: "8972eb172f4a1c5a181d5338096454cca798ea8ed18370e48f739ac3fc95905e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "34.2.9"
   term_glyph:
     dependency: transitive
     description:

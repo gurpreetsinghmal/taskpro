@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -19,13 +20,13 @@ class TaskCompletionScreen extends StatelessWidget {
   const TaskCompletionScreen({super.key, required this.task});
 
   static const Color _background = Color(0xFFF7F9FC);
-  static const Color _card = Colors.white;
+  // static const Color _card = Colors.white;
   static const Color _text = Color(0xFF172033);
   static const Color _muted = Color(0xFF718096);
   static const Color _border = Color(0xFFE8EDF4);
   static const Color _blue = Color(0xFF2563EB);
   static const Color _green = Color(0xFF16A34A);
-  static const Color _red = Color(0xFFDC2626);
+  // static const Color _red = Color(0xFFDC2626);
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +44,48 @@ class TaskCompletionScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    completionController.captureSignature();
+                  },
+                  icon: const Icon(Icons.draw_rounded),
+                  label: const Text('Get Signature'),
+                ),
+                Spacer(),
+
+                Obx(() {
+                  if (completionController.signatureBase64.value == null ||
+                      completionController.signatureBase64.value!.isEmpty) {
+                    return const Text(
+                      'No signature added',
+                    );
+                  }
+
+                  return Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.memory(
+                        base64Decode(completionController.signatureBase64.value!),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  );
+                })
+
+              ],),
+
+              const SizedBox(height: 18),
+
               _buildPageIntro(),
 
               const SizedBox(height: 18),

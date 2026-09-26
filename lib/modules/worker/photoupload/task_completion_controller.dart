@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+
 import 'dart:io';
 import 'dart:math' hide log;
 
@@ -11,6 +12,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
+import 'package:taskpro/singature/signature_screen.dart';
+import 'package:taskpro/theme/app_colors.dart';
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/work_session_model.dart';
 import '../../../services/secure_storage_service.dart';
@@ -33,6 +36,40 @@ class TaskCompletionController extends GetxController {
     /// Load sessions received from API
     workSessions.assignAll(task.checkins);
   }
+
+  /// Base64 encoded PNG signature.
+  final RxnString signatureBase64 = RxnString();
+
+  /// Opens the signature screen and receives
+  /// the Base64 encoded signature image.
+  Future<void> captureSignature() async {
+    final String? result = await Get.to<String>(
+          () => const SignatureScreen(),
+    );
+
+    if (result == null || result.isEmpty) {
+      signatureBase64.value="";
+      return;
+    }
+    if (result.isNotEmpty) {
+      signatureBase64.value = result;
+    }
+
+
+    update();
+
+    Get.snackbar(
+      'Signature Added',
+      'Customer signature has been captured successfully.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor:AppColors.success,
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+    );
+
+  }
+
 
   // ------------------------------------------------------------
   // CURRENT SESSION
