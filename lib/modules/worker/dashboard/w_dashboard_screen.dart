@@ -65,82 +65,7 @@ class WorkerDashboardScreen extends StatelessWidget {
               );
             }),
             actions: [
-              Builder(
-                builder: (context) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16.0),
-                    child: GestureDetector(
-                      onTap: () => Scaffold.of(context).openEndDrawer(),
-                      child: Stack(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primary,
-                                width: 2,
-                              ),
-                            ),
-                            child: Obx(() {
-                              final user = controller.user.value;
-                              if (user == null) {
-                                return const CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: AppColors.infoLight,
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                );
-                              }
-                              final initial = user.firstName.isNotEmpty
-                                  ? user.firstName[0].toUpperCase()
-                                  : '?';
-                              final hasPhoto = user.photo != null && user.photo!.isNotEmpty;
-                              return CircleAvatar(
-                                radius: 20,
-                                backgroundColor: AppColors.infoLight,
-                                backgroundImage: hasPhoto ? NetworkImage(user.photo!) : null,
-                                child: !hasPhoto
-                                    ? Text(
-                                        initial,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.primary,
-                                        ),
-                                      )
-                                    : null,
-                              );
-                            }),
-                          ),
-                          Positioned(
-                            right: 2,
-                            bottom: 2,
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: Colors.amber,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
+              AppCircleMenu(controller: controller),
             ],
           ),
           body: const DashboardTabScreen(),
@@ -160,13 +85,101 @@ class WorkerDashboardScreen extends StatelessWidget {
   }
 }
 
+class AppCircleMenu extends StatelessWidget {
+  const AppCircleMenu({
+    super.key,
+    required this.controller,
+  });
+
+  final WorkerDashboardController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: GestureDetector(
+            onTap: () => Scaffold.of(context).openEndDrawer(),
+            child: Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                  child: Obx(() {
+                    final user = controller.user.value;
+                    if (user == null) {
+                      return const CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.infoLight,
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      );
+                    }
+                    final initial = user.firstName.isNotEmpty
+                        ? user.firstName[0].toUpperCase()
+                        : '?';
+                    final hasPhoto = user.photo != null && user.photo!.isNotEmpty;
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppColors.infoLight,
+                      backgroundImage: hasPhoto ? NetworkImage(user.photo!) : null,
+                      child: !hasPhoto
+                          ? Text(
+                              initial,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : null,
+                    );
+                  }),
+                ),
+                Positioned(
+                  right: 2,
+                  bottom: 2,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.amber,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class DashboardTabScreen extends StatelessWidget {
   const DashboardTabScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<WorkerDashboardController>();
-
     return RefreshIndicator(
       onRefresh: controller.getdata,
       color: Colors.white,
@@ -180,7 +193,95 @@ class DashboardTabScreen extends StatelessWidget {
           vertical: 8,
         ),
         children: [
-          Obx(()=>Text(controller.syncStatus.toString())),
+          Obx(() {
+            final isSynced = controller.syncStatus.value == true;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: isSynced
+                    ? Colors.green.withValues(alpha: 0.08)
+                    : Colors.orange.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isSynced
+                      ? Colors.green.withValues(alpha: 0.25)
+                      : Colors.orange.withValues(alpha: 0.30),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isSynced
+                          ? Colors.green.withValues(alpha: 0.15)
+                          : Colors.orange.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isSynced
+                          ? Icons.cloud_done_rounded
+                          : Icons.cloud_off_rounded,
+                      color: isSynced
+                          ? Colors.green.shade700
+                          : Colors.orange.shade700,
+                      size: 22,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isSynced
+                              ? 'Data synced'
+                              : 'Sync pending',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: isSynced
+                                ? Colors.green.shade800
+                                : Colors.orange.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          isSynced
+                              ? 'Your local device data is up to date'
+                              : 'Your local data has not been synced yet',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Status indicator
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: isSynced
+                          ? Colors.green
+                          : Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           const SizedBox(height: 20),
           const Text(
             "Today's Overview",
@@ -271,7 +372,10 @@ class DashboardTabScreen extends StatelessWidget {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () => Get.to(() => const WorkerTasksScreen()),
+                      onTap: () async{
+                        await Get.to(() => const WorkerTasksScreen());
+                        controller.fetchSyncStatus();
+                        },
                       child: const Text(
                         "View All >",
                         style: TextStyle(
@@ -316,7 +420,7 @@ class DashboardTabScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
+                              color: Colors.black.withValues(alpha: 0.06),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -354,7 +458,7 @@ class DashboardTabScreen extends StatelessWidget {
                                             height: 44,
                                             width: 44,
                                             decoration: BoxDecoration(
-                                              color: statusColor.withOpacity(0.10),
+                                              color: statusColor.withValues(alpha: 0.10),
                                               borderRadius:
                                               BorderRadius.circular(12),
                                             ),
@@ -429,7 +533,7 @@ class DashboardTabScreen extends StatelessWidget {
                                                 vertical: 6,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: statusColor.withOpacity(0.10),
+                                                color: statusColor.withValues(alpha: 0.10),
                                                 borderRadius:
                                                 BorderRadius.circular(20),
                                               ),
@@ -465,7 +569,7 @@ class DashboardTabScreen extends StatelessWidget {
                                                 vertical: 6,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: statusColor.withOpacity(0.10),
+                                                color: statusColor.withValues(alpha: 0.10),
                                                 borderRadius:
                                                 BorderRadius.circular(20),
                                               ),

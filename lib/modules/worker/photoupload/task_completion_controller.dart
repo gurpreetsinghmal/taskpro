@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer' ;
+
 import 'dart:io';
 import 'dart:math' hide log;
 
@@ -30,7 +30,6 @@ class TaskCompletionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    log(task.toJson().toString());
     /// Load sessions received from API
     workSessions.assignAll(task.checkins);
   }
@@ -129,8 +128,6 @@ class TaskCompletionController extends GetxController {
     await storage.updateWorkOrderData(updatedWorkOrder);
 
 
-    final x=await storage.getWorkOrderList();
-    log(x.toString());
   }
   // ------------------------------------------------------------
   // CHECK OUT
@@ -165,10 +162,6 @@ class TaskCompletionController extends GetxController {
     );
 
     await storage.updateWorkOrderData(updatedWorkOrder);
-
-
-    List<WorkOrderModel>? x=await storage.getWorkOrderList();
-    log(x!.map((e) => e.toJson()).toString());
   }
 
   final Rxn<DateTime> checkInTime = Rxn<DateTime>();
@@ -621,24 +614,6 @@ class TaskCompletionController extends GetxController {
     }
   }
 
-  String? _readApiMessage(String responseBody) {
-    if (responseBody.trim().isEmpty) return null;
-
-    try {
-      final decoded = jsonDecode(responseBody);
-      if (decoded is Map<String, dynamic>) {
-        final message = decoded['message'] ??
-            decoded['Message'] ??
-            decoded['error'] ??
-            decoded['Error'];
-        return message?.toString();
-      }
-    } catch (_) {
-      // The endpoint may intentionally return plain text or an empty body.
-    }
-
-    return null;
-  }
 
   void _showSuccessDialog(
       BuildContext context,
@@ -773,8 +748,4 @@ class TaskCompletionController extends GetxController {
   }
 }
 
-class _ApiException implements Exception {
-  const _ApiException(this.message);
 
-  final String message;
-}

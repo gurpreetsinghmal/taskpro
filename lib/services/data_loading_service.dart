@@ -41,7 +41,7 @@ class LoadingService {
         ),
       ),
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
     );
   }
 

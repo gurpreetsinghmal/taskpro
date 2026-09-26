@@ -201,10 +201,10 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.08),
+                    color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.15),
+                      color: AppColors.primary.withValues(alpha: 0.15),
                       width: 1,
                     ),
                   ),
@@ -256,7 +256,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
-                      backgroundColor: AppColors.primary.withOpacity(0.12),
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         AppColors.primary,
                       ),
@@ -271,7 +271,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary.withOpacity(0.8),
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
                     letterSpacing: 0.3,
                   ),
                 ),
@@ -285,10 +285,10 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                     ),
                   ),
                   child: const Text(
@@ -325,14 +325,14 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
         boxShadow: [
           // Soft Primary Tint Outer Glow
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.18 + (pulseValue * 0.08)),
+            color: AppColors.primary.withValues(alpha: 0.18 + (pulseValue * 0.08)),
             blurRadius: pulseGlow,
             spreadRadius: pulseValue * 3,
             offset: const Offset(0, 10),
           ),
           // Subtle Depth Ambient Shadow
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -349,7 +349,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -398,7 +398,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
         width: 3,
         height: 3,
         decoration: BoxDecoration(
-          color: AppColors.textSecondary.withOpacity(0.4),
+          color: AppColors.textSecondary.withValues(alpha: 0.4),
           shape: BoxShape.circle,
         ),
       ),
@@ -426,8 +426,8 @@ class _BackgroundPainter extends CustomPainter {
     // Top Right Primary Glow
     paint.shader = RadialGradient(
       colors: [
-        AppColors.primary.withOpacity(0.12),
-        AppColors.primary.withOpacity(0.0),
+        AppColors.primary.withValues(alpha: 0.12),
+        AppColors.primary.withValues(alpha: 0.0),
       ],
     ).createShader(
       Rect.fromCircle(
@@ -444,8 +444,8 @@ class _BackgroundPainter extends CustomPainter {
     // Bottom Left Subtle Accent Glow
     paint.shader = RadialGradient(
       colors: [
-        AppColors.primaryDark.withOpacity(0.08),
-        AppColors.primaryDark.withOpacity(0.0),
+        AppColors.primaryDark.withValues(alpha: 0.08),
+        AppColors.primaryDark.withValues(alpha: 0.0),
       ],
     ).createShader(
       Rect.fromCircle(

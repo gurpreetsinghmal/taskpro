@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
@@ -47,10 +47,9 @@ class WorkerDashboardController extends GetxController {
 
   Future<void> getdata() async{
     //await LocationService.start();
-
-
+    await fetchSyncStatus();
     if(await _apiService.checkInternet()){
-      await fetchSyncStatus();
+
       fetchOnlineApis();
     } else {
       fetchOfflineData();
@@ -59,12 +58,8 @@ class WorkerDashboardController extends GetxController {
   }
 
   Future<void> fetchSyncStatus() async {
-    print('fetchSyncStatus');
     List<WorkOrderModel>? wlist= await storage.getWorkOrderList();
-    //pre check status after sync
-    if (wlist != null) {
-      syncStatus.value = !wlist.any((e) => e.sync == 0);
-    }
+
     if(await _apiService.checkInternet() && wlist!=null){
       for (final task in wlist) {
         if (task.sync == 0) {
@@ -85,7 +80,7 @@ class WorkerDashboardController extends GetxController {
   Future<bool> hitOnlineSyncApi(WorkOrderModel task) async {
     try {
 
-      final value = await _apiService.post(ApiRoutes.workOrderCheckinSync,data:{
+      final value = await _apiService.post(ApiRoutes.workOrderCheckInSync,data:{
         "checkins":task.checkins.map((e)=>e.toJson()).toList()
       }, isLoaderShow: false);
       final dynamic responseData = value.data;
@@ -147,7 +142,7 @@ class WorkerDashboardController extends GetxController {
             .map((item) => WorkOrderStatusModel.fromJson(item as Map<String, dynamic>))
             .toList();
         await storage.write(StorageKeys.workOrderStatusesList, jsonEncode(
-          workOrderStatusList.value
+          workOrderStatusList
               .map((item) => item.toJson())
               .toList(),
         ));
@@ -166,7 +161,7 @@ class WorkerDashboardController extends GetxController {
             .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
             .toList();
         await storage.write(StorageKeys.workOrderList, jsonEncode(
-          workOrderList.value.map((item) => item.toJson())
+          workOrderList.map((item) => item.toJson())
               .toList(),
         ));
       }

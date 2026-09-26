@@ -66,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -138,7 +138,7 @@ class LoginScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       elevation: 4,
-                      shadowColor: AppColors.primary.withOpacity(0.35),
+                      shadowColor: AppColors.primary.withValues(alpha: 0.35),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -213,7 +213,7 @@ class LoginScreen extends StatelessWidget {
         color: AppColors.background,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.15),
+          color: AppColors.primary.withValues(alpha: 0.15),
           width: 1,
         ),
       ),

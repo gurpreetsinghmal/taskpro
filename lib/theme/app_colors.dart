@@ -81,7 +81,7 @@ class AppColors {
   // Wallet
   //=======================================================
 
-  static const Color income = Color(0xFF16A34A);
+  static const Color income = Color(0xFF0B5A26);
   static const Color expense = Color(0xFFDC2626);
 
   //=======================================================

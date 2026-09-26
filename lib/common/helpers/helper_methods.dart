@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,6 +16,17 @@ class Common {
       return '-';
     }
   }
+  static String getformatDate(String? utcString) {
+    if (utcString == null || utcString.trim().isEmpty) return '-';
+
+    try {
+      DateTime localTime = DateTime.parse(utcString).toLocal();
+      return DateFormat('MMM dd, yyyy      hh:mm a').format(localTime);
+    } catch (e) {
+      return '-';
+    }
+  }
+
   static String getStatusText(int? id, List<WorkOrderStatusModel> statusList) {
     if (id == null) return "-";
     for (var element in statusList) {
