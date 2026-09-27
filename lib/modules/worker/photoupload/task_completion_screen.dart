@@ -4,14 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:taskpro/common/helpers/app_helper.dart';
+
 import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
-import '../../../common/models/work_session_model.dart';
 import '../tasks/w_tasks_controller.dart';
 
 class TaskCompletionScreen extends StatelessWidget {
@@ -19,14 +17,13 @@ class TaskCompletionScreen extends StatelessWidget {
 
   const TaskCompletionScreen({super.key, required this.task});
 
-  static const Color _background = Color(0xFFF7F9FC);
-  // static const Color _card = Colors.white;
-  static const Color _text = Color(0xFF172033);
-  static const Color _muted = Color(0xFF718096);
-  static const Color _border = Color(0xFFE8EDF4);
-  static const Color _blue = Color(0xFF2563EB);
-  static const Color _green = Color(0xFF16A34A);
-  // static const Color _red = Color(0xFFDC2626);
+  static const Color _background = AppColors.background;
+  static const Color _text = AppColors.textPrimary;
+  static const Color _muted = AppColors.textHint;
+  static const Color _border = AppColors.accent;
+  static const Color _blue = AppColors.primary;
+  static const Color _green = AppColors.success;
+
 
   @override
   Widget build(BuildContext context) {
@@ -40,90 +37,46 @@ class TaskCompletionScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    completionController.captureSignature();
-                  },
-                  icon: const Icon(Icons.draw_rounded),
-                  label: const Text('Get Signature'),
-                ),
-                Spacer(),
 
-                Obx(() {
-                  if (completionController.signatureBase64.value == null ||
-                      completionController.signatureBase64.value!.isEmpty) {
-                    return const Text(
-                      'No signature added',
-                    );
-                  }
+              Column(
+                children: [
+                  const SizedBox(height: 16),
 
-                  return Container(
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: Colors.grey.shade300,
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.memory(
-                        base64Decode(completionController.signatureBase64.value!),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  );
-                })
+                  _buildTaskSummaryCard(completionController),
 
-              ],),
+                  const SizedBox(height: 16),
 
-              const SizedBox(height: 18),
+                  _buildImageUploadSection(
+                    context,
+                    completionController,
+                  ),
 
-              _buildPageIntro(),
+                  const SizedBox(height: 16),
 
-              const SizedBox(height: 18),
+                  _buildChecklistSection(completionController),
 
-              _CheckInOutCard(task: task),
+                  const SizedBox(height: 16),
 
-              Obx(
-                () => completionController.isCheckedIn
-                    ? Column(
-                        children: [
-                          const SizedBox(height: 16),
+                  _buildNotesSection(completionController),
 
-                          _buildTaskSummaryCard(completionController),
+                  const SizedBox(height: 16),
 
-                          const SizedBox(height: 16),
+                  _buildGetSignature(completionController),
 
-                          _buildImageUploadSection(
-                            context,
-                            completionController,
-                          ),
+                  const SizedBox(height: 20),
 
-                          const SizedBox(height: 16),
+                  _buildSubmitButton(context, completionController),
 
-                          _buildChecklistSection(completionController),
-
-                          const SizedBox(height: 16),
-
-                          _buildNotesSection(completionController),
-
-                          const SizedBox(height: 20),
-
-                          _buildSubmitButton(context, completionController),
-
-                          const SizedBox(height: 12),
-                        ],
-                      )
-                    : const SizedBox(),
+                  const SizedBox(height: 12),
+                ],
               ),
+
+
+
             ],
           ),
         ),
@@ -187,70 +140,7 @@ class TaskCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPageIntro() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: .18),
-            blurRadius: 20,
-            offset: const Offset(0, 9),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .16),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Icon(
-              Icons.assignment_turned_in_outlined,
-              color: Colors.white,
-              size: 25,
-            ),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Finish your work order',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Record your work, attach proof and submit the completion report.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    height: 1.4,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildTaskSummaryCard(TaskCompletionController controller) {
     return _ModernCard(
@@ -1259,6 +1149,114 @@ class TaskCompletionScreen extends StatelessWidget {
       ),
     );
   }
+
+  _buildGetSignature(completionController) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Get Signature Button
+        ElevatedButton.icon(
+          onPressed: () {
+            completionController.captureSignature();
+          },
+          icon: const Icon(
+            Icons.draw_rounded,
+            size: 20,
+          ),
+          label: const Text(
+            'Get Signature',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 13,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        ),
+
+        const Spacer(),
+
+        // Signature Preview
+        Obx(() {
+          if (completionController.signatureBase64.value == null ||
+              completionController.signatureBase64.value!.isEmpty) {
+            return Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.draw_outlined,
+                    size: 18,
+                    color: Colors.grey.shade500,
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    'No signature',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Container(
+            height: 100,
+            width: 150,
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.grey.shade200,
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.memory(
+                base64Decode(
+                  completionController.signatureBase64.value!,
+                ),
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
 }
 
 // ============================================================
@@ -1293,758 +1291,5 @@ class _ModernCard extends StatelessWidget {
       ),
       child: child,
     );
-  }
-}
-
-// ============================================================
-// WORK SESSIONS
-// ============================================================
-
-class _CheckInOutCard extends StatelessWidget {
-  final WorkOrderModel task;
-
-  const _CheckInOutCard({required this.task});
-
-  static const Color _blue = Color(0xFF2563EB);
-  static const Color _green = Color(0xFF16A34A);
-  static const Color _red = Color(0xFFDC2626);
-  static const Color _text = Color(0xFF172033);
-  static const Color _muted = Color(0xFF718096);
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<TaskCompletionController>();
-
-    return Obx(() {
-      final sessions = controller.workSessions;
-      final activeSession = controller.activeSession;
-
-      return _ModernSessionContainer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 43,
-                  height: 43,
-                  decoration: BoxDecoration(
-                    color: _blue.withValues(alpha: .09),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.timer_outlined,
-                    color: _blue,
-                    size: 22,
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Work Sessions',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: _text,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'Track your time on this work order',
-                        style: TextStyle(fontSize: 10.5, color: _muted),
-                      ),
-                    ],
-                  ),
-                ),
-
-                if (activeSession != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _green.withValues(alpha: .09),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.circle, size: 7, color: _green),
-                        SizedBox(width: 5),
-                        Text(
-                          'ACTIVE',
-                          style: TextStyle(
-                            color: _green,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-
-            _buildSummary(controller),
-
-            if (activeSession != null) ...[
-              const SizedBox(height: 16),
-              _ActiveSessionCard(
-                session: activeSession,
-                onCheckOut: () {
-                  _confirmCheckOut(context, controller);
-                },
-              ),
-            ],
-
-            if (sessions.any(
-              (session) => session.checkOutDateTime != null,
-            )) ...[
-              const SizedBox(height: 6),
-              _SessionHistory(
-                sessions: sessions
-                    .where((session) => session.checkOutDateTime != null)
-                    .toList(),
-              ),
-            ],
-
-            const SizedBox(height: 15),
-
-            if (activeSession == null && task.statusId == 59)
-              findButton(
-                title: sessions.isEmpty ? 'Check In' : 'Start New Session',
-                icon: Icon(Icons.login_rounded, size: 19,color: AppColors.textWhite,),
-                backgroundColor: AppColors.primary,
-                onPressed:()=>_confirmCheckIn(context, controller)
-              ),
-           ],
-        ),
-      );
-    });
-  }
-
-  Widget _buildSummary(TaskCompletionController controller) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9EEF5)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _SessionSummaryItem(
-              icon: Icons.layers_outlined,
-              title: 'Sessions',
-              value: '${controller.totalSessions}',
-            ),
-          ),
-          _verticalDivider(),
-          Expanded(
-            child: _SessionSummaryItem(
-              icon: Icons.check_circle_outline_rounded,
-              title: 'Completed',
-              value: '${controller.completedSessions}',
-            ),
-          ),
-          _verticalDivider(),
-          Expanded(
-            child: _SessionSummaryItem(
-              icon: Icons.timer_outlined,
-              title: 'Total Time',
-              value: _formatDuration(controller.totalWorkedDuration),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _verticalDivider() {
-    return Container(width: 1, height: 38, color: const Color(0xFFE1E7EF));
-  }
-
-  Future<void> _confirmCheckIn(
-    BuildContext context,
-    TaskCompletionController controller,
-  ) async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
-        contentPadding: const EdgeInsets.fromLTRB(22, 4, 22, 8),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        title: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: _blue.withValues(alpha: .09),
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: const Icon(Icons.login_rounded, color: _blue),
-            ),
-            const SizedBox(width: 11),
-            const Expanded(
-              child: Text(
-                'Confirm Check-In',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Are you ready to start working on this task?\n\n'
-          'Your check-in time will be recorded when you confirm.',
-          style: TextStyle(fontSize: 12.5, height: 1.5, color: _muted),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: () => Get.back(result: true),
-            icon: const Icon(Icons.check_rounded, size: 17),
-            label: const Text('Yes, Check In'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _blue,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      controller.checkIn();
-    }
-  }
-
-  Future<void> _confirmCheckOut(
-    BuildContext context,
-    TaskCompletionController controller,
-  ) async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
-        contentPadding: const EdgeInsets.fromLTRB(22, 4, 22, 8),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        title: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: _red.withValues(alpha: .09),
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: const Icon(Icons.logout_rounded, color: _red),
-            ),
-            const SizedBox(width: 11),
-            const Expanded(
-              child: Text(
-                'Confirm Check-Out',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Are you sure you want to check out from this session?\n\n'
-          'Your work session will be completed and the check-out time will be recorded.',
-          style: TextStyle(fontSize: 12.5, height: 1.5, color: _muted),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: () => Get.back(result: true),
-            icon: const Icon(Icons.logout_rounded, size: 17),
-            label: const Text('Yes, Check Out'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _red,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      controller.checkOut();
-    }
-  }
-
-  static String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    }
-
-    return '${minutes}m';
-  }
-}
-
-// ============================================================
-// SESSION CONTAINER
-// ============================================================
-
-class _ModernSessionContainer extends StatelessWidget {
-  final Widget child;
-
-  const _ModernSessionContainer({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8EDF4)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .025),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-// ============================================================
-// SESSION SUMMARY ITEM
-// ============================================================
-
-class _SessionSummaryItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-
-  const _SessionSummaryItem({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, size: 19, color: const Color(0xFF64748B)),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF172033),
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 9.5,
-            color: Color(0xFF718096),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ============================================================
-// ACTIVE SESSION
-// ============================================================
-
-class _ActiveSessionCard extends StatelessWidget {
-  final WorkSessionModel session;
-  final VoidCallback onCheckOut;
-
-  const _ActiveSessionCard({required this.session, required this.onCheckOut});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFFF0FDF4), Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xFFBBF7D0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF16A34A).withValues(alpha: .10),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.play_arrow_rounded,
-                  color: Color(0xFF16A34A),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Current Session',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF172033),
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'You are currently working',
-                      style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'ACTIVE',
-                  style: TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF15803D),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 13),
-
-          Container(
-            padding: const EdgeInsets.all(11),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .8),
-              borderRadius: BorderRadius.circular(13),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.login_rounded,
-                  size: 17,
-                  color: Color(0xFF16A34A),
-                ),
-                const SizedBox(width: 7),
-                const Text(
-                  'Checked in',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  _formatDateTime(session.checkInDateTime),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF172033),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 11),
-
-          SizedBox(
-            width: double.infinity,
-            height: 45,
-            child: OutlinedButton.icon(
-              onPressed: onCheckOut,
-              icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text(
-                'Check Out',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFDC2626),
-                side: BorderSide(
-                  color: const Color(0xFFDC2626).withValues(alpha: .35),
-                ),
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(13),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static String _formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) return '--';
-
-    return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
-  }
-}
-
-// ============================================================
-// SESSION HISTORY
-// ============================================================
-
-class _SessionHistory extends StatelessWidget {
-  final List<WorkSessionModel> sessions;
-
-  const _SessionHistory({required this.sessions});
-
-  @override
-  Widget build(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 2),
-        childrenPadding: EdgeInsets.zero,
-        initiallyExpanded: false,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        collapsedShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        iconColor: const Color(0xFF64748B),
-        collapsedIconColor: const Color(0xFF64748B),
-        title: const Row(
-          children: [
-            Icon(Icons.history_rounded, size: 18, color: Color(0xFF64748B)),
-            SizedBox(width: 8),
-            Text(
-              'Session History',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF172033),
-              ),
-            ),
-          ],
-        ),
-        children: [
-          const SizedBox(height: 4),
-          ...sessions.asMap().entries.map((entry) {
-            return _SessionHistoryItem(
-              sessionNumber: entry.key + 1,
-              session: entry.value,
-            );
-          }),
-        ],
-      ),
-    );
-  }
-}
-
-// ============================================================
-// SESSION HISTORY ITEM
-// ============================================================
-
-class _SessionHistoryItem extends StatelessWidget {
-  final int sessionNumber;
-  final WorkSessionModel session;
-
-  const _SessionHistoryItem({
-    required this.sessionNumber,
-    required this.session,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isActive = session.isActive;
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8EDF4)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isActive
-                  ? const Color(0xFFDCFCE7)
-                  : const Color(0xFFEFF6FF),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '$sessionNumber',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: isActive
-                    ? const Color(0xFF15803D)
-                    : const Color(0xFF2563EB),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 11),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Session $sessionNumber',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF172033),
-                        ),
-                      ),
-                    ),
-                    if (isActive)
-                      const Text(
-                        'ACTIVE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF16A34A),
-                        ),
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 9),
-
-                _historyRow(
-                  Icons.login_rounded,
-                  _formatDateTime(session.checkInDateTime),
-                  const Color(0xFF16A34A),
-                ),
-
-                const SizedBox(height: 5),
-
-                _historyRow(
-                  Icons.logout_rounded,
-                  isActive
-                      ? 'Still working'
-                      : _formatDateTime(session.checkOutDateTime),
-                  isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                ),
-
-                if (!isActive && session.duration != null) ...[
-                  const SizedBox(height: 5),
-                  _historyRow(
-                    Icons.timer_outlined,
-                    'Duration: ${_formatDuration(session.duration!)}',
-                    const Color(0xFF64748B),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _historyRow(IconData icon, String text, Color color) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 5),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF64748B),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  static String _formatDateTime(DateTime? dateTime) {
-    if (dateTime == null) return '--';
-
-    return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
-  }
-
-  static String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    }
-
-    return '${minutes}m';
   }
 }

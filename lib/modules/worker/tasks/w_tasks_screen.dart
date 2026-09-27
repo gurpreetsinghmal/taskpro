@@ -6,8 +6,9 @@ import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/app_helper.dart';
 import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/modules/worker/checkin/checkin_screen.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
-import 'package:taskpro/modules/worker/photoupload/task_completion_screen.dart';
+
 import 'package:taskpro/modules/worker/tasks/w_tasks_controller.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
@@ -180,7 +181,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
                 physics: const BouncingScrollPhysics(),
                 itemCount: tasks.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 13),
+                separatorBuilder: (_, _) => const SizedBox(height: 13),
                 itemBuilder: (context, index) {
                   return _TaskCard(
                     task: tasks[index],
@@ -215,7 +216,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: filters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (_, index) {
           final filter = filters[index];
           final selected = selectedFilter == filter;
@@ -586,7 +587,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                               title: "Maximum Payout",
                               value:
                                   "\$ ${((double.tryParse(task.maxHours) ?? 0.0) * (double.tryParse(task.rateValue) ?? 0.0)).toStringAsFixed(2)}",
-                              custColor: AppColors.income,
+                              customColor: AppColors.income,
                             ),
                           ],
                         ),
@@ -684,7 +685,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
       task.statusId,
       controller.workOrderStatusList,
     );
-    print(statusName);
+
 
     final statusText = Common.getStatusText(
       task.statusId,
@@ -741,7 +742,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
           icon: Icons.play_circle_outline_rounded,
           title: "Hard Start Time",
           value: Common.getformatDate(task.hardStartTime),
-          custColor: AppColors.error,
+          customColor: AppColors.error,
         ),
         const SizedBox(height: 10),
       ],
@@ -853,7 +854,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
       onPressed: () {
         Get.back();
 
-        Get.to(() => TaskCompletionScreen(task: task));
+        Get.to(() => CheckInScreen(task: task));
       },
       icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
     );
@@ -986,121 +987,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     );
   }
 
-  Widget _scheduleGrid({required List<_ScheduleItem> items}) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.65,
-      ),
-      itemBuilder: (_, index) {
-        final item = items[index];
 
-        return Container(
-          padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8F9FC),
-            borderRadius: BorderRadius.circular(17),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Icon(item.icon, size: 19, color: const Color(0xFFF59E0B)),
-
-                  const SizedBox(height: 7, width: 7),
-
-                  Text(
-                    item.title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      // color: Color(0xFF858A99),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 2),
-
-              Text(
-                item.value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF242733),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _rateGrid({required List<_RateItem> items}) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.65,
-      ),
-      itemBuilder: (_, index) {
-        final item = items[index];
-
-        return Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF8F7),
-            borderRadius: BorderRadius.circular(17),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Icon(item.icon, size: 19, color: AppColors.chartCyan),
-
-                  const SizedBox(height: 7, width: 7),
-
-                  Text(
-                    item.title,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Color(0xFF858A99),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 2),
-
-              Text(
-                item.value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF242733),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _modernSection({
     required IconData icon,
@@ -1621,81 +1508,19 @@ class _LargeBadge extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
 
-  const _StatCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        color: const Color(0xffF5F8FC),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xffE9EEF5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 34,
-            width: 34,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: .09),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 17, color: AppColors.primary),
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            value,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _InfoTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
-  final Color? custColor;
+  final Color? customColor;
 
   const _InfoTile({
     required this.icon,
     required this.title,
     required this.value,
-    this.custColor,
+    this.customColor,
   });
 
   @override
@@ -1703,7 +1528,7 @@ class _InfoTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: custColor?.withValues(alpha: 0.2) ?? const Color(0xffF7F9FC),
+        color: customColor?.withValues(alpha: 0.2) ?? const Color(0xffF7F9FC),
         borderRadius: BorderRadius.circular(17),
         border: Border.all(color: const Color(0xffE9EEF5)),
       ),
@@ -1719,7 +1544,7 @@ class _InfoTile extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              color: custColor ?? AppColors.textSecondary,
+              color: customColor ?? AppColors.textSecondary,
               size: 19,
             ),
           ),
@@ -1735,7 +1560,7 @@ class _InfoTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: custColor??Colors.grey.shade600,
+                    color: customColor??Colors.grey.shade600,
                   ),
                 ),
 
@@ -1746,7 +1571,7 @@ class _InfoTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: custColor ?? AppColors.textPrimary,
+                    color: customColor ?? AppColors.textPrimary,
                     height: 1.3,
                   ),
                 ),
@@ -1759,114 +1584,6 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
-class _TimingRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-
-  const _TimingRow({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 19, color: AppColors.primary),
-
-        const SizedBox(width: 10),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-
-              const SizedBox(height: 2),
-
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _HourBox extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-
-  const _HourBox({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: const Color(0xffE5EAF1)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 19, color: AppColors.primary),
-
-          const SizedBox(width: 9),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _EmptyTasks extends StatelessWidget {
   const _EmptyTasks();
@@ -1918,18 +1635,4 @@ class _EmptyTasks extends StatelessWidget {
   }
 }
 
-class _ScheduleItem {
-  final IconData icon;
-  final String title;
-  final String value;
 
-  _ScheduleItem({required this.icon, required this.title, required this.value});
-}
-
-class _RateItem {
-  final String title;
-  final String value;
-  final IconData icon;
-
-  _RateItem({required this.title, required this.value, required this.icon});
-}
