@@ -12,7 +12,6 @@ import 'package:taskpro/theme/app_colors.dart';
 
 import '../../../common/helpers/helper_methods.dart';
 import '../../../common/models/work_order_status.dart';
-import '../../../location/location_service.dart';
 
 class WorkerDashboardController extends GetxController {
   final storage = SecureStorageService.instance;
@@ -46,7 +45,7 @@ class WorkerDashboardController extends GetxController {
   }
 
   Future<void> getdata() async{
-    //await LocationService.start();
+
     await fetchSyncStatus();
     if(await _apiService.checkInternet()){
 

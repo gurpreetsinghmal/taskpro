@@ -1,11 +1,14 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/work_session_model.dart';
+import '../../../location/location_service.dart';
 import '../../../services/secure_storage_service.dart';
+import '../../../theme/app_colors.dart';
 
 class CheckinController extends GetxController {
 
@@ -86,6 +89,19 @@ class CheckinController extends GetxController {
   // ------------------------------------------------------------
 
   Future<void> checkIn() async {
+    if(!await LocationService.start())
+    {
+      Get.snackbar(
+        'Allow Location Service',
+        'Please Allow Location Service details Before Starting Entering Session.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+
+      return;
+    }
     if (activeSession != null) {
       Get.snackbar(
         'Already Checked In',
@@ -121,12 +137,25 @@ class CheckinController extends GetxController {
     await storage.updateWorkOrderData(updatedWorkOrder);
 
 
+
+
   }
   // ------------------------------------------------------------
   // CHECK OUT
   // ------------------------------------------------------------
   Future<void> checkOut() async {
-
+    if(!await LocationService.start())
+    {
+      Get.snackbar(
+        'Failed',
+        'Please Allow Location Service details Before Ending Session.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
     final currentSession = activeSession;
     if (currentSession == null) {
       Get.snackbar(
@@ -155,6 +184,7 @@ class CheckinController extends GetxController {
     );
 
     await storage.updateWorkOrderData(updatedWorkOrder);
+    await LocationService.stop();
   }
 
   final Rxn<DateTime> checkInTime = Rxn<DateTime>();

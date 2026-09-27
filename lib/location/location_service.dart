@@ -16,7 +16,7 @@ class LocationService {
   static const int notificationId = 888;
 
   // Send location every 10 minutes.
-  static const Duration locationInterval = Duration(minutes: 10);
+  static const Duration locationInterval = Duration(minutes:10);
 
   static final FlutterLocalNotificationsPlugin notifications =
       FlutterLocalNotificationsPlugin();
@@ -103,7 +103,7 @@ class LocationService {
   // START SERVICE
   // ============================================================
 
-  static Future<void> start() async {
+  static Future<bool> start() async {
     final service = FlutterBackgroundService();
 
     try {
@@ -111,7 +111,7 @@ class LocationService {
 
       if (running) {
         print('Location service already running');
-        return;
+        return true;
       }
 
       // ----------------------------------------------------------
@@ -125,7 +125,7 @@ class LocationService {
 
         await Geolocator.openLocationSettings();
 
-        return;
+        return false;
       }
 
       // ----------------------------------------------------------
@@ -141,7 +141,7 @@ class LocationService {
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         print('Location permission denied');
-        return;
+        return false;
       }
 
       // ----------------------------------------------------------
@@ -165,9 +165,11 @@ class LocationService {
       await service.startService();
 
       print('Location service started');
+      return true;
     } catch (e, stackTrace) {
       print('Unable to start location service: $e');
       print(stackTrace);
+      return false;
     }
   }
 
