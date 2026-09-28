@@ -350,57 +350,192 @@ class DashboardTabScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    // ------------------------------------------------------------
+                    // Section Title
+                    // ------------------------------------------------------------
+                    Row(
                       children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 16,
-                          color: AppColors.primary,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          "Assigned Jobs",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          height: 34,
+                          width: 34,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.access_time_rounded,
+                            size: 18,
                             color: AppColors.primary,
                           ),
                         ),
+
+                        const SizedBox(width: 10),
+
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Assigned Jobs',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Your current work orders',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    GestureDetector(
-                      onTap: () async{
-                        await Get.to(() => const WorkerTasksScreen());
-                        controller.fetchSyncStatus();
+
+                    // ------------------------------------------------------------
+                    // View All
+                    // ------------------------------------------------------------
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () async {
+                          await Get.to(
+                                () => const WorkerTasksScreen(),
+                          );
+
+                          controller.fetchSyncStatus();
                         },
-                      child: const Text(
-                        "View All >",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'View All',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 15,
+                                color: AppColors.primary,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 12),
-                Obx(
-                      () => controller.workOrderList.isNotEmpty
-                      ? ListView.separated(
+
+                Obx(() {
+
+                  final assignedWorkOrders = controller.workOrderList
+                      .where((workOrder) => workOrder.statusId == 13)
+                      .toList();
+
+                  // ------------------------------------------------------------
+                  // No Worker / No Assigned Work Order
+                  // ------------------------------------------------------------
+                  if (assignedWorkOrders.isEmpty) {
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 30,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.textWhite,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.12),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 64,
+                            width: 64,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.08),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.person_search_outlined,
+                              size: 32,
+                              color: AppColors.primary,
+                            ),
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          const Text(
+                            'No New Work Orders Available',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          Text(
+                            'There are no new work orders assigned to you at the moment.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.4,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // ------------------------------------------------------------
+                  // Assigned Work Orders
+                  // ------------------------------------------------------------
+                  return ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: controller.workOrderList.length,
+                    itemCount: assignedWorkOrders.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final workOrder = controller.workOrderList[index];
 
-                      if(workOrder.statusId!=13) {
-                        return const SizedBox.shrink();
-                      }
+                    itemBuilder: (context, index) {
+                      final workOrder = assignedWorkOrders[index];
 
                       final statusName = Common.getStatusColorName(
                         workOrder.statusId,
@@ -429,7 +564,9 @@ class DashboardTabScreen extends StatelessWidget {
                         child: IntrinsicHeight(
                           child: Row(
                             children: [
-                              // Status Accent Line
+                              // --------------------------------------------------
+                              // Status Accent
+                              // --------------------------------------------------
                               Container(
                                 width: 5,
                                 decoration: BoxDecoration(
@@ -448,7 +585,9 @@ class DashboardTabScreen extends StatelessWidget {
                                     crossAxisAlignment:
                                     CrossAxisAlignment.start,
                                     children: [
+                                      // ------------------------------------------------
                                       // Header
+                                      // ------------------------------------------------
                                       Row(
                                         crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -458,7 +597,9 @@ class DashboardTabScreen extends StatelessWidget {
                                             height: 44,
                                             width: 44,
                                             decoration: BoxDecoration(
-                                              color: statusColor.withValues(alpha: 0.10),
+                                              color: statusColor.withValues(
+                                                alpha: 0.10,
+                                              ),
                                               borderRadius:
                                               BorderRadius.circular(12),
                                             ),
@@ -471,7 +612,7 @@ class DashboardTabScreen extends StatelessWidget {
 
                                           const SizedBox(width: 12),
 
-                                          // Title and Manager
+                                          // Title + Service + Manager
                                           Expanded(
                                             child: Column(
                                               crossAxisAlignment:
@@ -492,8 +633,8 @@ class DashboardTabScreen extends StatelessWidget {
                                                 const SizedBox(height: 5),
 
                                                 Text(
-                                                  "${workOrder.serviceTypeName} • "
-                                                      "${workOrder.managerFirstName}",
+                                                  '${workOrder.serviceTypeName} • '
+                                                      '${workOrder.managerFirstName}',
                                                   maxLines: 1,
                                                   overflow:
                                                   TextOverflow.ellipsis,
@@ -506,100 +647,161 @@ class DashboardTabScreen extends StatelessWidget {
                                               ],
                                             ),
                                           ),
-
-                                          const SizedBox(width: 8),
-
-                                          // Arrow
-                                    if(workOrder.statusId!=13)
-                                          Icon(
-                                            Icons.chevron_right_rounded,
-                                            color: Colors.grey.shade500,
-                                            size: 22,
-                                          ),
                                         ],
                                       ),
 
                                       const SizedBox(height: 14),
 
-                                      // Status Badge
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: statusColor.withValues(alpha: 0.10),
-                                                borderRadius:
-                                                BorderRadius.circular(20),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
+                                      // ------------------------------------------------
+                                      // Worker Information
+                                      // ------------------------------------------------
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.withValues(
+                                            alpha: 0.05,
+                                          ),
+                                          borderRadius:
+                                          BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.engineering_outlined,
+                                              size: 18,
+                                              color: statusColor,
+                                            ),
+
+                                            const SizedBox(width: 8),
+
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                                 children: [
-                                                  Container(
-                                                    height: 7,
-                                                    width: 7,
-                                                    decoration: BoxDecoration(
-                                                      color: statusColor,
-                                                      shape: BoxShape.circle,
+                                                  const Text(
+                                                    'Technician',
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                      FontWeight.w500,
+                                                      color:
+                                                      AppColors.textSecondary,
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 6),
+                                                  const SizedBox(height: 2),
                                                   Text(
-                                                    statusText,
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: statusColor,
+                                                    [
+                                                      workOrder.technicianFirstName,
+                                                      workOrder.technicianMiddleName,
+                                                      workOrder.technicianLastName,
+                                                    ]
+                                                        .where(
+                                                          (name) =>
+                                                      name != null &&
+                                                          name
+                                                              .trim()
+                                                              .isNotEmpty,
+                                                    )
+                                                        .join(' '),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                    TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                      FontWeight.w600,
+                                                      color: AppColors.primary,
                                                     ),
                                                   ),
                                                 ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 12),
+
+                                      // ------------------------------------------------
+                                      // Status + Work Order Number
+                                      // ------------------------------------------------
+                                      Row(
+                                        children: [
+                                          // Status
+                                          Container(
+                                            padding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: statusColor.withValues(
+                                                alpha: 0.10,
+                                              ),
+                                              borderRadius:
+                                              BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize:
+                                              MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  height: 7,
+                                                  width: 7,
+                                                  decoration: BoxDecoration(
+                                                    color: statusColor,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+
+                                                const SizedBox(width: 6),
+
+                                                Text(
+                                                  statusText,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight:
+                                                    FontWeight.w600,
+                                                    color: statusColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          const Spacer(),
+
+                                          // Work Order Number
+                                          Container(
+                                            padding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: statusColor.withValues(
+                                                alpha: 0.06,
+                                              ),
+                                              borderRadius:
+                                              BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              'WO: ${workOrder.workOrderNo}',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight:
+                                                FontWeight.w600,
+                                                color: statusColor,
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 12),
-                                          Align(  alignment: Alignment.centerLeft,
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                                vertical: 6,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: statusColor.withValues(alpha: 0.10),
-                                                borderRadius:
-                                                BorderRadius.circular(20),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Container(
-                                                    height: 7,
-                                                    width: 7,
-                                                    decoration: BoxDecoration(
-                                                      color: statusColor,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    "WO No: ${workOrder.workOrderNo}",
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: statusColor,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          )
                                         ],
-                                      )
-
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -609,9 +811,8 @@ class DashboardTabScreen extends StatelessWidget {
                         ),
                       );
                     },
-                  )
-                      : const SizedBox.shrink(),
-                )
+                  );
+                })
               ],
             ),
           ),

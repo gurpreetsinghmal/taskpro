@@ -86,7 +86,7 @@ class WorkerTasksController extends GetxController {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderStatusUpdate,data: {
         "work_order_id": workOrderId,
-        "status_id": 13,
+        "status_id": 61,
       }, isLoaderShow: true);
       final dynamic responseData = value.data;
 

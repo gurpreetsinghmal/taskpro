@@ -847,8 +847,8 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
         ],
       );
     }
-
-    return findButton(
+    if (task.statusId == 59)
+      return findButton(
       title: "Proceed",
       backgroundColor: AppColors.primary,
       onPressed: () {
@@ -858,6 +858,8 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
       },
       icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
     );
+
+    return Container();
   }
 
   Widget _sectionTitle({required IconData icon, required String title}) {
