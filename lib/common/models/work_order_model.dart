@@ -32,6 +32,8 @@ class WorkOrderModel {
   final String? hardStartTime;
   final dynamic maxHours;
   final dynamic approximateHoursToComplete;
+  final WorkOrderAddressModel? address;
+
   // Multiple check-in / check-out sessions
   final List<WorkSessionModel> checkins;
   int sync;
@@ -70,6 +72,7 @@ class WorkOrderModel {
     this.hardStartTime,
     this.maxHours,
     this.approximateHoursToComplete,
+    this.address,
     this.checkins = const [],
     this.sync=1
 
@@ -108,6 +111,11 @@ class WorkOrderModel {
       hardStartTime: json['hard_start_time'] as String?,
       maxHours: json['max_hours'],
       approximateHoursToComplete: json['approximate_hours_to_complete'],
+      address: json['address'] is Map<String, dynamic>
+          ? WorkOrderAddressModel.fromJson(
+        json['address'] as Map<String, dynamic>,
+      )
+          : null,
       checkins: (json['checkins'] as List<dynamic>?)
           ?.map(
             (item) => WorkSessionModel.fromJson(
@@ -154,6 +162,7 @@ class WorkOrderModel {
       'hard_start_time': hardStartTime,
       'max_hours': maxHours,
       'approximate_hours_to_complete': approximateHoursToComplete,
+      'address': address?.toJson(),
       'checkins': checkins
           .map((session) => session.toJson())
           .toList(),
@@ -192,6 +201,7 @@ class WorkOrderModel {
     String? hardStartTime,
     dynamic maxHours,
     dynamic approximateHoursToComplete,
+    WorkOrderAddressModel? address,
     List<WorkSessionModel>? checkins,
     int? sync,
   }) {
@@ -237,47 +247,45 @@ class WorkOrderModel {
       maxHours: maxHours ?? this.maxHours,
       approximateHoursToComplete:
       approximateHoursToComplete ?? this.approximateHoursToComplete,
-
+      address: address ?? this.address,
       checkins: checkins ?? this.checkins,
 
       sync: sync ?? this.sync,
     );
   }
-  // ------------------------------------------------------------
-  // Helpful getters
-  // ------------------------------------------------------------
 
-  WorkSessionModel? get activeSession {
-    for (final session in checkins.reversed) {
-      if (session.isActive) {
-        return session;
-      }
-    }
+}
 
-    return null;
+class WorkOrderAddressModel {
+  final String fullAddress;
+  final String googleMapLink;
+
+  const WorkOrderAddressModel({
+    required this.fullAddress,
+    required this.googleMapLink,
+  });
+
+  factory WorkOrderAddressModel.fromJson(Map<String, dynamic> json) {
+    return WorkOrderAddressModel(
+      fullAddress: json['full_address']?.toString() ?? '',
+      googleMapLink: json['google_map_link']?.toString() ?? '',
+    );
   }
 
-  bool get isCheckedIn => activeSession != null;
+  Map<String, dynamic> toJson() {
+    return {
+      'full_address': fullAddress,
+      'google_map_link': googleMapLink,
+    };
+  }
 
-  bool get isCheckedOut =>
-      checkins.isNotEmpty && activeSession == null;
-
-  int get totalSessions => checkins.length;
-
-  int get completedSessions =>
-      checkins.where((session) => !session.isActive).length;
-
-  Duration get totalWorkedDuration {
-    Duration total = Duration.zero;
-
-    for (final session in checkins) {
-      final duration = session.duration;
-
-      if (duration != null) {
-        total += duration;
-      }
-    }
-
-    return total;
+  WorkOrderAddressModel copyWith({
+    String? fullAddress,
+    String? googleMapLink,
+  }) {
+    return WorkOrderAddressModel(
+      fullAddress: fullAddress ?? this.fullAddress,
+      googleMapLink: googleMapLink ?? this.googleMapLink,
+    );
   }
 }

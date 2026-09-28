@@ -514,10 +514,10 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                               icon: Icons.location_city_outlined,
                               title: "Service Location",
                               value:
-                                  "742 Evergreen Terrace, Springfield, OR 97477",
+                                  task.address!.fullAddress,
                             ),
 
-                            _modernLocationButton(onTap: ()=>controller.loadMap(null)),
+                            _modernLocationButton(onTap: ()=>controller.loadMap(task.address!.googleMapLink)),
                           ],
                         ),
 
