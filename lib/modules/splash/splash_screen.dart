@@ -20,7 +20,7 @@ class SplashScreen extends GetView<SplashController> {
     // Set immersive status bar style for a modern edge-to-edge feel
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: Colors.blue,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
@@ -134,180 +134,202 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(flex: 3),
+    return Stack(
+      children:[
 
-          // Animated Logo Section with Ambient Pulse Glow
-          AnimatedBuilder(
-            animation: Listenable.merge([_entryController, _pulseController]),
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _logoScale.value,
-                child: Opacity(
-                  opacity: _logoOpacity.value,
-                  child: _buildLogoCard(_pulseController.value),
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 26),
-
-          // Animated Branding Text & Subtitles
-          AnimatedBuilder(
-            animation: _entryController,
-            builder: (context, child) {
-              return SlideTransition(
-                position: _textSlide,
-                child: Opacity(
-                  opacity: _textOpacity.value,
-                  child: child,
-                ),
-              );
-            },
-            child: Column(
-              children: [
-                // App Title with Gradient Text
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryDark,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ).createShader(bounds),
-                  child: Text(
-                    "TaskPro",
-                    style: TextStyle(
-                      fontSize: 38,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Pill Tagline
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.15),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text(
-                    "Smart Task Management",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Audience Description
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildAudienceChip(Icons.person_outline_rounded, "Citizens"),
-                    _buildDotSeparator(),
-                    _buildAudienceChip(Icons.business_center_outlined, "Managers"),
-                    _buildDotSeparator(),
-                    _buildAudienceChip(Icons.engineering_outlined, "Workers"),
-                  ],
-                ),
-              ],
+        // Soft overlay for readability
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue.withValues(alpha: 0.82),
+                  Colors.white.withValues(alpha: 0.68),
+                  Colors.white.withValues(alpha: 0.50),
+                  Colors.yellowAccent.withValues(alpha: 0.86),
+                ],
+              ),
             ),
           ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 3),
 
-          const Spacer(flex: 3),
+              // Animated Logo Section with Ambient Pulse Glow
+              AnimatedBuilder(
+                animation: Listenable.merge([_entryController, _pulseController]),
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _logoScale.value,
+                    child: Opacity(
+                      opacity: _logoOpacity.value,
+                      child: _buildLogoCard(_pulseController.value),
+                    ),
+                  );
+                },
+              ),
 
-          // Bottom Loader & Version Tag
-          AnimatedBuilder(
-            animation: _entryController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _loaderOpacity.value,
-                child: child,
-              );
-            },
-            child: Column(
-              children: [
-                // Custom Glowing Modern Linear Progress Indicator
-                SizedBox(
-                  width: 140,
-                  height: 4,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.primary,
+              const SizedBox(height: 26),
+
+              // Animated Branding Text & Subtitles
+              AnimatedBuilder(
+                animation: _entryController,
+                builder: (context, child) {
+                  return SlideTransition(
+                    position: _textSlide,
+                    child: Opacity(
+                      opacity: _textOpacity.value,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    // App Title with Gradient Text
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primaryDark,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds),
+                      child: Text(
+                        "PSN Task Pro",
+                        style: TextStyle(
+                          fontSize: 38,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                ),
 
-                const SizedBox(height: 14),
+                    const SizedBox(height: 8),
 
-                Text(
-                  "Initializing workspace...",
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary.withValues(alpha: 0.8),
-                    letterSpacing: 0.3,
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Version Badge Tag
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.05),
+                    // Pill Tagline
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Text(
+                        "Smart Task Management",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    "v1.0.0",
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey,
-                      letterSpacing: 0.8,
+
+                    const SizedBox(height: 16),
+
+                    // Audience Description
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+
+                        _buildAudienceChip(Icons.business_center_outlined, "Managers"),
+                        _buildDotSeparator(),
+                        _buildAudienceChip(Icons.engineering_outlined, "Technicians"),
+                      ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+
+              const Spacer(flex: 3),
+
+              // Bottom Loader & Version Tag
+              AnimatedBuilder(
+                animation: _entryController,
+                builder: (context, child) {
+                  return Opacity(
+                    opacity: _loaderOpacity.value,
+                    child: child,
+                  );
+                },
+                child: Column(
+                  children: [
+                    // Custom Glowing Modern Linear Progress Indicator
+                    SizedBox(
+                      width: 140,
+                      height: 4,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    Text(
+                      "Initializing workspace...",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary.withValues(alpha: 0.8),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Version Badge Tag
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.black.withValues(alpha: 0.05),
+                        ),
+                      ),
+                      child: const Text(
+                        "v1.0.0",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
           ),
+        ),
+      ]
 
-          const SizedBox(height: 20),
-        ],
-      ),
     );
   }
 
@@ -343,7 +365,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
         children: [
           // Main Icon
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
@@ -356,7 +378,7 @@ class _SplashAnimatedBodyState extends State<SplashAnimatedBody>
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(24),
               child: Image.asset(
                 'assets/prosat.gif',
                 fit: BoxFit.cover,

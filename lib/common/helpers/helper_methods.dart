@@ -21,7 +21,7 @@ class Common {
 
     try {
       DateTime localTime = DateTime.parse(utcString).toLocal();
-      return DateFormat('MMM dd, yyyy      hh:mm a').format(localTime);
+      return DateFormat('EEEE,   MMM dd, yyyy      hh:mm a').format(localTime);
     } catch (e) {
       return '-';
     }

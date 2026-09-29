@@ -82,11 +82,12 @@ class WorkerTasksController extends GetxController {
     }
   }
 
-  Future<void> rejectWorkOrderApi(int workOrderId,String wno) async {
+  Future<void> rejectWorkOrderApi(int workOrderId,String wno, String remarks) async {
     try {
       final value = await _apiService.post(ApiRoutes.workOrderStatusUpdate,data: {
         "work_order_id": workOrderId,
         "status_id": 61,
+        "remarks": remarks
       }, isLoaderShow: true);
       final dynamic responseData = value.data;
 

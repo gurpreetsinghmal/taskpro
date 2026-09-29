@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 
 
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/work_session_model.dart';
+import '../../../location/location_controller.dart';
 import '../../../location/location_service.dart';
 import '../../../services/secure_storage_service.dart';
 import '../../../theme/app_colors.dart';
@@ -21,11 +23,12 @@ class CheckinController extends GetxController {
   /// All check-in/check-out sessions
   final RxList<WorkSessionModel> workSessions = <WorkSessionModel>[].obs;
   final storage = SecureStorageService.instance;
-
+  final locController=Get.put(LocationController());
+  late Position position;
   @override
   void onInit() {
     super.onInit();
-
+    getPositions();
     /// Load sessions received from API
     workSessions.assignAll(task.checkins);
   }
@@ -113,12 +116,18 @@ class CheckinController extends GetxController {
     if (isCheckedIn) {
       return;
     }
+    position = await LocationService.getLatLong();
+
     final random = Random();
     final session = WorkSessionModel(
       id: random.nextInt(10000),
       workOrderId: task.id,
       checkInDateTime: DateTime.now(),
       checkOutDateTime: null,
+      checkInLatitude: position.latitude,
+      checkOutLatitude: null,
+      checkInLongitude: position.longitude,
+      checkOutLongitude: null,
       createdBy: null,
       updatedBy: null,
       deletedBy: null,
@@ -172,9 +181,11 @@ class CheckinController extends GetxController {
     if (index == -1) {
       return;
     }
-
+    position = await LocationService.getLatLong();
     workSessions[index] = currentSession.copyWith(
       checkOutDateTime: DateTime.now(),
+      checkOutLatitude: position.latitude,
+      checkOutLongitude: position.longitude,
     );
 
     workSessions.refresh();
@@ -190,4 +201,7 @@ class CheckinController extends GetxController {
   final Rxn<DateTime> checkInTime = Rxn<DateTime>();
   final Rxn<DateTime> checkOutTime = Rxn<DateTime>();
 
+  void getPositions() async{
+    position = await LocationService.getLatLong();
+  }
 }

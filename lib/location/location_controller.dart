@@ -46,7 +46,7 @@ class LocationController extends GetxController {
     }
 
     // Start background service
-    await LocationService.start();
+    //await LocationService.start();
 
     isTracking.value = true;
   }

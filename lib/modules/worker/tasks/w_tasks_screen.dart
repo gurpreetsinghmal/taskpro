@@ -1,14 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
 
 import 'package:taskpro/common/helpers/app_helper.dart';
 import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_screen.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
-
 import 'package:taskpro/modules/worker/tasks/w_tasks_controller.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
@@ -19,18 +19,38 @@ class WorkerTasksScreen extends StatefulWidget {
   State<WorkerTasksScreen> createState() => _WorkerTasksScreenState();
 }
 
-class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
+class _WorkerTasksScreenState extends State<WorkerTasksScreen>
+    with SingleTickerProviderStateMixin {
   final WorkerTasksController controller = Get.put(WorkerTasksController());
 
   final TextEditingController searchController = TextEditingController();
 
   String selectedFilter = "All";
 
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _animationController.forward();
+  }
+
   @override
   void dispose() {
+    _animationController.dispose();
     searchController.dispose();
     super.dispose();
   }
+
+  // ================================================================
+  // FILTERED TASKS
+  // ================================================================
 
   List<WorkOrderModel> get filteredTasks {
     final query = searchController.text.trim().toLowerCase();
@@ -52,6 +72,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
       if (selectedFilter == "All") {
         return true;
       }
+
       if (selectedFilter == task.statusName?.toString()) {
         return true;
       }
@@ -65,141 +86,261 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     }).toList();
   }
 
+  // ================================================================
+  // BUILD
+  // ================================================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF5F7FC),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAnimatedHeader(),
 
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
+            _buildSearch(),
 
-        titleSpacing: 20,
+            const SizedBox(height: 14),
 
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              "All Work Orders",
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-                letterSpacing: -0.5,
-              ),
-            ),
-            SizedBox(height: 3),
-            Text(
-              "Stay on top of your work orders",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
+            Obx(() => _buildFilters()),
+
+            const SizedBox(height: 14),
+
+            Expanded(
+              child: Obx(() {
+                if (controller.isApiLoading.value) {
+                  return const _AnimatedLoading();
+                }
+
+                final tasks = filteredTasks;
+
+                if (tasks.isEmpty) {
+                  return const _EmptyTasks();
+                }
+
+                return RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: () async {
+                    await controller.getTasksData();
+                  },
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 35),
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    itemCount: tasks.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      return _AnimatedTaskCard(
+                        index: index,
+                        animationController: _animationController,
+                        child: _TaskCard(
+                          task: tasks[index],
+                          controller: controller,
+                          onTap: () async {
+                            await _showTaskDetails(context, tasks[index]);
+
+                            controller.getTasksData();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }),
             ),
           ],
         ),
-
-        // actions: [
-        //   Container(
-        //     margin: const EdgeInsets.only(right: 18),
-        //     height: 44,
-        //     width: 44,
-        //     decoration: BoxDecoration(
-        //       color: Colors.white,
-        //       borderRadius: BorderRadius.circular(14),
-        //       boxShadow: [
-        //         BoxShadow(
-        //           color: Colors.black.withValues(alpha: .05),
-        //           blurRadius: 12,
-        //           offset: const Offset(0, 4),
-        //         ),
-        //       ],
-        //     ),
-        //     child: Stack(
-        //       alignment: Alignment.center,
-        //       children: [
-        //         const Icon(
-        //           Icons.notifications_none_rounded,
-        //           color: AppColors.primary,
-        //           size: 25,
-        //         ),
-        //         Positioned(
-        //           right: 9,
-        //           top: 8,
-        //           child: Container(
-        //             height: 8,
-        //             width: 8,
-        //             decoration: BoxDecoration(
-        //               color: Colors.redAccent,
-        //               shape: BoxShape.circle,
-        //               border: Border.all(color: Colors.white, width: 1.5),
-        //             ),
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ],
-      ),
-
-      body: Column(
-        children: [
-          const SizedBox(height: 15),
-
-          // Search
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _SearchBox(
-              controller: searchController,
-              onChanged: (_) {
-                setState(() {});
-              },
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          // Filters
-          Obx(() => _buildFilters()),
-          const SizedBox(height: 18),
-
-          Expanded(
-            child: Obx(() {
-              if (controller.isApiLoading.value) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final tasks = filteredTasks;
-
-              if (tasks.isEmpty) {
-                return _EmptyTasks();
-              }
-
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-                physics: const BouncingScrollPhysics(),
-                itemCount: tasks.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 13),
-                itemBuilder: (context, index) {
-                  return _TaskCard(
-                    task: tasks[index],
-                    controller: controller,
-                    onTap: () async {
-                      if (!context.mounted) return;
-                      await _showTaskDetails(context, tasks[index]);
-                      controller.getTasksData();
-                    },
-                  );
-                },
-              );
-            }),
-          ),
-        ],
       ),
     );
   }
+
+  // ================================================================
+  // HEADER
+  // ================================================================
+
+  Widget _buildAnimatedHeader() {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        final value = Curves.easeOutCubic.transform(_animationController.value);
+
+        return Transform.translate(
+          offset: Offset(0, -25 * (1 - value)),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
+        decoration: const BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+        ),
+        child: Stack(
+          children: [
+            // Decorative circles
+            Positioned(
+              right: -35,
+              top: -55,
+              child: Container(
+                height: 145,
+                width: 145,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: .055),
+                ),
+              ),
+            ),
+
+            Positioned(
+              right: 45,
+              bottom: -75,
+              child: Container(
+                height: 120,
+                width: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: .035),
+                ),
+              ),
+            ),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .14),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: .12),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.handyman_rounded,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "PSN TASK PRO",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            "All Work Orders",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    _HeaderCount(),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================================================================
+  // SEARCH
+  // ================================================================
+
+  Widget _buildSearch() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.primary.withValues(alpha: .07)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: .055),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: searchController,
+          onChanged: (_) {
+            setState(() {});
+          },
+          textInputAction: TextInputAction.search,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+          decoration: InputDecoration(
+            hintText: "Search work orders, services...",
+            hintStyle: TextStyle(
+              color: Colors.grey.shade400,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+            prefixIcon: Container(
+              margin: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: .08),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Icon(
+                Icons.search_rounded,
+                color: AppColors.primary,
+                size: 21,
+              ),
+            ),
+            suffixIcon: searchController.text.isNotEmpty
+                ? IconButton(
+                    onPressed: () {
+                      searchController.clear();
+                      setState(() {});
+                    },
+                    icon: const Icon(Icons.close_rounded, size: 19),
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 18),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ================================================================
+  // FILTERS
+  // ================================================================
 
   Widget _buildFilters() {
     final filters = [
@@ -210,46 +351,79 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     ];
 
     return SizedBox(
-      height: 42,
+      height: 46,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: filters.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (_, index) {
           final filter = filters[index];
           final selected = selectedFilter == filter;
+          final color = _getFilterColor(filter);
 
           return GestureDetector(
             onTap: () {
+              HapticFeedback.selectionClick();
+
               setState(() {
                 selectedFilter = filter;
               });
             },
-            child: AnimatedContainer(
+            child: AnimatedPhysicalModel(
               duration: const Duration(milliseconds: 220),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: selected ? AppColors.primary : Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: selected
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha:.22),
-                          blurRadius: 12,
-                          offset: const Offset(0, 5),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Text(
-                filter,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: selected ? Colors.white : AppColors.primary,
+              curve: Curves.easeOutCubic,
+              elevation: selected ? 4 : 0,
+              color: selected ? color : Colors.white,
+              shadowColor: selected
+                  ? color.withValues(alpha: .25)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.rectangle,
+              clipBehavior: Clip.none,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  color: selected ? color : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: selected
+                        ? color
+                        : Colors.grey.withValues(alpha: .12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(scale: animation, child: child);
+                      },
+                      child: Icon(
+                        _getFilterIcon(filter),
+                        key: ValueKey("$filter-$selected"),
+                        size: 15,
+                        color: selected ? Colors.white : color,
+                      ),
+                    ),
+
+                    const SizedBox(width: 6),
+
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: selected ? Colors.white : color,
+                      ),
+                      child: Text(filter),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -259,190 +433,111 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     );
   }
 
-  // Future<void> _showTaskDetails(
-  //   BuildContext context,
-  //   WorkOrderModel task,
-  // ) async
-  // {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     useSafeArea: true,
-  //     backgroundColor: Colors.transparent,
-  //     barrierColor: Colors.black.withValues(alpha: .45),
-  //     builder: (context) {
-  //       return DraggableScrollableSheet(
-  //         expand: false,
-  //         initialChildSize: .90,
-  //         minChildSize: .60,
-  //         maxChildSize: .96,
-  //         snap: true,
-  //         snapSizes: const [.90, .96],
-  //         builder: (_, scrollController) {
-  //           return Container(
-  //             decoration: BoxDecoration(
-  //               color: const Color(0xFFF8F9FC),
-  //               borderRadius: const BorderRadius.vertical(
-  //                 top: Radius.circular(32),
-  //               ),
-  //               boxShadow: [
-  //                 BoxShadow(
-  //                   color: Colors.black.withValues(alpha: .12),
-  //                   blurRadius: 30,
-  //                   offset: const Offset(0, -8),
-  //                 ),
-  //               ],
-  //             ),
-  //             child: Column(
-  //               children: [
-  //                 // ─────────────────────────────────────────────
-  //                 // Top Handle
-  //                 // ─────────────────────────────────────────────
-  //                 Padding(
-  //                   padding: const EdgeInsets.only(top: 12),
-  //                   child: Container(
-  //                     width: 44,
-  //                     height: 5,
-  //                     decoration: BoxDecoration(
-  //                       color: Colors.grey.shade300,
-  //                       borderRadius: BorderRadius.circular(20),
-  //                     ),
-  //                   ),
-  //                 ),
-  //
-  //                 // ─────────────────────────────────────────────
-  //                 // Scrollable Content
-  //                 // ─────────────────────────────────────────────
-  //                 Expanded(
-  //                   child: ListView(
-  //                     controller: scrollController,
-  //                     physics: const BouncingScrollPhysics(),
-  //                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-  //                     children: [
-  //                       // Header
-  //                       _buildDetailHeader(task),
-  //
-  //                       const SizedBox(height: 20),
-  //
-  //                       // Status & Priority
-  //                       _buildStatusPriority(task),
-  //
-  //                       const SizedBox(height: 28),
-  //
-  //                       // ───────────────────────────────────────
-  //                       // Work Information
-  //                       // ───────────────────────────────────────
-  //                       _sectionTitle(
-  //                         icon: Icons.assignment_outlined,
-  //                         title: "Work Information",
-  //                       ),
-  //
-  //                       const SizedBox(height: 10),
-  //
-  //                       _InfoTile(
-  //                         icon: Icons.category_outlined,
-  //                         title: "Service Type",
-  //                         value: task.serviceTypeName,
-  //                       ),
-  //
-  //                       const SizedBox(height: 10),
-  //
-  //                       _InfoTile(
-  //                         icon: Icons.engineering_outlined,
-  //                         title: "Assigned Worker",
-  //                         value:
-  //                             "${task.technicianFirstName} ${task.technicianLastName}",
-  //                       ),
-  //
-  //                       const SizedBox(height: 10),
-  //
-  //                       _InfoTile(
-  //                         icon: Icons.manage_accounts_outlined,
-  //                         title: "Manager",
-  //                         value:
-  //                             "${task.managerFirstName} ${task.managerLastName}",
-  //                       ),
-  //
-  //                       const SizedBox(height: 10),
-  //
-  //                       _InfoTile(
-  //                         icon: Icons.description_outlined,
-  //                         title: "Scope of Work",
-  //                         value: task.scopeOfWork?.trim().isNotEmpty == true
-  //                             ? task.scopeOfWork!
-  //                             : "-",
-  //                       ),
-  //
-  //                       const SizedBox(height: 28),
-  //
-  //                       // ───────────────────────────────────────
-  //                       // Work Estimation
-  //                       // ───────────────────────────────────────
-  //                       _sectionTitle(
-  //                         icon: Icons.analytics_outlined,
-  //                         title: "Work Estimation",
-  //                       ),
-  //
-  //                       const SizedBox(height: 14),
-  //
-  //                       _buildScheduleGrid(task),
-  //
-  //                       const SizedBox(height: 28),
-  //
-  //                       // ───────────────────────────────────────
-  //                       // Actions
-  //                       // ───────────────────────────────────────
-  //                       _buildActions(task),
-  //
-  //                       const SizedBox(height: 10),
-  //                     ],
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
+  Color _getFilterColor(String filter) {
+    if (filter == "All") {
+      return AppColors.primary;
+    }
+
+    final lower = filter.toLowerCase();
+
+    if (lower.contains("new") || lower.contains("assign")) {
+      return const Color(0xFF4F7CFF);
+    }
+
+    if (lower.contains("progress")) {
+      return const Color(0xFFF59E0B);
+    }
+
+    if (lower.contains("hold")) {
+      return const Color(0xFFEAB308);
+    }
+
+    if (lower.contains("complete")) {
+      return const Color(0xFF10B981);
+    }
+
+    if (lower.contains("cancel")) {
+      return const Color(0xFFEF4444);
+    }
+
+    if (lower.contains("submit")) {
+      return const Color(0xFF8B5CF6);
+    }
+
+    return AppColors.primary;
+  }
+
+  IconData _getFilterIcon(String filter) {
+    if (filter == "All") {
+      return Icons.grid_view_rounded;
+    }
+
+    final lower = filter.toLowerCase();
+
+    if (lower.contains("new") || lower.contains("assign")) {
+      return Icons.assignment_outlined;
+    }
+
+    if (lower.contains("progress")) {
+      return Icons.play_circle_outline_rounded;
+    }
+
+    if (lower.contains("hold")) {
+      return Icons.pause_circle_outline_rounded;
+    }
+
+    if (lower.contains("complete")) {
+      return Icons.check_circle_outline_rounded;
+    }
+
+    if (lower.contains("cancel")) {
+      return Icons.cancel_outlined;
+    }
+
+    if (lower.contains("submit")) {
+      return Icons.send_outlined;
+    }
+
+    return Icons.circle_outlined;
+  }
+
+  // ================================================================
+  // DETAILS
+  // ================================================================
 
   Future<void> _showTaskDetails(
     BuildContext context,
     WorkOrderModel task,
   ) async {
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha:.50),
+      barrierColor: Colors.black.withValues(alpha: .55),
       builder: (context) {
         return DraggableScrollableSheet(
           expand: false,
-          initialChildSize: .92,
-          minChildSize: .60,
+          initialChildSize: .91,
+          minChildSize: .55,
           maxChildSize: .97,
           snap: true,
-          snapSizes: const [.92, .97],
+          snapSizes: const [.91, .97],
           builder: (_, scrollController) {
             return Container(
               decoration: const BoxDecoration(
-                color: Color(0xFFF6F7FB),
+                color: Color(0xFFF5F7FC),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
               ),
               child: Column(
                 children: [
-                  // ─────────────────────────────────────────
-                  // Drag Handle
-                  // ─────────────────────────────────────────
                   Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.only(top: 10),
                     child: Container(
                       width: 42,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD5D8E0),
+                        color: Color(0xFFD2D6DF),
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
@@ -452,23 +547,16 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                     child: ListView(
                       controller: scrollController,
                       physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
+                      padding: const EdgeInsets.fromLTRB(16, 17, 16, 30),
                       children: [
-                        // ─────────────────────────────────────
-                        // Header
-                        // ─────────────────────────────────────
                         _buildDetailHeader(task),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 15),
 
-                        // Status / Priority
                         _buildStatusPriority(task),
 
-                        const SizedBox(height: 26),
+                        const SizedBox(height: 22),
 
-                        // ═════════════════════════════════════
-                        // WORK INFORMATION
-                        // ═════════════════════════════════════
                         _modernSection(
                           icon: Icons.work_outline_rounded,
                           title: "Work Order Information",
@@ -500,11 +588,8 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
 
-                        // ═════════════════════════════════════
-                        // LOCATION INFORMATION
-                        // ═════════════════════════════════════
                         _modernSection(
                           icon: Icons.location_on_outlined,
                           title: "Location Information",
@@ -513,19 +598,24 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                             _modernInfoTile(
                               icon: Icons.location_city_outlined,
                               title: "Service Location",
-                              value:
-                                  task.address!.fullAddress,
+                              value: task.address?.fullAddress ?? "-",
+                              multiline: true,
                             ),
 
-                            _modernLocationButton(onTap: ()=>controller.loadMap(task.address!.googleMapLink)),
+                            _modernLocationButton(
+                              onTap: () {
+                                if (task.address?.googleMapLink != null) {
+                                  controller.loadMap(
+                                    task.address!.googleMapLink,
+                                  );
+                                }
+                              },
+                            ),
                           ],
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
 
-                        // ═════════════════════════════════════
-                        // SCHEDULE INFORMATION
-                        // ═════════════════════════════════════
                         _modernSection(
                           icon: Icons.calendar_month_outlined,
                           title: "Schedule Information",
@@ -533,28 +623,25 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                           children: [_buildScheduleGrid(task)],
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
 
-                        // ═════════════════════════════════════
-                        // TRAVEL RATES
-                        // ═════════════════════════════════════
                         _modernSection(
                           icon: Icons.directions_car_outlined,
-                          title: "Travel Rates",
+                          title: "Pricing Information",
                           color: AppColors.chartCyan,
                           children: [
                             Row(
                               children: [
                                 Expanded(
-                                  child: _modernInfoTile(
+                                  child: _InfoTile(
                                     icon: Icons.route_outlined,
                                     title: "Rate Type",
                                     value: _rateType(task.rateType),
                                   ),
                                 ),
-                                SizedBox(width: 7),
+                                const SizedBox(width: 8),
                                 Expanded(
-                                  child: _modernInfoTile(
+                                  child: _InfoTile(
                                     icon: Icons.attach_money_rounded,
                                     title: "Rate Value",
                                     value: task.rateValue,
@@ -562,44 +649,47 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                                 ),
                               ],
                             ),
+
                             Row(
                               children: [
                                 Expanded(
                                   child: _InfoTile(
                                     icon: Icons.timer_outlined,
-                                    title: "Approx. Hours",
+                                    title: "Estimated Hours",
                                     value: task.approximateHoursToComplete,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: _InfoTile(
-                                    icon: Icons.hourglass_bottom,
-                                    title: "Max Hours",
+                                    icon: Icons.hourglass_bottom_rounded,
+                                    title: "Maximum Hours",
                                     value: task.maxHours,
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 7),
+
                             _InfoTile(
-                              icon: Icons.attach_money_rounded,
+                              icon: Icons.directions_car_outlined,
+                              title: "Travel Rates",
+                              value: "NA",
+                            ),
+
+                            _InfoTile(
+                              icon: Icons.payments_rounded,
                               title: "Maximum Payout",
-                              value:
-                                  "\$ ${((double.tryParse(task.maxHours) ?? 0.0) * (double.tryParse(task.rateValue) ?? 0.0)).toStringAsFixed(2)}",
+                              value: task.rateType == 2
+                                  ? task.rateValue
+                                  : "\$ ${((double.tryParse(task.maxHours) ?? 0) * (double.tryParse(task.rateValue) ?? 0)).toStringAsFixed(2)}",
                               customColor: AppColors.income,
                             ),
                           ],
                         ),
 
-                        const SizedBox(height: 26),
+                        const SizedBox(height: 22),
 
-                        // ─────────────────────────────────────
-                        // Actions
-                        // ─────────────────────────────────────
                         _buildActions(task),
-
-                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
@@ -612,6 +702,10 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     );
   }
 
+  // ================================================================
+  // DETAIL HEADER
+  // ================================================================
+
   Widget _buildDetailHeader(WorkOrderModel task) {
     final statusName = Common.getStatusColorName(
       task.statusId,
@@ -620,72 +714,91 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
 
     final statusColor = Common.getStatusColor(statusName);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          height: 62,
-          width: 62,
-          decoration: BoxDecoration(
-            color: statusColor.withValues(alpha: .10),
-            borderRadius: BorderRadius.circular(19),
-          ),
-          child: Icon(Icons.assignment_rounded, color: statusColor, size: 32),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [statusColor, statusColor.withValues(alpha: .82)],
         ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: .20),
+            blurRadius: 18,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 58,
+            width: 58,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: Icon(Icons.assignment_rounded, color: statusColor, size: 30),
+          ),
 
-        const SizedBox(width: 15),
+          const SizedBox(width: 13),
 
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                task.workOrderTitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  height: 1.15,
-                  letterSpacing: -.4,
-                ),
-              ),
-
-              const SizedBox(height: 7),
-
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 11,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: .08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  "WO No • ${task.workOrderNo}",
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.workOrderTitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 7),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "WO • ${task.workOrderNo}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: .3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
+
+  // ================================================================
+  // STATUS + PRIORITY
+  // ================================================================
 
   Widget _buildStatusPriority(WorkOrderModel task) {
     final statusName = Common.getStatusColorName(
       task.statusId,
       controller.workOrderStatusList,
     );
-
 
     final statusText = Common.getStatusText(
       task.statusId,
@@ -704,9 +817,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
             color: statusColor,
           ),
         ),
-
-        const SizedBox(width: 12),
-
+        const SizedBox(width: 10),
         Expanded(
           child: _LargeBadge(
             icon: Icons.flag_rounded,
@@ -719,6 +830,10 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     );
   }
 
+  // ================================================================
+  // SCHEDULE
+  // ================================================================
+
   Widget _buildScheduleGrid(WorkOrderModel task) {
     return Column(
       children: [
@@ -728,7 +843,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
           value: Common.getformatDate(task.scheduledEtaFrom),
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         _InfoTile(
           icon: Icons.event_available_rounded,
@@ -736,7 +851,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
           value: Common.getformatDate(task.scheduledEtaTo),
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         _InfoTile(
           icon: Icons.play_circle_outline_rounded,
@@ -744,10 +859,13 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
           value: Common.getformatDate(task.hardStartTime),
           customColor: AppColors.error,
         ),
-        const SizedBox(height: 10),
       ],
     );
   }
+
+  // ================================================================
+  // RATE TYPE
+  // ================================================================
 
   String _rateType(dynamic rateType) {
     if (rateType == null) {
@@ -757,43 +875,53 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     switch (rateType.toString()) {
       case "1":
         return "Hourly Rate";
-
       case "2":
         return "Flat Rate";
-
       default:
         return "N/A";
     }
   }
+
+  // ================================================================
+  // ACTIONS
+  // ================================================================
 
   Widget _buildActions(WorkOrderModel task) {
     if (task.statusId == 13) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle(icon: Icons.flash_on_rounded, title: "Actions"),
+          _sectionTitle(
+            icon: Icons.flash_on_rounded,
+            title: "What would you like to do?",
+          ),
 
-          const SizedBox(height: 15),
+          const SizedBox(height: 13),
 
           Row(
             children: [
               Expanded(
-                child: findButton(
+                child: _AnimatedActionButton(
                   title: "Accept",
+                  icon: Icons.check_rounded,
+                  color: AppColors.success,
                   onPressed: () async {
+                    HapticFeedback.mediumImpact();
 
-
-                    bool? confirmed = await showConfirmationDialog(
+                    final result = await showConfirmationDialog(
                       context: context,
                       title: "Accept Work Order?",
-                      message: "You are about to accept this work order. It will be added to your Active Work Orders.",
+                      message:
+                          "You are about to accept this work order. It will be added to your Active Work Orders.",
                       confirmText: "Accept",
-                      isDestructive: false, // Triggers Green styling & checkmark icon
+                      isDestructive: false,
                       icon: Icons.task_alt_rounded,
+                      requireRemarks: false,
                     );
 
-                    if (confirmed == true) {
+                    if (result?.confirmed == true){
                       Get.back();
+
                       await controller.acceptWorkOrderApi(
                         task.id,
                         task.workOrderNo,
@@ -801,45 +929,43 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
 
                       Get.offAll(() => const WorkerDashboardScreen());
                     }
-
-
                   },
-                  backgroundColor: AppColors.success,
-                  icon: const Icon(
-                    Icons.thumb_up,
-                    color: Colors.white,
-                  ),
                 ),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
 
               Expanded(
-                child: findButton(
+                child: _AnimatedActionButton(
                   title: "Reject",
-                  onPressed: () async{
+                  icon: Icons.close_rounded,
+                  color: AppColors.error,
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
 
-                    bool? confirmed = await showConfirmationDialog(
+                    final result  = await showConfirmationDialog(
                       context: context,
                       title: "Reject Work Order?",
-                      message: "Are you sure you want to reject this Work Order? This action cannot be undone.",
+                      message:
+                          "Are you sure you want to reject this Work Order? This action cannot be undone.",
                       confirmText: "Reject",
-                      isDestructive: true, // Triggers Red styling & cross icon isDestructive: true, // Triggers Green styling & checkmark icon
+                      isDestructive: true,
                       icon: Icons.block_rounded,
+                      requireRemarks: true
                     );
 
-                    if (confirmed == true) {
+                    if (result?.confirmed == true){
                       Get.back();
+
                       await controller.rejectWorkOrderApi(
                         task.id,
                         task.workOrderNo,
+                        result?.remarks ?? ""
                       );
 
                       Get.offAll(() => const WorkerDashboardScreen());
                     }
                   },
-                  backgroundColor: AppColors.error,
-                  icon: const Icon(Icons.thumb_down, color: Colors.white),
                 ),
               ),
             ],
@@ -847,47 +973,124 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
         ],
       );
     }
-    if (task.statusId == 59)
-      return findButton(
-      title: "Proceed",
-      backgroundColor: AppColors.primary,
-      onPressed: () {
-        Get.back();
 
-        Get.to(() => CheckInScreen(task: task));
-      },
-      icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
-    );
+    if (task.statusId == 59) {
+      return _AnimatedActionButton(
+        title: "Proceed to Check In",
+        icon: Icons.arrow_forward_rounded,
+        color: AppColors.primary,
+        onPressed: () {
+          HapticFeedback.mediumImpact();
 
-    return Container();
+          Get.back();
+
+          Get.to(() => CheckInScreen(task: task));
+        },
+      );
+    }
+
+    return const SizedBox.shrink();
   }
+
+  // ================================================================
+  // SECTION TITLE
+  // ================================================================
 
   Widget _sectionTitle({required IconData icon, required String title}) {
     return Row(
       children: [
         Container(
-          height: 34,
-          width: 34,
+          height: 35,
+          width: 35,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: .10),
-            borderRadius: BorderRadius.circular(10),
+            color: AppColors.primary.withValues(alpha: .09),
+            borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(icon, size: 19, color: AppColors.primary),
+          child: Icon(icon, size: 18, color: AppColors.primary),
         ),
 
         const SizedBox(width: 10),
 
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
       ],
     );
   }
+
+  // ================================================================
+  // MODERN SECTION
+  // ================================================================
+
+  Widget _modernSection({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.black.withValues(alpha: .045)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .035),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: .10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 13),
+
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  // ================================================================
+  // MODERN INFO
+  // ================================================================
 
   Widget _modernInfoTile({
     required IconData icon,
@@ -896,26 +1099,26 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     bool multiline = false,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(13),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FC),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFFF7F8FC),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            height: 35,
+            width: 35,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 19, color: const Color(0xFF646A7A)),
+            child: Icon(icon, size: 18, color: const Color(0xFF687083)),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           Expanded(
             child: Column(
@@ -924,9 +1127,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF858A99),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF8B91A0),
                   ),
                 ),
 
@@ -937,9 +1140,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                   maxLines: multiline ? 5 : 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 12.5,
                     height: 1.35,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF242733),
                   ),
                 ),
@@ -951,129 +1154,75 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
     );
   }
 
+  // ================================================================
+  // LOCATION
+  // ================================================================
+
   Widget _modernLocationButton({required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF10A37F).withValues(alpha: .08),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.map_outlined, color: Color(0xFF10A37F), size: 19),
-
-            SizedBox(width: 9),
-
-            Expanded(
-              child: Text(
-                "View location on map",
-                style: TextStyle(
-                  color: Color(0xFF10A37F),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Color(0xFF10A37F),
-              size: 14,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-  Widget _modernSection({
-    required IconData icon,
-    required String title,
-    required Color color,
-    required List<Widget> children,
-  }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE8EAF0), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.035),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(15),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10A37F).withValues(alpha: .08),
+            borderRadius: BorderRadius.circular(15),
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section Header
-          Row(
+          child: const Row(
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Icon(icon, color: color, size: 21),
-              ),
+              Icon(Icons.map_outlined, color: Color(0xFF10A37F), size: 19),
 
-              const SizedBox(width: 12),
+              SizedBox(width: 9),
 
               Expanded(
                 child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF181A22),
-                    letterSpacing: -0.2,
+                  "Open location on map",
+                  style: TextStyle(
+                    color: Color(0xFF10A37F),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
+
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Color(0xFF10A37F),
+                size: 13,
+              ),
             ],
           ),
-
-          const SizedBox(height: 16),
-
-          // Section Content
-          ...children,
-        ],
+        ),
       ),
     );
   }
+
+  // ================================================================
+  // MANAGER
+  // ================================================================
 
   Widget _psnManagerDetails(WorkOrderModel task) {
     final managerName = "${task.managerFirstName} ${task.managerLastName}"
         .trim();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FC),
+        color: const Color(0xFFF7F8FC),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon
           Container(
-            width: 38,
             height: 38,
+            width: 38,
             decoration: BoxDecoration(
               color: const Color(0xFF5B5FEF).withValues(alpha: .10),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(11),
             ),
             child: const Icon(
               Icons.manage_accounts_outlined,
@@ -1082,11 +1231,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
             ),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
-          // Details
           Expanded(
             child: InkWell(
+              borderRadius: BorderRadius.circular(10),
               onTap: () {
                 final contact = [
                   if (task.managerEmail?.isNotEmpty == true) task.managerEmail!,
@@ -1099,11 +1248,12 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
 
                   Get.snackbar(
                     "Copied",
-                    "Manager contact copied to clipboard",
+                    "Manager contact copied",
                     snackPosition: SnackPosition.BOTTOM,
                     backgroundColor: AppColors.chartPurple,
                     colorText: Colors.white,
-                    borderRadius: 10,
+                    borderRadius: 12,
+                    margin: const EdgeInsets.all(12),
                     duration: const Duration(seconds: 2),
                   );
                 }
@@ -1112,41 +1262,41 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "PSN Manager Details",
+                    "PSN MANAGER",
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: .7,
                       color: Color(0xFF858A99),
                     ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
 
                   Text(
                     managerName.isNotEmpty ? managerName : "-",
                     style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
                       color: Color(0xFF242733),
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 7),
 
-                  // Email
                   Row(
                     children: [
                       const Icon(
                         Icons.email_outlined,
-                        size: 15,
+                        size: 14,
                         color: Color(0xFF858A99),
                       ),
-                      const SizedBox(width: 7),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           task.managerEmail ?? "-",
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 11.5,
                             color: Color(0xFF646A7A),
                             fontWeight: FontWeight.w500,
                           ),
@@ -1155,22 +1305,21 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
 
-                  // Phone
                   Row(
                     children: [
                       const Icon(
                         Icons.phone_outlined,
-                        size: 15,
+                        size: 14,
                         color: Color(0xFF858A99),
                       ),
-                      const SizedBox(width: 7),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           task.managerPhoneNumber ?? "-",
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 11.5,
                             color: Color(0xFF646A7A),
                             fontWeight: FontWeight.w500,
                           ),
@@ -1186,65 +1335,54 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen> {
       ),
     );
   }
+}
 
+// ====================================================================
+// ANIMATED TASK CARD
+// ====================================================================
 
-  
- }
+class _AnimatedTaskCard extends StatelessWidget {
+  final int index;
+  final AnimationController animationController;
+  final Widget child;
 
-
-
-class _SearchBox extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  const _SearchBox({required this.controller, required this.onChanged});
+  const _AnimatedTaskCard({
+    required this.index,
+    required this.animationController,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 54,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(17),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .045),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
+    final start = (index * .08).clamp(0.0, .65);
+
+    final animation = CurvedAnimation(
+      parent: animationController,
+      curve: Interval(
+        start,
+        math.min(start + .4, 1.0),
+        curve: Curves.easeOutCubic,
       ),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        textInputAction: TextInputAction.search,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        decoration: InputDecoration(
-          hintText: "Search work orders...",
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          prefixIcon: const Icon(
-            Icons.search_rounded,
-            color: AppColors.primary,
-            size: 25,
-          ),
-          suffixIcon: controller.text.isNotEmpty
-              ? IconButton(
-                  onPressed: () {
-                    controller.clear();
-                    onChanged("");
-                  },
-                  icon: const Icon(Icons.close_rounded, size: 20),
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-      ),
+    );
+
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (_, child) {
+        return Transform.translate(
+          offset: Offset(0, 25 * (1 - animation.value)),
+          child: Opacity(opacity: animation.value, child: child),
+        );
+      },
+      child: child,
     );
   }
 }
 
-class _TaskCard extends StatelessWidget {
+// ====================================================================
+// TASK CARD
+// ====================================================================
+
+class _TaskCard extends StatefulWidget {
   final WorkOrderModel task;
   final WorkerTasksController controller;
   final VoidCallback onTap;
@@ -1256,140 +1394,261 @@ class _TaskCard extends StatelessWidget {
   });
 
   @override
+  State<_TaskCard> createState() => _TaskCardState();
+}
+
+class _TaskCardState extends State<_TaskCard> {
+  bool pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final statusName = Common.getStatusColorName(
-      task.statusId,
-      controller.workOrderStatusList,
+      widget.task.statusId,
+      widget.controller.workOrderStatusList,
     );
 
     final statusText = Common.getStatusText(
-      task.statusId,
-      controller.workOrderStatusList,
+      widget.task.statusId,
+      widget.controller.workOrderStatusList,
     );
 
     final statusColor = Common.getStatusColor(statusName);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(21),
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => pressed = true);
+      },
+      onTapCancel: () {
+        setState(() => pressed = false);
+      },
+      onTapUp: (_) {
+        setState(() => pressed = false);
+        HapticFeedback.selectionClick();
+        widget.onTap();
+      },
+      child: AnimatedScale(
+        scale: pressed ? .975 : 1,
+        duration: const Duration(milliseconds: 120),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(21),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: statusColor.withValues(alpha: .08)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: .055),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
+                color: statusColor.withValues(alpha: .07),
+                blurRadius: 20,
+                offset: const Offset(0, 7),
               ),
             ],
           ),
-          child: IntrinsicHeight(
-            child: Row(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Column(
               children: [
-                // Status line
+                // Top status strip
                 Container(
-                  width: 5,
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(21),
-                      bottomLeft: Radius.circular(21),
-                    ),
-                  ),
+                  height: 4,
+                  width: double.infinity,
+                  color: statusColor,
                 ),
 
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Icon
+                          Container(
+                            height: 52,
+                            width: 52,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  statusColor.withValues(alpha: .16),
+                                  statusColor.withValues(alpha: .07),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(
+                              Icons.handyman_rounded,
+                              color: statusColor,
+                              size: 26,
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 5),
+
+                                Text(
+                                  widget.task.workOrderTitle,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                    height: 1.2,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 5),
+
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.miscellaneous_services_outlined,
+                                      size: 13,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        "${widget.task.serviceTypeName} • "
+                                        "${widget.task.managerFirstName}",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(width: 5),
+
+                          Container(
+                            height: 32,
+                            width: 32,
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: .07),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 12,
+                              color: statusColor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 13),
+
+                      // Technician row
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF7F8FC),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Row(
                           children: [
                             Container(
-                              height: 52,
-                              width: 52,
+                              height: 30,
+                              width: 30,
                               decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: .10),
-                                borderRadius: BorderRadius.circular(16),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(9),
                               ),
                               child: Icon(
-                                Icons.assignment_rounded,
+                                Icons.engineering_outlined,
+                                size: 17,
                                 color: statusColor,
-                                size: 27,
                               ),
                             ),
 
-                            const SizedBox(width: 13),
+                            const SizedBox(width: 8),
 
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    task.workOrderTitle,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                  const Text(
+                                    "TECHNICIAN",
+                                    style: TextStyle(
+                                      fontSize: 8,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary,
-                                      height: 1.15,
+                                      letterSpacing: .6,
+                                      color: AppColors.textSecondary,
                                     ),
                                   ),
-
-                                  const SizedBox(height: 6),
-
+                                  const SizedBox(height: 2),
                                   Text(
-                                    "${task.serviceTypeName} • "
-                                    "${task.managerFirstName}",
+                                    [
+                                          widget.task.technicianFirstName,
+                                          widget.task.technicianMiddleName,
+                                          widget.task.technicianLastName,
+                                        ]
+                                        .where(
+                                          (name) =>
+                                              name != null &&
+                                              name.trim().isNotEmpty,
+                                        )
+                                        .join(" "),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.textSecondary,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
 
-                            const SizedBox(width: 8),
-
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              color: Colors.grey.shade400,
-                              size: 25,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 17),
-
-                        Row(
-                          children: [
                             _SmallBadge(
                               icon: Icons.circle,
                               text: statusText,
                               color: statusColor,
                             ),
-
-                            const Spacer(),
-
-                            _SmallBadge(
-                              icon: Icons.circle,
-                              text: 'Wo No: ${task.workOrderNo}',
-                              color: AppColors.primary,
+                            SizedBox(width: 5),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: .07),
+                                    borderRadius: BorderRadius.circular(7),
+                                  ),
+                                  child: Text(
+                                    "WO ${widget.task.workOrderNo}",
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: statusColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -1400,6 +1659,10 @@ class _TaskCard extends StatelessWidget {
     );
   }
 }
+
+// ====================================================================
+// SMALL BADGE
+// ====================================================================
 
 class _SmallBadge extends StatelessWidget {
   final IconData icon;
@@ -1415,20 +1678,20 @@ class _SmallBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: .09),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 9, color: color),
-          const SizedBox(width: 6),
+          Icon(icon, size: 7, color: color),
+          const SizedBox(width: 5),
           Text(
             text,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 8.5,
               fontWeight: FontWeight.w800,
               color: color,
             ),
@@ -1438,6 +1701,10 @@ class _SmallBadge extends StatelessWidget {
     );
   }
 }
+
+// ====================================================================
+// LARGE BADGE
+// ====================================================================
 
 class _LargeBadge extends StatelessWidget {
   final IconData icon;
@@ -1455,25 +1722,25 @@ class _LargeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
         color: color.withValues(alpha: .07),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(17),
         border: Border.all(color: color.withValues(alpha: .10)),
       ),
       child: Row(
         children: [
           Container(
-            height: 40,
-            width: 40,
+            height: 38,
+            width: 38,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: .12),
+              color: color.withValues(alpha: .11),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 19),
+            child: Icon(icon, color: color, size: 18),
           ),
 
-          const SizedBox(width: 10),
+          const SizedBox(width: 9),
 
           Expanded(
             child: Column(
@@ -1481,11 +1748,11 @@ class _LargeBadge extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade600,
-                    letterSpacing: .5,
+                  style: const TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: .6,
+                    color: Color(0xFF858A99),
                   ),
                 ),
 
@@ -1496,7 +1763,7 @@ class _LargeBadge extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w800,
                     color: color,
                   ),
@@ -1510,7 +1777,9 @@ class _LargeBadge extends StatelessWidget {
   }
 }
 
-
+// ====================================================================
+// INFO TILE
+// ====================================================================
 
 class _InfoTile extends StatelessWidget {
   final IconData icon;
@@ -1527,31 +1796,32 @@ class _InfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = customColor ?? AppColors.textSecondary;
+
     return Container(
       padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: customColor?.withValues(alpha: 0.2) ?? const Color(0xffF7F9FC),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xffE9EEF5)),
+        color: customColor?.withValues(alpha: .08) ?? const Color(0xFFF7F8FC),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: customColor?.withValues(alpha: .10) ?? const Color(0xFFE9EDF4),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 39,
-            width: 39,
+            height: 37,
+            width: 37,
             decoration: BoxDecoration(
-              color: AppColors.textWhite,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(
-              icon,
-              color: customColor ?? AppColors.textSecondary,
-              size: 19,
-            ),
+            child: Icon(icon, color: color, size: 18),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           Expanded(
             child: Column(
@@ -1560,21 +1830,23 @@ class _InfoTile extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 9,
                     fontWeight: FontWeight.w600,
-                    color: customColor??Colors.grey.shade600,
+                    color: color,
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
 
                 Text(
                   value.isEmpty ? "-" : value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
                     color: customColor ?? AppColors.textPrimary,
-                    height: 1.3,
+                    height: 1.25,
                   ),
                 ),
               ],
@@ -1586,55 +1858,287 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
+// ====================================================================
+// ACTION BUTTON
+// ====================================================================
 
-class _EmptyTasks extends StatelessWidget {
-  const _EmptyTasks();
+class _AnimatedActionButton extends StatefulWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onPressed;
+
+  const _AnimatedActionButton({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  State<_AnimatedActionButton> createState() => _AnimatedActionButtonState();
+}
+
+class _AnimatedActionButtonState extends State<_AnimatedActionButton> {
+  bool pressed = false;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 100,
-              width: 100,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: .08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.assignment_turned_in_outlined,
-                size: 48,
-                color: AppColors.primary,
-              ),
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => pressed = true);
+      },
+      onTapCancel: () {
+        setState(() => pressed = false);
+      },
+      onTapUp: (_) {
+        setState(() => pressed = false);
+        widget.onPressed();
+      },
+      child: AnimatedScale(
+        scale: pressed ? .96 : 1,
+        duration: const Duration(milliseconds: 120),
+        child: Container(
+          height: 53,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [widget.color, widget.color.withValues(alpha: .82)],
             ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              "No Work Order Found",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+            borderRadius: BorderRadius.circular(17),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: .22),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
               ),
-            ),
-
-            const SizedBox(height: 7),
-
-            Text(
-              "You're all caught up!",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-            ),
-          ],
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(widget.icon, color: Colors.white, size: 19),
+              const SizedBox(width: 8),
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+// ====================================================================
+// HEADER COUNT
+// ====================================================================
 
+class _HeaderCount extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<WorkerTasksController>(
+      builder: (controller) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .12),
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(color: Colors.white.withValues(alpha: .10)),
+          ),
+          child: Column(
+            children: [
+              Obx(
+                () => Text(
+                  controller.workOrderList.length.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const Text(
+                "JOBS",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 7,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: .7,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ====================================================================
+// EMPTY STATE
+// ====================================================================
+
+class _EmptyTasks extends StatefulWidget {
+  const _EmptyTasks();
+
+  @override
+  State<_EmptyTasks> createState() => _EmptyTasksState();
+}
+
+class _EmptyTasksState extends State<_EmptyTasks>
+    with SingleTickerProviderStateMixin {
+  late AnimationController animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    animation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    animation.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (_, child) {
+          return Transform.translate(
+            offset: Offset(0, math.sin(animation.value * math.pi) * 5),
+            child: child,
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 105,
+                width: 105,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withValues(alpha: .13),
+                      AppColors.primary.withValues(alpha: .04),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.assignment_turned_in_outlined,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "You're all caught up!",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 7),
+
+              Text(
+                "No work orders match your current filter.\n"
+                "New jobs will appear here when assigned.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.45,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ====================================================================
+// LOADING
+// ====================================================================
+
+class _AnimatedLoading extends StatefulWidget {
+  const _AnimatedLoading();
+
+  @override
+  State<_AnimatedLoading> createState() => _AnimatedLoadingState();
+}
+
+class _AnimatedLoadingState extends State<_AnimatedLoading>
+    with SingleTickerProviderStateMixin {
+  late AnimationController animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    animation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    animation.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (_, __) {
+          return Transform.rotate(
+            angle: animation.value * math.pi * 2,
+            child: Container(
+              height: 52,
+              width: 52,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: .10),
+                    blurRadius: 15,
+                  ),
+                ],
+              ),
+              child: const CircularProgressIndicator(
+                strokeWidth: 3,
+                color: AppColors.primary,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

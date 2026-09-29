@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpro/location/location_screen.dart';
@@ -33,13 +35,16 @@ class SplashController extends GetxController {
       Get.offAll(()=>OnboardingScreen());
       return;
     }
+
     //Check Location service screen
     // Get.offAll(() => LocationScreen());
     // return;
     if (loggedIn) {
       Get.offAll(() => WorkerDashboardScreen());
     } else {
-      Get.offAll(() => LoginScreen());
+      Future.delayed(const Duration(seconds: 5), () {
+        Get.offAll(() => const LoginScreen());
+      });
     }
 
   }

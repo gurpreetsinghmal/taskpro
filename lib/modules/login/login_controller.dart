@@ -33,6 +33,8 @@ class LoginController extends GetxController {
         'Required',
         'Please enter user email',
         snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
         margin: const EdgeInsets.all(16),
       );
       return;
@@ -42,6 +44,8 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Invalid Email',
         'Please enter a valid email address',
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(16),
       );
@@ -52,6 +56,8 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Required',
         'Please enter your password',
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(16),
       );
@@ -61,6 +67,8 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Required',
         'The password must be at least 8 characters.',
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(16),
       );

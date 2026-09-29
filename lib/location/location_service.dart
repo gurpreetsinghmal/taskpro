@@ -196,6 +196,13 @@ class LocationService {
     }
   }
 
+  static Future<Position>getLatLong() async{
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+    );
+    return position;
+  }
+
   // ============================================================
   // SERVICE STATUS
   // ============================================================

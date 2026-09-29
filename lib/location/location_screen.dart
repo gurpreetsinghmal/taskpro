@@ -41,8 +41,7 @@ class LocationScreen
 
                   ElevatedButton(
                     onPressed: () {
-                      controller
-                          .startLocation();
+
                     },
 
                     child: const Text(
