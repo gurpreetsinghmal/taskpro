@@ -698,8 +698,12 @@ class _CheckInOutCard extends StatelessWidget {
   }
 
   static String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
+    final days=duration.inDays;
+    final hours = duration.inHours.remainder(24);
     final minutes = duration.inMinutes.remainder(60);
+    if (days > 0) {
+      return '${days}d ${hours}h ${minutes}m';
+    }
 
     if (hours > 0) {
       return '${hours}h ${minutes}m';
