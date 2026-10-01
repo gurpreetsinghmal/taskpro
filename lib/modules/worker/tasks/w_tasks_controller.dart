@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
@@ -17,12 +18,15 @@ class WorkerTasksController extends GetxController {
   final RxList<WorkOrderStatusModel> workOrderStatusList = <WorkOrderStatusModel>[].obs;
 
   final isApiLoading = false.obs;
+  final RxMap<int, int> hardStartChangeStatus = <int, int>{}.obs;
+  final proposedTime = "".obs;
   final _apiService = ApiService();
 
   @override
   void onInit() {
     super.onInit();
     getTasksData();
+
   }
 
   Future<void> getTasksData() async {
@@ -43,6 +47,11 @@ class WorkerTasksController extends GetxController {
       workOrderList.value = (workOrderListJson as List)
           .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
           .toList();
+
+      for (var task in workOrderList.value) {
+          hardStartChangeStatus[task.id] = task.proposed_datetime_accepted_by_manager??0;
+      }
+
     }
   }
 
@@ -118,6 +127,61 @@ class WorkerTasksController extends GetxController {
 
     }
   }
+
+  Future<void> proposeChangeScheduleTimeApi(DateTime newSchedule, WorkOrderModel task) async {
+    try {
+
+      final value = await _apiService.post(ApiRoutes.workOrderProposedDatetimeUpdate,data:{
+        "work_order_id": task.id,
+        "proposed_datetime":  newSchedule.toString(),
+        "proposed_reason": 'Technician requested a change in hard start time.'
+      },isLoaderShow: true);
+      final dynamic responseData = value.data;
+
+      if (responseData != null && responseData['success'].toString() == "true") {
+
+    final updatedWorkOrder = task.copyWith(
+          id: task.id,
+          proposed_datetime: newSchedule,
+          proposed_datetime_accepted_by_manager: 1,
+          requested_at: DateTime.now(),
+          requested_by: int.tryParse(task.technicianId),
+          approved_at: null,
+          approved_by: null,
+          proposed_reason:'Technician requested a change in hard start time.',
+        );
+        final storage = SecureStorageService.instance;
+
+        await storage.updateWorkOrderData(updatedWorkOrder);
+        hardStartChangeStatus[task.id] = 1;
+        proposedTime.value=newSchedule.toString();
+        Get.snackbar(
+          'Success',
+          responseData['message'].toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.success,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
+      }
+      else{
+        Get.snackbar(
+          'Failed',
+          responseData['message'].toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+        );
+      }
+
+
+    } catch (error) {
+      debugPrint("❌ProposedScheduleApi Error: $error");
+
+    }
+  }
+
 
   Future<void> loadMap(String? loc) async {
 

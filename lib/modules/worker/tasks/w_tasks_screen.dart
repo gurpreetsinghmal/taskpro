@@ -1,3 +1,4 @@
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -141,7 +142,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                           onTap: () async {
                             await _showTaskDetails(context, tasks[index]);
 
-                            controller.getTasksData();
+                            if (mounted) {
+                              await controller.getTasksData();
+                            }
                           },
                         ),
                       );
@@ -673,7 +676,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                             _InfoTile(
                               icon: Icons.directions_car_outlined,
                               title: "Travel Rates",
-                              value: "NA",
+                              value: task.travelRate??"-",
                             ),
 
                             _InfoTile(
@@ -688,8 +691,16 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         ),
 
                         const SizedBox(height: 22),
+                        Obx(() {
 
-                        _buildActions(task),
+                          if (controller.hardStartChangeStatus[task.id]==0) {
+                            return  _buildActions(task);
+                          }
+                          if (controller.hardStartChangeStatus[task.id]!>1) {
+                            return  _buildActions(task);
+                          }
+                          return const SizedBox.shrink();
+                        })
                       ],
                     ),
                   ),
@@ -859,6 +870,18 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           value: Common.getformatDate(task.hardStartTime),
           customColor: AppColors.error,
         ),
+        const SizedBox(height: 8),
+        Obx(() {
+          if (controller.hardStartChangeStatus[task.id]==0) {
+            return  _buildHardStartChangeRequest(task);
+          }
+          return _buildConstant(task);
+        })
+
+
+
+
+
       ],
     );
   }
@@ -887,7 +910,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   // ================================================================
 
   Widget _buildActions(WorkOrderModel task) {
-    if (task.statusId == 13) {
+    if (task.statusId == 13 && controller.hardStartChangeStatus[task.id]!=1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1329,6 +1352,760 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHardStartChangeRequest(WorkOrderModel task) {
+    // Replace these with your actual model fields.
+
+
+
+    // ─────────────────────────────────────────────
+    // Request already exists
+    // ─────────────────────────────────────────────
+    var  hasRequest = task.proposed_datetime_accepted_by_manager??0;
+
+    final bool pending = hasRequest == 1;
+    final bool approved =  hasRequest == 2;
+    final bool rejected =  hasRequest == 3;
+
+    final Color statusColor = approved
+        ? const Color(0xFF16A34A)
+        : rejected
+        ? const Color(0xFFDC2626)
+        : const Color(0xFFD97706);
+
+    final Color backgroundColor = approved
+        ? const Color(0xFFF0FDF4)
+        : rejected
+        ? const Color(0xFFFEF2F2)
+        : const Color(0xFFFFFBEB);
+
+    final Color borderColor = approved
+        ? const Color(0xFFBBF7D0)
+        : rejected
+        ? const Color(0xFFFECACA)
+        : const Color(0xFFFDE68A);
+
+
+
+    if (hasRequest==0 && task.statusId==13) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7ED),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: const Color(0xFFFED7AA),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEDD5),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Icon(
+                Icons.edit_calendar_rounded,
+                color: Color(0xFFEA580C),
+                size: 20,
+              ),
+            ),
+
+            const SizedBox(width: 11),
+
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Need to change Hard Start Time?',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF7C2D12),
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    'You can propose a different time for manager approval.',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF9A3412),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            Material(
+              color: const Color(0xFFEA580C),
+              borderRadius: BorderRadius.circular(9),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(9),
+                onTap: () {
+                  _showHardStartChangeDialog(task);
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    'Request',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else if (hasRequest!=0){
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: borderColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                approved
+                    ? Icons.check_circle_rounded
+                    : rejected
+                    ? Icons.cancel_rounded
+                    : Icons.hourglass_top_rounded,
+                size: 19,
+                color: statusColor,
+              ),
+
+              const SizedBox(width: 7),
+
+              const Expanded(
+                child: Text(
+                  'Hard Start Time Change',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF172033),
+                  ),
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Text(
+                  approved
+                      ? 'APPROVED'
+                      : rejected
+                      ? 'REJECTED'
+                      : 'PENDING',
+                  style: TextStyle(
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: _ChangeTimeBox(
+                  title: 'Current',
+                  value: Common.getformatDate(
+                    task.hardStartTime,
+                  ),
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 17,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+
+              Expanded(
+                child:
+                    Obx(()=> _ChangeTimeBox(
+                      title: 'Proposed',
+                      value: controller.proposedTime.value==""
+                          ? Common.getformatDate(task.proposed_datetime.toString())
+                          : Common.getformatDate(controller.proposedTime.value.toString()),
+                      color: statusColor,
+                    ))
+               ,
+              ),
+            ],
+          ),
+
+          if (rejected && task.proposed_reason != null) ...[
+            const SizedBox(height: 10),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 15,
+                    color: statusColor,
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      task.proposed_reason!,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        height: 1.35,
+                        color: Color(0xFF475569),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+    }
+    else
+      {
+        return SizedBox.shrink();
+      }
+  }
+
+  Future<void> _showHardStartChangeDialog(
+      WorkOrderModel task,
+      ) async {
+    DateTime selectedDateTime = DateTime.tryParse(task.hardStartTime ?? '') ?? DateTime.now();
+
+    final result = await showDialog<DateTime>(
+      context: Get.context!,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                5,
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                10,
+              ),
+              actionsPadding: const EdgeInsets.fromLTRB(
+                15,
+                0,
+                15,
+                15,
+              ),
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.edit_calendar_rounded,
+                    color: Color(0xFFEA580C),
+                  ),
+                  SizedBox(width: 9),
+                  Text(
+                    'Request Time Change',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Current Hard Start Time',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Text(
+                    Common.getformatDate(task.hardStartTime),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  const Text(
+                    'Proposed Hard Start Time',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 7),
+
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () async {
+                      final now = DateTime.now();
+
+                      final today = DateTime(
+                        now.year,
+                        now.month,
+                        now.day,
+                      );
+
+                      final lastDate = today.add(
+                        const Duration(days: 30),
+                      );
+
+// Existing hard start may already be in the past.
+// In that case, open the picker on today instead.
+                      final initialDate = selectedDateTime.isBefore(today)
+                          ? today
+                          : selectedDateTime;
+
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: initialDate,
+                        firstDate: today,
+                        lastDate: lastDate,
+                      );
+
+                      if (date == null) return;
+
+// ─────────────────────────────────────────────
+// Select Time
+// ─────────────────────────────────────────────
+
+                      final isToday =
+                          date.year == now.year &&
+                              date.month == now.month &&
+                              date.day == now.day;
+
+                      final currentTime = TimeOfDay.fromDateTime(now);
+
+                      TimeOfDay initialTime;
+
+                      if (isToday) {
+                        // If the previously selected time is already in the past,
+                        // open the picker around the current time.
+                        final selectedMinutes =
+                            selectedDateTime.hour * 60 +
+                                selectedDateTime.minute;
+
+                        final currentMinutes =
+                            now.hour * 60 +
+                                now.minute;
+
+                        initialTime = selectedMinutes > currentMinutes
+                            ? TimeOfDay.fromDateTime(selectedDateTime)
+                            : currentTime;
+                      } else {
+                        initialTime = TimeOfDay.fromDateTime(selectedDateTime);
+                      }
+
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: initialTime,
+                      );
+
+                      if (time == null) return;
+
+// ─────────────────────────────────────────────
+// Final validation
+// ─────────────────────────────────────────────
+
+                      final proposedDateTime = DateTime(
+                        date.year,
+                        date.month,
+                        date.day,
+                        time.hour,
+                        time.minute,
+                      );
+
+                      if (!proposedDateTime.isAfter(now)) {
+                        Get.snackbar(
+                          'Invalid Time',
+                          'Proposed Hard Start Time must be in the future.',
+                          backgroundColor: AppColors.error,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
+                      setState(() {
+                        selectedDateTime = proposedDateTime;
+                      });
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(13),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF7ED),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFFED7AA),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 20,
+                            color: Color(0xFFEA580C),
+                          ),
+                          const SizedBox(width: 9),
+                          Expanded(
+                            child: Text(
+                              Common.getformatDate(
+                                selectedDateTime.toIso8601String(),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF9A3412),
+                              ),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.edit_rounded,
+                            size: 16,
+                            color: Color(0xFFEA580C),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'The requested time will be sent to your manager for approval.',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      height: 1.4,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(
+                      context,
+                      selectedDateTime,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEA580C),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.send_rounded,
+                    size: 16,
+                  ),
+                  label: const Text(
+                    'Send Request',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    await controller.proposeChangeScheduleTimeApi(result,task);
+
+  }
+
+  Widget _buildConstant(WorkOrderModel task) {
+    var  hasRequest = task.proposed_datetime_accepted_by_manager??0;
+    final bool pending = hasRequest == 1;
+    final bool approved =  hasRequest == 2;
+    final bool rejected =  hasRequest == 3;
+    final Color statusColor = approved
+        ? const Color(0xFF16A34A)
+        : rejected
+        ? const Color(0xFFDC2626)
+        : const Color(0xFFD97706);
+
+    final Color backgroundColor = approved
+        ? const Color(0xFFF0FDF4)
+        : rejected
+        ? const Color(0xFFFEF2F2)
+        : const Color(0xFFFFFBEB);
+
+    final Color borderColor = approved
+        ? const Color(0xFFBBF7D0)
+        : rejected
+        ? const Color(0xFFFECACA)
+        : const Color(0xFFFDE68A);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: borderColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                approved
+                    ? Icons.check_circle_rounded
+                    : rejected
+                    ? Icons.cancel_rounded
+                    : Icons.hourglass_top_rounded,
+                size: 19,
+                color: statusColor,
+              ),
+
+              const SizedBox(width: 7),
+
+              const Expanded(
+                child: Text(
+                  'Hard Start Time Change',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF172033),
+                  ),
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Text(
+                  approved
+                      ? 'APPROVED'
+                      : rejected
+                      ? 'REJECTED'
+                      : 'PENDING',
+                  style: TextStyle(
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: _ChangeTimeBox(
+                  title: 'Current',
+                  value: Common.getformatDate(
+                    task.hardStartTime,
+                  ),
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 17,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+
+              Expanded(
+                child:
+                Obx(()=> _ChangeTimeBox(
+                  title: 'Proposed',
+                  value: controller.proposedTime.value ==""
+                      ? Common.getformatDate(task.proposed_datetime.toString())
+                      : Common.getformatDate(controller.proposedTime.value.toString()),
+                  color: statusColor,
+                ))
+                ,
+              ),
+            ],
+          ),
+
+          if (rejected && task.proposed_reason != null) ...[
+            const SizedBox(height: 10),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 15,
+                    color: statusColor,
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      task.proposed_reason!,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        height: 1.35,
+                        color: Color(0xFF475569),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+
+  }
+}
+
+class _ChangeTimeBox extends StatelessWidget {
+  final String title;
+  final String value;
+  final Color color;
+
+  const _ChangeTimeBox({
+    required this.title,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 9,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 9,
+              color: Color(0xFF94A3B8),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.5,
+              color: color,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ],

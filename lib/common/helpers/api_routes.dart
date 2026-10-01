@@ -9,6 +9,8 @@ class ApiRoutes {
   static const String updateProfile="auth/profile/update";
   static const String changePassword="auth/change-password";
 
+  static const String dashboardStats="auth/dashboard";
+
   static const String locationMonitoring = 'auth/gps-tracking';
   static const String fetchProfile="auth/profile";
   static const String taskSubmitted="tasks/submitted";
@@ -18,8 +20,6 @@ class ApiRoutes {
   static const String workOrderStatusUpdate="auth/work-order-status-update";
 
   static const String workOrderCheckInSync="auth/work-order-checkin-sync";
-
-
-
+  static const String workOrderProposedDatetimeUpdate="auth/work-order-proposed-datetime-update";
 
 }

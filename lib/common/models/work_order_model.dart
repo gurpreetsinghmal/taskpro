@@ -27,9 +27,19 @@ class WorkOrderModel {
   final String? scopeOfWork;
   final int? rateType;
   final dynamic rateValue;
+  final String? travelRate;
   final String? scheduledEtaFrom;
   final String? scheduledEtaTo;
   final String? hardStartTime;
+  // Hard Start Time Change Request
+  final DateTime? proposed_datetime;
+  final int? proposed_datetime_accepted_by_manager;
+  final DateTime? requested_at;
+  final int? requested_by;
+  final DateTime? approved_at;
+  final int? approved_by;
+  final String? proposed_reason;
+
   final dynamic maxHours;
   final dynamic approximateHoursToComplete;
   final WorkOrderAddressModel? address;
@@ -37,8 +47,6 @@ class WorkOrderModel {
   // Multiple check-in / check-out sessions
   final List<WorkSessionModel> checkins;
   int sync;
-
-
 
   WorkOrderModel({
     required this.id,
@@ -67,15 +75,23 @@ class WorkOrderModel {
     this.scopeOfWork,
     this.rateType,
     this.rateValue,
+    this.travelRate,
     this.scheduledEtaFrom,
     this.scheduledEtaTo,
     this.hardStartTime,
+    // Hard Start Time Change Request
+    this.proposed_datetime,//"proposed_datetime":  "2026-09-24 23:00:00",
+    this.proposed_datetime_accepted_by_manager,//proposed_datetime_accepted_by_manager
+    this.requested_at,//requested_at
+    this.requested_by,//requested_by
+    this.approved_at,//approved_at
+    this.approved_by,//approved_by
+    this.proposed_reason,//proposed_reason
     this.maxHours,
     this.approximateHoursToComplete,
     this.address,
     this.checkins = const [],
-    this.sync=1
-
+    this.sync = 1,
   });
 
   factory WorkOrderModel.fromJson(Map<String, dynamic> json) {
@@ -106,26 +122,51 @@ class WorkOrderModel {
       scopeOfWork: json['scope_of_work'] as String?,
       rateType: json['rate_type'] as int?,
       rateValue: json['rate_value'],
+      travelRate: json['travelrate'] as String?,
       scheduledEtaFrom: json['scheduled_eta_from'] as String?,
       scheduledEtaTo: json['scheduled_eta_to'] as String?,
       hardStartTime: json['hard_start_time'] as String?,
+      proposed_datetime: json['proposed_datetime'] != null
+          ? DateTime.tryParse(json['proposed_datetime'].toString())
+          : null,
+
+      proposed_datetime_accepted_by_manager: json['proposed_datetime_accepted_by_manager'] == null
+          ? null
+          : int.tryParse(json['proposed_datetime_accepted_by_manager'].toString()),
+
+      requested_at: json['requested_at'] != null
+          ? DateTime.tryParse(json['requested_at'].toString())
+          : null,
+
+      requested_by: json['requested_by'] == null
+          ? null
+          : int.tryParse(json['requested_by'].toString()),
+
+      approved_at: json['approved_at'] != null
+          ? DateTime.tryParse(json['approved_at'].toString())
+          : null,
+
+      approved_by: json['approved_by'] == null
+          ? null
+          : int.tryParse(json['approved_by'].toString()),
+
+      proposed_reason: json['proposed_reason']?.toString(),
       maxHours: json['max_hours'],
       approximateHoursToComplete: json['approximate_hours_to_complete'],
       address: json['address'] is Map<String, dynamic>
           ? WorkOrderAddressModel.fromJson(
-        json['address'] as Map<String, dynamic>,
-      )
+              json['address'] as Map<String, dynamic>,
+            )
           : null,
-      checkins: (json['checkins'] as List<dynamic>?)
-          ?.map(
-            (item) => WorkSessionModel.fromJson(
-          item as Map<String, dynamic>,
-        ),
-      )
-          .toList() ??
+      checkins:
+          (json['checkins'] as List<dynamic>?)
+              ?.map(
+                (item) =>
+                    WorkSessionModel.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
           [],
       sync: json['sync'] as int? ?? 1,
-
     );
   }
 
@@ -157,18 +198,26 @@ class WorkOrderModel {
       'scope_of_work': scopeOfWork,
       'rate_type': rateType,
       'rate_value': rateValue,
+      'travelrate':travelRate,
       'scheduled_eta_from': scheduledEtaFrom,
       'scheduled_eta_to': scheduledEtaTo,
       'hard_start_time': hardStartTime,
+      'proposed_datetime': proposed_datetime?.toIso8601String(),
+      'proposed_datetime_accepted_by_manager': proposed_datetime_accepted_by_manager,
+      'requested_at': requested_at
+          ?.toIso8601String(),
+      'requested_by': requested_by,
+      'approved_at': approved_at?.toIso8601String(),
+      'approved_by': approved_by,
+      'proposed_reason': proposed_reason,
       'max_hours': maxHours,
       'approximate_hours_to_complete': approximateHoursToComplete,
       'address': address?.toJson(),
-      'checkins': checkins
-          .map((session) => session.toJson())
-          .toList(),
+      'checkins': checkins.map((session) => session.toJson()).toList(),
       'sync': sync,
     };
   }
+
   WorkOrderModel copyWith({
     int? id,
     String? workOrderNo,
@@ -196,9 +245,17 @@ class WorkOrderModel {
     String? scopeOfWork,
     int? rateType,
     dynamic rateValue,
+    String? travelRate,
     String? scheduledEtaFrom,
     String? scheduledEtaTo,
     String? hardStartTime,
+    DateTime? proposed_datetime,
+    int? proposed_datetime_accepted_by_manager,
+    DateTime? requested_at,
+    int? requested_by,
+    DateTime? approved_at,
+    int? approved_by,
+    String? proposed_reason,
     dynamic maxHours,
     dynamic approximateHoursToComplete,
     WorkOrderAddressModel? address,
@@ -239,21 +296,42 @@ class WorkOrderModel {
 
       rateType: rateType ?? this.rateType,
       rateValue: rateValue ?? this.rateValue,
+      travelRate: travelRate ?? this.travelRate,
 
       scheduledEtaFrom: scheduledEtaFrom ?? this.scheduledEtaFrom,
       scheduledEtaTo: scheduledEtaTo ?? this.scheduledEtaTo,
       hardStartTime: hardStartTime ?? this.hardStartTime,
 
+      proposed_datetime:
+          proposed_datetime ?? this.proposed_datetime,
+
+      proposed_datetime_accepted_by_manager:
+          proposed_datetime_accepted_by_manager ?? this.proposed_datetime_accepted_by_manager,
+
+      requested_at:
+          requested_at ?? this.requested_at,
+
+      requested_by:
+          requested_by ?? this.requested_by,
+
+      approved_at:
+          approved_at ?? this.approved_at,
+
+      approved_by:
+          approved_by ?? this.approved_by,
+
+      proposed_reason:
+          proposed_reason ?? this.proposed_reason,
+
       maxHours: maxHours ?? this.maxHours,
       approximateHoursToComplete:
-      approximateHoursToComplete ?? this.approximateHoursToComplete,
+          approximateHoursToComplete ?? this.approximateHoursToComplete,
       address: address ?? this.address,
       checkins: checkins ?? this.checkins,
 
       sync: sync ?? this.sync,
     );
   }
-
 }
 
 class WorkOrderAddressModel {
@@ -273,16 +351,10 @@ class WorkOrderAddressModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'full_address': fullAddress,
-      'google_map_link': googleMapLink,
-    };
+    return {'full_address': fullAddress, 'google_map_link': googleMapLink};
   }
 
-  WorkOrderAddressModel copyWith({
-    String? fullAddress,
-    String? googleMapLink,
-  }) {
+  WorkOrderAddressModel copyWith({String? fullAddress, String? googleMapLink}) {
     return WorkOrderAddressModel(
       fullAddress: fullAddress ?? this.fullAddress,
       googleMapLink: googleMapLink ?? this.googleMapLink,

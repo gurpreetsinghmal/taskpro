@@ -47,7 +47,7 @@ class ApiService {
     bool showedLoader = false;
     try {
       if (isLoaderShow) {
-        LoadingService.show("Fetching data...");
+        LoadingService.show("Processing...");
         showedLoader = true;
       }
       final response = await _dio.get<T>(

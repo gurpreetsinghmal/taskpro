@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:taskpro/modules/worker/profile/profile_model.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
@@ -171,7 +172,7 @@ class WorkerDashboardController extends GetxController {
 
   Future<void> getDashboardData() async {
     try {
-      final value = await _apiService.get('auth/dashboard');
+      final value = await _apiService.get(ApiRoutes.dashboardStats);
       if (value.data['success'] == true) {
         final stats = value.data['data'];
         if (stats != null) {
