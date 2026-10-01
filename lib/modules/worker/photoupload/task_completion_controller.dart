@@ -90,16 +90,20 @@ class TaskCompletionController extends GetxController {
     VerificationCheckItem(
       title: 'Safety Lockout/Tagout Removed',
       isChecked: true,
+      quantity: 1,
     ),
     VerificationCheckItem(
       title: 'Air Filters Cleaned & Replaced',
       isChecked: true,
+      quantity: 2,
     ),
     VerificationCheckItem(
       title: 'System Pressure & Refrigerant Verified',
+      quantity: 1,
     ),
     VerificationCheckItem(
       title: 'Work Area Cleaned & Debris Cleared',
+      quantity: 1,
     ),
   ].obs;
 
@@ -122,7 +126,23 @@ class TaskCompletionController extends GetxController {
   final uploadProgressText = 'Preparing upload...'.obs;
 
   void toggleChecklist(int index) {
-    checklist[index].isChecked = !checklist[index].isChecked;
+    final item = checklist[index];
+
+    item.isChecked = !item.isChecked;
+
+    item.markFromTechnician = item.isChecked ? 1 : 0;
+
+    checklist.refresh();
+  }
+  void increaseQuantity(int index) {
+    checklist[index].quantity++;
+    checklist.refresh();
+  }
+
+  void decreaseQuantity(int index) {
+    if (checklist[index].quantity <= 1) return;
+
+    checklist[index].quantity--;
     checklist.refresh();
   }
 

@@ -1369,7 +1369,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     // ─────────────────────────────────────────────
     var  hasRequest = task.proposed_datetime_accepted_by_manager??0;
 
-    final bool pending = hasRequest == 1;
+
     final bool approved =  hasRequest == 2;
     final bool rejected =  hasRequest == 3;
 
@@ -1899,7 +1899,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
   Widget _buildConstant(WorkOrderModel task) {
     var  hasRequest = task.proposed_datetime_accepted_by_manager??0;
-    final bool pending = hasRequest == 1;
+
     final bool approved =  hasRequest == 2;
     final bool rejected =  hasRequest == 3;
     final Color statusColor = approved

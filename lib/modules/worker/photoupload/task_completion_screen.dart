@@ -529,8 +529,64 @@ class TaskCompletionScreen extends StatelessWidget {
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    child: Row(
+                    child:
+                    // Row(
+                    //   children: [
+                    //     AnimatedContainer(
+                    //       duration: const Duration(milliseconds: 180),
+                    //       width: 24,
+                    //       height: 24,
+                    //       decoration: BoxDecoration(
+                    //         color: item.isChecked ? _blue : Colors.white,
+                    //         borderRadius: BorderRadius.circular(7),
+                    //         border: Border.all(
+                    //           color: item.isChecked
+                    //               ? _blue
+                    //               : const Color(0xFFD5DCE7),
+                    //           width: 1.5,
+                    //         ),
+                    //       ),
+                    //       child: item.isChecked
+                    //           ? const Icon(
+                    //               Icons.check_rounded,
+                    //               color: Colors.white,
+                    //               size: 16,
+                    //             )
+                    //           : null,
+                    //     ),
+                    //
+                    //     const SizedBox(width: 12),
+                    //
+                    //     Expanded(
+                    //       child: Text(
+                    //         item.title,
+                    //         style: TextStyle(
+                    //           fontSize: 12.5,
+                    //           height: 1.3,
+                    //           fontWeight: FontWeight.w600,
+                    //           color: item.isChecked
+                    //               ? _text
+                    //               : const Color(0xFF526174),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //
+                    //     const SizedBox(width: 8),
+                    //
+                    //     Icon(
+                    //       item.isChecked
+                    //           ? Icons.verified_rounded
+                    //           : Icons.radio_button_unchecked_rounded,
+                    //       size: 18,
+                    //       color: item.isChecked
+                    //           ? _green
+                    //           : const Color(0xFFCBD5E1),
+                    //     ),
+                    //   ],
+                    // ),
+                    Row(
                       children: [
+                        // Checkbox
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           width: 24,
@@ -547,15 +603,16 @@ class TaskCompletionScreen extends StatelessWidget {
                           ),
                           child: item.isChecked
                               ? const Icon(
-                                  Icons.check_rounded,
-                                  color: Colors.white,
-                                  size: 16,
-                                )
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          )
                               : null,
                         ),
 
                         const SizedBox(width: 12),
 
+                        // Checklist title
                         Expanded(
                           child: Text(
                             item.title,
@@ -572,6 +629,7 @@ class TaskCompletionScreen extends StatelessWidget {
 
                         const SizedBox(width: 8),
 
+                        // Verified status
                         Icon(
                           item.isChecked
                               ? Icons.verified_rounded
@@ -581,8 +639,70 @@ class TaskCompletionScreen extends StatelessWidget {
                               ? _green
                               : const Color(0xFFCBD5E1),
                         ),
+
+                        const SizedBox(width: 8),
+
+                        // Quantity selector
+                        Container(
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F7FA),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFFE1E6ED),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: item.quantity > 1
+                                    ? () => controller.decreaseQuantity(index)
+                                    : null,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 30,
+                                  minHeight: 30,
+                                ),
+                                icon: const Icon(
+                                  Icons.remove_rounded,
+                                  size: 16,
+                                ),
+                              ),
+
+                              Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 20,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${item.quantity}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: _text,
+                                  ),
+                                ),
+                              ),
+
+                              IconButton(
+                                onPressed: () =>
+                                    controller.increaseQuantity(index),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 30,
+                                  minHeight: 30,
+                                ),
+                                icon: const Icon(
+                                  Icons.add_rounded,
+                                  size: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
-                    ),
+                    )
                   ),
                 );
               },

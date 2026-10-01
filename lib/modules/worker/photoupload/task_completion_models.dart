@@ -35,17 +35,38 @@ class UploadedPhotoModel {
 class VerificationCheckItem {
   final String title;
   bool isChecked;
+  int quantity;
+  int markFromTechnician;
 
   VerificationCheckItem({
     required this.title,
     this.isChecked = false,
+    this.quantity = 1,
+    this.markFromTechnician = 0,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'title': title,
       'isChecked': isChecked,
+      'quantity': quantity,
+      'markFromTechnician': markFromTechnician,
     };
+  }
+
+  VerificationCheckItem copyWith({
+    String? title,
+    bool? isChecked,
+    int? quantity,
+    int? markFromTechnician,
+  }) {
+    return VerificationCheckItem(
+      title: title ?? this.title,
+      isChecked: isChecked ?? this.isChecked,
+      quantity: quantity ?? this.quantity,
+      markFromTechnician:
+      markFromTechnician ?? this.markFromTechnician,
+    );
   }
 }
 

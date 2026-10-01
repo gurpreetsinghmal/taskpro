@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
@@ -48,7 +48,7 @@ class WorkerTasksController extends GetxController {
           .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
           .toList();
 
-      for (var task in workOrderList.value) {
+      for (var task in workOrderList) {
           hardStartChangeStatus[task.id] = task.proposed_datetime_accepted_by_manager??0;
       }
 
