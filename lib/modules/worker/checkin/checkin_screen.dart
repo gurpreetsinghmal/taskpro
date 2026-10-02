@@ -31,7 +31,7 @@ class CheckInScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildWorkOrderHeader(),
+              _buildWorkOrderHeader(controller,context),
               const SizedBox(height: 14),
               _CheckInOutCard(
                 task: task,
@@ -109,7 +109,7 @@ class CheckInScreen extends StatelessWidget {
   // WORK ORDER HEADER
   // ==========================================================
 
-  Widget _buildWorkOrderHeader() {
+  Widget _buildWorkOrderHeader(CheckinController controller, BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -204,8 +204,11 @@ class CheckInScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 5),
                     InkWell(
-                      onTap:()=>{
-                        //ToDo
+                      onTap: () {
+                        WorkOrderDetailsModal.show(
+                          context,
+                          task,
+                        );
                       },
                       child: Text(
                         'Details',
