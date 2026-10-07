@@ -2188,7 +2188,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F5FA6).withOpacity(.15),
+                color: const Color(0xFF0F5FA6).withValues(alpha:.15),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -2204,7 +2204,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.15),
+                      color: Colors.white.withValues(alpha:.15),
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
@@ -2250,7 +2250,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.15),
+                      color: Colors.white.withValues(alpha:.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -2272,7 +2272,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 7,
-                  backgroundColor: Colors.white.withOpacity(.20),
+                  backgroundColor: Colors.white.withValues(alpha:.20),
                   valueColor:
                   const AlwaysStoppedAnimation<Color>(
                     Colors.white,
@@ -2362,7 +2362,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.035),
+            color: Colors.black.withValues(alpha:.035),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
