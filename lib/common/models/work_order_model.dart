@@ -43,6 +43,8 @@ class WorkOrderModel {
   final dynamic maxHours;
   final dynamic approximateHoursToComplete;
   final WorkOrderAddressModel? address;
+  //sow
+  List<SowItemModel> sowItems;
 
   // Multiple check-in / check-out sessions
   final List<WorkSessionModel> checkins;
@@ -90,6 +92,7 @@ class WorkOrderModel {
     this.maxHours,
     this.approximateHoursToComplete,
     this.address,
+    this.sowItems = const [],
     this.checkins = const [],
     this.sync = 1,
   });
@@ -158,6 +161,15 @@ class WorkOrderModel {
               json['address'] as Map<String, dynamic>,
             )
           : null,
+      sowItems:
+      (json['sow_items'] as List<dynamic>?)
+          ?.map(
+            (item) => SowItemModel.fromJson(
+          item as Map<String, dynamic>,
+        ),
+      )
+          .toList() ??
+          [],
       checkins:
           (json['checkins'] as List<dynamic>?)
               ?.map(
@@ -213,6 +225,7 @@ class WorkOrderModel {
       'max_hours': maxHours,
       'approximate_hours_to_complete': approximateHoursToComplete,
       'address': address?.toJson(),
+      'sow_items': sowItems.map((item) => item.toJson()).toList(),
       'checkins': checkins.map((session) => session.toJson()).toList(),
       'sync': sync,
     };
@@ -259,6 +272,7 @@ class WorkOrderModel {
     dynamic maxHours,
     dynamic approximateHoursToComplete,
     WorkOrderAddressModel? address,
+    List<SowItemModel>? sowItems,
     List<WorkSessionModel>? checkins,
     int? sync,
   }) {
@@ -327,9 +341,107 @@ class WorkOrderModel {
       approximateHoursToComplete:
           approximateHoursToComplete ?? this.approximateHoursToComplete,
       address: address ?? this.address,
+      sowItems: sowItems ?? this.sowItems,
       checkins: checkins ?? this.checkins,
 
       sync: sync ?? this.sync,
+    );
+  }
+}
+
+class SowItemModel {
+  final int id;
+  final int workOrderId;
+  final String type;
+  final int sortOrder;
+  final String description;
+  int status;
+  final DateTime? completedAt;
+  final int? completedBy;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  SowItemModel({
+    required this.id,
+    required this.workOrderId,
+    required this.type,
+    required this.sortOrder,
+    required this.description,
+    this.status=0,
+    this.completedAt,
+    this.completedBy,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  bool get isCompleted => status == 1;
+
+  bool get isPreInstall => type == 'pre_install';
+
+  bool get isInstall => type == 'install';
+
+  factory SowItemModel.fromJson(Map<String, dynamic> json) {
+    return SowItemModel(
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      workOrderId:
+      int.tryParse(json['work_order_id']?.toString() ?? '') ?? 0,
+      type: json['type']?.toString() ?? '',
+      sortOrder:
+      int.tryParse(json['sort_order']?.toString() ?? '') ?? 0,
+      description: json['description']?.toString() ?? '',
+      status: int.tryParse(json['status']?.toString() ?? '') ?? 0,
+      completedAt: json['completed_at'] != null
+          ? DateTime.tryParse(json['completed_at'].toString())
+          : null,
+      completedBy: json['completed_by'] != null
+          ? int.tryParse(json['completed_by'].toString())
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'work_order_id': workOrderId,
+      'type': type,
+      'sort_order': sortOrder,
+      'description': description,
+      'status': status,
+      'completed_at': completedAt?.toIso8601String(),
+      'completed_by': completedBy,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+  SowItemModel copyWith({
+    int? id,
+    int? workOrderId,
+    String? type,
+    int? sortOrder,
+    String? description,
+    int? status,
+    DateTime? completedAt,
+    int? completedBy,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return SowItemModel(
+      id: id ?? this.id,
+      workOrderId: workOrderId ?? this.workOrderId,
+      type: type ?? this.type,
+      sortOrder: sortOrder ?? this.sortOrder,
+      description: description ?? this.description,
+      status: status ?? this.status,
+      completedAt: completedAt ?? this.completedAt,
+      completedBy: completedBy ?? this.completedBy,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }
