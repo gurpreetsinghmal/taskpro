@@ -613,14 +613,8 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
                             _psnManagerDetails(task),
 
-                            _modernInfoTile(
-                              icon: Icons.description_outlined,
-                              title: "Scope of Work",
-                              value: task.scopeOfWork?.trim().isNotEmpty == true
-                                  ? task.scopeOfWork!
-                                  : "-",
-                              multiline: true,
-                            ),
+                            buildSowSection(task),
+
                           ],
                         ),
 
@@ -724,7 +718,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         ),
 
                         const SizedBox(height: 22),
-                        Obx(() {
+                         Obx(() {
 
                           if (controller.hardStartChangeStatus[task.id]==0) {
                             return  _buildActions(task);
@@ -943,7 +937,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   // ================================================================
 
   Widget _buildActions(WorkOrderModel task) {
-    if (task.statusId == 13 && controller.hardStartChangeStatus[task.id]!=1) {
+    if (task.statusId == 13 && controller.hardStartChangeStatus[task.id] !=1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2091,6 +2085,597 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     );
 
 
+  }
+
+  Widget buildSowSection(WorkOrderModel task) {
+    final preInstall = task.sowItems
+        .where((e) => e.type == 'pre_install')
+        .toList()
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    final installation = task.sowItems
+        .where((e) => e.type == 'install')
+        .toList()
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    final total = task.sowItems.length;
+    final completed =
+        task.sowItems.where((e) => e.status == 1).length;
+
+    final progress = total == 0 ? 0.0 : completed / total;
+
+    if (total == 0) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 24,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: const Color(0xFFE5EAF1),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Icon
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF3FC),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.assignment_outlined,
+                color: Color(0xFF1769AA),
+                size: 27,
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            const Text(
+              "No Scope of Work",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF172B4D),
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            const Text(
+              "No specific work instructions or checklist have been assigned to this work order.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF7A869A),
+                fontSize: 11.5,
+                height: 1.45,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 11,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFE5EAF1),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 13,
+                    color: Color(0xFF7A869A),
+                  ),
+                  SizedBox(width: 5),
+                  Text(
+                    "No checklist required",
+                    style: TextStyle(
+                      color: Color(0xFF5E6C84),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        // =========================================================
+        // HEADER / OVERALL PROGRESS
+        // =========================================================
+
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF0F5FA6),
+                Color(0xFF1976C9),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F5FA6).withValues(alpha:.15),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+
+              Row(
+                children: [
+
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha:.15),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(
+                      Icons.fact_check_rounded,
+                      color: Colors.white,
+                      size: 23,
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        Text(
+                          "Scope of Work",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+
+                        SizedBox(height: 3),
+
+                        Text(
+                          "Installation checklist & progress",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha:.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "$completed / $total",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 7,
+                  backgroundColor: Colors.white.withValues(alpha:.20),
+                  valueColor:
+                  const AlwaysStoppedAnimation<Color>(
+                    Colors.white,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+
+                  Text(
+                    "$completed tasks completed",
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10.5,
+                    ),
+                  ),
+
+                  Text(
+                    "${(progress * 100).round()}%",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // =========================================================
+        // PRE INSTALL
+        // =========================================================
+
+        if (preInstall.isNotEmpty)
+          _buildSowGroup(
+            title: "Pre-Installation",
+            subtitle: "Complete before installation begins",
+            icon: Icons.assignment_outlined,
+            items: preInstall,
+          ),
+
+        if (preInstall.isNotEmpty && installation.isNotEmpty)
+          const SizedBox(height: 14),
+
+        // =========================================================
+        // INSTALLATION
+        // =========================================================
+
+        if (installation.isNotEmpty)
+          _buildSowGroup(
+            title: "Installation & Testing",
+            subtitle: "On-site installation checklist",
+            icon: Icons.handyman_rounded,
+            items: installation,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSowGroup({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required List<SowItemModel> items,
+  })
+  {
+    final completed =
+        items.where((item) => item.status == 1).length;
+
+    final allCompleted =
+        items.isNotEmpty && completed == items.length;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFE5EAF1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha:.035),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Theme(
+        data: ThemeData(
+          dividerColor: Colors.transparent,
+        ),
+        child: ExpansionTile(
+
+          initiallyExpanded: false,
+
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 5,
+          ),
+
+          childrenPadding: const EdgeInsets.only(
+            left: 14,
+            right: 14,
+            bottom: 14,
+          ),
+
+          leading: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: allCompleted
+                  ? const Color(0xFFE8F7EF)
+                  : const Color(0xFFEAF3FC),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              allCompleted
+                  ? Icons.check_circle_rounded
+                  : icon,
+              color: allCompleted
+                  ? const Color(0xFF22A06B)
+                  : const Color(0xFF1769AA),
+              size: 21,
+            ),
+          ),
+
+          title: Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF172B4D),
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF7A869A),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 9,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: allCompleted
+                  ? const Color(0xFFE8F7EF)
+                  : const Color(0xFFF1F4F8),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              "$completed/${items.length}",
+              style: TextStyle(
+                color: allCompleted
+                    ? const Color(0xFF16875B)
+                    : const Color(0xFF44546F),
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+
+          children: [
+
+            const Divider(
+              height: 10,
+              color: Color(0xFFEEF1F5),
+            ),
+
+            const SizedBox(height: 6),
+
+            ...List.generate(
+              items.length,
+                  (index) => _buildSowItem(
+                items[index],
+                index,
+                items.length,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSowItem(
+      SowItemModel item,
+      int index,
+      int total,
+      )
+  {
+    final completed = item.status == 1;
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+
+          // =====================================================
+          // TIMELINE
+          // =====================================================
+
+          SizedBox(
+            width: 34,
+            child: Column(
+              children: [
+
+                Container(
+                  width: 25,
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: completed
+                        ? const Color(0xFF22A06B)
+                        : Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: completed
+                          ? const Color(0xFF22A06B)
+                          : const Color(0xFFC7D1DD),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: completed
+                      ? const Icon(
+                    Icons.check_rounded,
+                    size: 15,
+                    color: Colors.white,
+                  )
+                      : Center(
+                    child: Text(
+                      "${index + 1}",
+                      style: const TextStyle(
+                        color: Color(0xFF7A869A),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+
+                if (index != total - 1)
+                  Expanded(
+                    child: Container(
+                      width: 1.5,
+                      margin:
+                      const EdgeInsets.symmetric(vertical: 3),
+                      color: completed
+                          ? const Color(0xFFB7E4CF)
+                          : const Color(0xFFE2E7ED),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 7),
+
+          // =====================================================
+          // DESCRIPTION
+          // =====================================================
+
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(
+                bottom: index == total - 1 ? 0 : 12,
+              ),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: completed
+                    ? const Color(0xFFF5FBF8)
+                    : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: completed
+                      ? const Color(0xFFD3EFE1)
+                      : const Color(0xFFEDF0F4),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Text(
+                    item.description,
+                    style: TextStyle(
+                      color: completed
+                          ? const Color(0xFF344563)
+                          : const Color(0xFF172B4D),
+                      fontSize: 12,
+                      height: 1.45,
+                      fontWeight: completed
+                          ? FontWeight.w500
+                          : FontWeight.w600,
+                    ),
+                  ),
+
+                  if (completed) ...[
+
+                    const SizedBox(height: 8),
+
+                    Row(
+                      children: [
+
+                        const Icon(
+                          Icons.verified_rounded,
+                          size: 13,
+                          color: Color(0xFF22A06B),
+                        ),
+
+                        const SizedBox(width: 5),
+
+                        const Text(
+                          "Completed",
+                          style: TextStyle(
+                            color: Color(0xFF16875B),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+
+                        if (item.completedAt != null) ...[
+
+                          const SizedBox(width: 5),
+
+                          const Text(
+                            "•",
+                            style: TextStyle(
+                              color: Color(0xFF97A0AF),
+                            ),
+                          ),
+
+                          const SizedBox(width: 5),
+
+                          Expanded(
+                            child: Text(
+                              item.completedAt!.toString(),
+                              style: const TextStyle(
+                                color: Color(0xFF7A869A),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

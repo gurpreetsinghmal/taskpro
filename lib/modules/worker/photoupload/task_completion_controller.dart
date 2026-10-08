@@ -16,10 +16,22 @@ import 'package:taskpro/singature/signature_screen.dart';
 import 'package:taskpro/theme/app_colors.dart';
 import '../../../common/models/work_order_model.dart';
 
+import '../../../services/secure_storage_service.dart';
 import 'task_completion_models.dart';
 
 class TaskCompletionController extends GetxController {
   final WorkOrderModel task;
+  final RxList<SowItemModel> sowItems = <SowItemModel>[].obs;
+
+  void setSowItems(WorkOrderModel task) {
+    sowItems.assignAll(task.sowItems);
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    setSowItems(task);
+  }
 
   TaskCompletionController({
     required this.task
@@ -74,6 +86,7 @@ class TaskCompletionController extends GetxController {
   static const int maxPhotoSizeBytes = 5 * 1024 * 1024;
 
   final ImagePicker _imagePicker = ImagePicker();
+  final storage = SecureStorageService.instance;
 
   // Task info parameters
   final taskId = 'TSK-1024'.obs;
@@ -403,12 +416,70 @@ class TaskCompletionController extends GetxController {
 
   Future<void> submitTaskCompletion(
       BuildContext context,
-      ) async
-  {
+      ) async {
+
+    // 1. PRE-INSTALLATION MUST BE COMPLETED FIRST
+    final pendingPreInstall = sowItems
+        .where(
+          (item) =>
+      item.type == 'pre_install' &&
+          item.status != 1,
+    )
+        .toList();
+
+    if (pendingPreInstall.isNotEmpty) {
+      Get.snackbar(
+        'Pre-Installation Incomplete',
+        '${pendingPreInstall.length} pre-installation item(s) are still pending. '
+            'Complete all pre-installation checks before proceeding.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade800,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+        icon: const Icon(
+          Icons.assignment_late_outlined,
+          color: Colors.white,
+        ),
+      );
+
+      return;
+    }
+
+// 2. INSTALLATION MUST BE COMPLETED
+    final pendingInstall = sowItems
+        .where(
+          (item) =>
+      item.type == 'install' &&
+          item.status != 1,
+    )
+        .toList();
+
+    if (pendingInstall.isNotEmpty) {
+      Get.snackbar(
+        'Installation Incomplete',
+        '${pendingInstall.length} installation & testing item(s) are still pending. '
+            'Complete them before submitting the work order.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade800,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+        icon: const Icon(
+          Icons.handyman_outlined,
+          color: Colors.white,
+        ),
+      );
+
+      return;
+    }
+
+    // ============================================================
+    // 2. VALIDATE PHOTO
+    // ============================================================
+
     if (uploadedPhotos.isEmpty) {
       Get.snackbar(
         'Proof Required',
-        'Please attach at least one photo as proof of work completion.',
+        'Please attach at least one work completion photo.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade700,
         colorText: Colors.white,
@@ -418,16 +489,16 @@ class TaskCompletionController extends GetxController {
       return;
     }
 
+    // ============================================================
+    // 3. SUBMIT
+    // ============================================================
+
     try {
       isSubmitting.value = true;
 
       uploadProgress.value = 0.0;
       uploadProgressText.value = 'Preparing upload...';
 
-
-      // IMPORTANT:
-      // Use Dio's FormData explicitly.
-      // fromMap({}) works safely across Dio versions.
       final formData = dio.FormData.fromMap({
         'taskId': taskId.value,
         'remarks': notesController.text.trim(),
@@ -435,22 +506,28 @@ class TaskCompletionController extends GetxController {
         'taskLocation': taskLocation.value,
       });
 
-      // Add checklist
+      // ==========================================================
+      // ADD SOW CHECKLIST
+      // ==========================================================
+
       formData.fields.add(
         MapEntry(
-          'checklist',
+          'sow_items',
           jsonEncode(
-            checklist.map(
-                  (item) => {
-                'title': item.title,
-                'isChecked': item.isChecked,
-              },
-            ).toList(),
+            sowItems.map((item) {
+              return {
+                'id': item.id,
+                'status': item.status,
+              };
+            }).toList(),
           ),
         ),
       );
 
-      // Add photos
+      // ==========================================================
+      // ADD PHOTOS
+      // ==========================================================
+
       for (final photo in uploadedPhotos) {
         final file = await dio.MultipartFile.fromFile(
           photo.filePath,
@@ -465,28 +542,43 @@ class TaskCompletionController extends GetxController {
         );
       }
 
-      // Call common API service
+      // ==========================================================
+      // API
+      // ==========================================================
+
       final response = await _apiService.postMultipart(
         ApiRoutes.taskSubmitted,
         data: formData,
         onSendProgress: (sent, total) {
           if (total > 0) {
-            final percentage = ((sent / total) * 100).round();
-            uploadProgress.value = percentage / 100;
-            uploadProgressText.value = 'Uploading photos... $percentage%';
+            final percentage =
+            ((sent / total) * 100).round();
+
+            uploadProgress.value =
+                percentage / 100;
+
+            uploadProgressText.value =
+            'Uploading photos... $percentage%';
           }
         },
       );
 
+      // ==========================================================
+      // SUCCESS
+      // ==========================================================
+
       if (response.statusCode == 200 ||
           response.statusCode == 201) {
-        isSubmitting.value = false;
+
         uploadProgress.value = 1.0;
         uploadProgressText.value =
         'Upload completed';
 
         if (context.mounted) {
-          _showSuccessDialog(context,"Success with Gurpreet");
+          _showSuccessDialog(
+            context,
+            "Task completed successfully",
+          );
         }
       } else {
         throw ApiException(
@@ -494,9 +586,13 @@ class TaskCompletionController extends GetxController {
           statusCode: response.statusCode,
         );
       }
-    } on ApiException catch (e) {
-      isSubmitting.value = false;
+    }
 
+    // ============================================================
+    // API ERROR
+    // ============================================================
+
+    on ApiException catch (e) {
       Get.snackbar(
         'Upload Failed',
         e.message,
@@ -505,20 +601,29 @@ class TaskCompletionController extends GetxController {
         colorText: Colors.white,
         margin: const EdgeInsets.all(16),
       );
-    } on dio.DioException catch (e) {
-      isSubmitting.value = false;
+    }
 
+    // ============================================================
+    // NETWORK ERROR
+    // ============================================================
+
+    on dio.DioException catch (e) {
       Get.snackbar(
         'Network Error',
-        e.message ?? 'Unable to connect to server.',
+        e.message ??
+            'Unable to connect to server.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade700,
         colorText: Colors.white,
         margin: const EdgeInsets.all(16),
       );
-    } catch (e) {
-      isSubmitting.value = false;
+    }
 
+    // ============================================================
+    // UNKNOWN ERROR
+    // ============================================================
+
+    catch (e) {
       Get.snackbar(
         'Error',
         'Something went wrong. Please try again.',
@@ -528,7 +633,143 @@ class TaskCompletionController extends GetxController {
         margin: const EdgeInsets.all(16),
       );
     }
+
+    // ============================================================
+    // ALWAYS RESET
+    // ============================================================
+
+    finally {
+      isSubmitting.value = false;
+    }
   }
+  // Future<void> submitTaskCompletion(
+  //     BuildContext context,
+  //     ) async
+  // {
+  //   if (uploadedPhotos.isEmpty) {
+  //     Get.snackbar(
+  //       'Proof Required',
+  //       'Please attach at least one work completion.',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.shade700,
+  //       colorText: Colors.white,
+  //       margin: const EdgeInsets.all(16),
+  //     );
+  //
+  //     return;
+  //   }
+  //
+  //   try {
+  //     isSubmitting.value = true;
+  //
+  //     uploadProgress.value = 0.0;
+  //     uploadProgressText.value = 'Preparing upload...';
+  //
+  //
+  //     // IMPORTANT:
+  //     // Use Dio's FormData explicitly.
+  //     // fromMap({}) works safely across Dio versions.
+  //     final formData = dio.FormData.fromMap({
+  //       'taskId': taskId.value,
+  //       'remarks': notesController.text.trim(),
+  //       'taskCategory': taskCategory.value,
+  //       'taskLocation': taskLocation.value,
+  //     });
+  //
+  //     // Add checklist
+  //     formData.fields.add(
+  //       MapEntry(
+  //         'checklist',
+  //         jsonEncode(
+  //           checklist.map(
+  //                 (item) => {
+  //               'title': item.title,
+  //               'isChecked': item.isChecked,
+  //             },
+  //           ).toList(),
+  //         ),
+  //       ),
+  //     );
+  //
+  //     // Add photos
+  //     for (final photo in uploadedPhotos) {
+  //       final file = await dio.MultipartFile.fromFile(
+  //         photo.filePath,
+  //         filename: photo.fileName,
+  //       );
+  //
+  //       formData.files.add(
+  //         MapEntry(
+  //           'photos',
+  //           file,
+  //         ),
+  //       );
+  //     }
+  //
+  //     // Call common API service
+  //     final response = await _apiService.postMultipart(
+  //       ApiRoutes.taskSubmitted,
+  //       data: formData,
+  //       onSendProgress: (sent, total) {
+  //         if (total > 0) {
+  //           final percentage = ((sent / total) * 100).round();
+  //           uploadProgress.value = percentage / 100;
+  //           uploadProgressText.value = 'Uploading photos... $percentage%';
+  //         }
+  //       },
+  //     );
+  //
+  //     if (response.statusCode == 200 ||
+  //         response.statusCode == 201) {
+  //       isSubmitting.value = false;
+  //       uploadProgress.value = 1.0;
+  //       uploadProgressText.value =
+  //       'Upload completed';
+  //
+  //       if (context.mounted) {
+  //         _showSuccessDialog(context,"Success with Gurpreet");
+  //       }
+  //     } else {
+  //       throw ApiException(
+  //         message: 'Unable to complete task.',
+  //         statusCode: response.statusCode,
+  //       );
+  //     }
+  //   } on ApiException catch (e) {
+  //     isSubmitting.value = false;
+  //
+  //     Get.snackbar(
+  //       'Upload Failed',
+  //       e.message,
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.shade700,
+  //       colorText: Colors.white,
+  //       margin: const EdgeInsets.all(16),
+  //     );
+  //   } on dio.DioException catch (e) {
+  //     isSubmitting.value = false;
+  //
+  //     Get.snackbar(
+  //       'Network Error',
+  //       e.message ?? 'Unable to connect to server.',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.shade700,
+  //       colorText: Colors.white,
+  //       margin: const EdgeInsets.all(16),
+  //     );
+  //   } catch (e) {
+  //     isSubmitting.value = false;
+  //
+  //     Get.snackbar(
+  //       'Error',
+  //       'Something went wrong. Please try again.',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.shade700,
+  //       colorText: Colors.white,
+  //       margin: const EdgeInsets.all(16),
+  //     );
+  //   }
+  // }
 
 
   void _showSuccessDialog(
@@ -662,6 +903,134 @@ class TaskCompletionController extends GetxController {
     notesController.dispose();
     super.onClose();
   }
+  Future<void> toggleSowItem(SowItemModel item) async {
+
+    // ------------------------------------------------------------
+    // If technician is trying to update an INSTALL item,
+    // first verify that ALL PRE-INSTALL items are completed.
+    // ------------------------------------------------------------
+    if (item.type == 'install') {
+
+      final pendingPreInstall = sowItems.where(
+            (e) =>
+        e.type == 'pre_install' &&
+            e.status != 1,
+      ).toList();
+
+      if (pendingPreInstall.isNotEmpty) {
+
+        Get.snackbar(
+          'Complete Pre-Installation First',
+          '${pendingPreInstall.length} pre-installation item(s) are still pending. '
+              'Complete all pre-installation checks before starting installation.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange.shade800,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+          icon: const Icon(
+            Icons.lock_outline_rounded,
+            color: Colors.white,
+          ),
+        );
+
+        return;
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Find SOW item
+    // ------------------------------------------------------------
+    final index = sowItems.indexWhere(
+          (e) => e.id == item.id,
+    );
+
+    if (index == -1) return;
+
+    final currentItem = sowItems[index];
+
+    final newStatus =
+    currentItem.status == 1 ? 0 : 1;
+
+    final updatedItem = currentItem.copyWith(
+      status: newStatus,
+      completedAt: newStatus == 1
+          ? DateTime.now()
+          : null,
+    );
+
+    // ------------------------------------------------------------
+    // Update RxList -> Obx automatically rebuilds
+    // ------------------------------------------------------------
+    sowItems[index] = updatedItem;
+
+    // ------------------------------------------------------------
+    // Update original WorkOrderModel
+    // ------------------------------------------------------------
+    final taskIndex = task.sowItems.indexWhere(
+          (e) => e.id == item.id,
+    );
+
+    if (taskIndex != -1) {
+      task.sowItems[taskIndex] = updatedItem;
+    }
+
+    // ------------------------------------------------------------
+    // Save locally
+    // ------------------------------------------------------------
+    await storage.updateWorkOrderData(task);
+  }
+
+  bool get isPreInstallationCompleted {
+    final preInstallItems = sowItems
+        .where((e) => e.type == 'pre_install')
+        .toList();
+
+    // If there are no pre-install items, don't block installation.
+    if (preInstallItems.isEmpty) {
+      return true;
+    }
+
+    return preInstallItems.every(
+          (e) => e.status == 1,
+    );
+  }
+
+  // Future<void> toggleSowItem(SowItemModel item) async {
+  //   final index = sowItems.indexWhere(
+  //         (e) => e.id == item.id,
+  //   );
+  //
+  //   if (index == -1) return;
+  //
+  //   final currentItem = sowItems[index];
+  //
+  //   final newStatus = currentItem.status == 1 ? 0 : 1;
+  //
+  //   final updatedItem = currentItem.copyWith(
+  //     status: newStatus,
+  //     completedAt: newStatus == 1
+  //         ? DateTime.now()
+  //         : null,
+  //   );
+  //
+  //   // 1. Update RxList
+  //   // This immediately rebuilds Obx.
+  //   sowItems[index] = updatedItem;
+  //
+  //   // 2. Also update original task
+  //   final taskIndex = task.sowItems.indexWhere(
+  //         (e) => e.id == item.id,
+  //   );
+  //
+  //   if (taskIndex != -1) {
+  //     task.sowItems[taskIndex] = updatedItem;
+  //   }
+  //
+  //   // 3. Save updated WorkOrder locally
+  //   await storage.updateWorkOrderData(task);
+  // }
+
 }
 
 

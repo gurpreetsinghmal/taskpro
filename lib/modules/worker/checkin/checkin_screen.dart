@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -12,10 +14,7 @@ import '../../../theme/app_colors.dart';
 class CheckInScreen extends StatelessWidget {
   final WorkOrderModel task;
 
-  const CheckInScreen({
-    super.key,
-    required this.task,
-  });
+  const CheckInScreen({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +30,9 @@ class CheckInScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildWorkOrderHeader(controller,context),
+              _buildWorkOrderHeader(controller, context),
               const SizedBox(height: 14),
-              _CheckInOutCard(
-                task: task,
-                controller: controller,
-              ),
+              _CheckInOutCard(task: task, controller: controller),
             ],
           ),
         ),
@@ -109,17 +105,16 @@ class CheckInScreen extends StatelessWidget {
   // WORK ORDER HEADER
   // ==========================================================
 
-  Widget _buildWorkOrderHeader(CheckinController controller, BuildContext context) {
+  Widget _buildWorkOrderHeader(
+    CheckinController controller,
+    BuildContext context,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1D4ED8),
-            Color(0xFF2563EB),
-            Color(0xFF3B82F6),
-          ],
+          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB), Color(0xFF3B82F6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -194,21 +189,14 @@ class CheckInScreen extends StatelessWidget {
                     color: Colors.white.withValues(alpha: .12),
                   ),
                 ),
-                child:  Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.info,
-                      size: 13,
-                      color: Colors.white,
-                    ),
+                    Icon(Icons.info, size: 13, color: Colors.white),
                     SizedBox(width: 5),
                     InkWell(
                       onTap: () {
-                        WorkOrderDetailsModal.show(
-                          context,
-                          task,
-                        );
+                        WorkOrderDetailsModal.show(context, task);
                       },
                       child: Text(
                         'Details',
@@ -225,7 +213,6 @@ class CheckInScreen extends StatelessWidget {
               ),
             ],
           ),
-
         ],
       ),
     );
@@ -240,10 +227,7 @@ class _CheckInOutCard extends StatelessWidget {
   final WorkOrderModel task;
   final CheckinController controller;
 
-  const _CheckInOutCard({
-    required this.task,
-    required this.controller,
-  });
+  const _CheckInOutCard({required this.task, required this.controller});
 
   static const Color _blue = Color(0xFF2563EB);
   static const Color _green = Color(0xFF16A34A);
@@ -267,15 +251,19 @@ class _CheckInOutCard extends StatelessWidget {
           // CURRENT STATUS CARD
           // ==================================================
 
-          findButton(title: 'Navigate to Location',icon: Icon(Icons.location_on_outlined,color: Colors.white,),
-      onPressed: ()=>_openGoogleMaps(task.address!.googleMapLink),backgroundColor: AppColors.success,textColor: AppColors.textWhite),
+          findButton(
+            title: 'Navigate to Location',
+            icon: Icon(Icons.location_on_outlined, color: Colors.white),
+            onPressed: () => _openGoogleMaps(task.address!.googleMapLink),
+            backgroundColor: AppColors.success,
+            textColor: AppColors.textWhite,
+          ),
 
           const SizedBox(height: 12),
 
           // ==================================================
           // GO TO SITE
           // ==================================================
-
           if (controller.isCheckedIn) ...[
             _buildworkCompletionCheckList(),
             const SizedBox(height: 12),
@@ -284,13 +272,11 @@ class _CheckInOutCard extends StatelessWidget {
           // ==================================================
           // SESSION SUMMARY
           // ==================================================
-
           _buildSummary(controller),
 
           // ==================================================
           // ACTIVE SESSION
           // ==================================================
-
           if (activeSession != null) ...[
             const SizedBox(height: 12),
             _ActiveSessionCard(
@@ -304,18 +290,14 @@ class _CheckInOutCard extends StatelessWidget {
           // ==================================================
           // HISTORY
           // ==================================================
-
           if (completedSessions.isNotEmpty) ...[
             const SizedBox(height: 12),
-            _SessionHistory(
-              sessions: completedSessions,
-            ),
+            _SessionHistory(sessions: completedSessions),
           ],
 
           // ==================================================
           // CHECK IN
           // ==================================================
-
           if (activeSession == null && task.statusId == 59) ...[
             const SizedBox(height: 14),
             _buildCheckInButton(context),
@@ -328,8 +310,6 @@ class _CheckInOutCard extends StatelessWidget {
   // ==========================================================
   // STATUS CARD
   // ==========================================================
-
-
 
   // ==========================================================
   // GO TO SITE
@@ -351,11 +331,7 @@ class _CheckInOutCard extends StatelessWidget {
       child: findButton(
         title: "Work Completion Check List",
         onPressed: () {
-          Get.to(
-                () => TaskCompletionScreen(
-              task: controller.task,
-            ),
-          );
+          Get.to(() => TaskCompletionScreen(task: controller.task));
         },
         backgroundColor: const Color(0xFF172033),
         icon: const Icon(
@@ -374,16 +350,11 @@ class _CheckInOutCard extends StatelessWidget {
   Widget _buildSummary(CheckinController controller) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        vertical: 17,
-        horizontal: 5,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5EAF1),
-        ),
+        border: Border.all(color: const Color(0xFFE5EAF1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: .025),
@@ -416,9 +387,7 @@ class _CheckInOutCard extends StatelessWidget {
             child: _SessionSummaryItem(
               icon: Icons.timer_outlined,
               title: 'Total Time',
-              value: _formatDuration(
-                controller.totalWorkedDuration,
-              ),
+              value: _formatDuration(controller.totalWorkedDuration),
               color: const Color(0xFF7C3AED),
             ),
           ),
@@ -428,11 +397,7 @@ class _CheckInOutCard extends StatelessWidget {
   }
 
   Widget _verticalDivider() {
-    return Container(
-      width: 1,
-      height: 42,
-      color: const Color(0xFFE5EAF1),
-    );
+    return Container(width: 1, height: 42, color: const Color(0xFFE5EAF1));
   }
 
   // ==========================================================
@@ -456,17 +421,10 @@ class _CheckInOutCard extends StatelessWidget {
         title: controller.workSessions.isEmpty
             ? 'Check In'
             : 'Start New Check In',
-        icon: const Icon(
-          Icons.login_rounded,
-          size: 20,
-          color: Colors.white,
-        ),
+        icon: const Icon(Icons.login_rounded, size: 20, color: Colors.white),
         backgroundColor: _blue,
         onPressed: () {
-          _confirmCheckIn(
-            context,
-            controller,
-          );
+          _confirmCheckIn(context, controller);
         },
       ),
     );
@@ -477,33 +435,16 @@ class _CheckInOutCard extends StatelessWidget {
   // ==========================================================
 
   Future<void> _confirmCheckIn(
-      BuildContext context,
-      CheckinController controller,
-      ) async {
+    BuildContext context,
+    CheckinController controller,
+  ) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        titlePadding: const EdgeInsets.fromLTRB(
-          22,
-          22,
-          22,
-          8,
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(
-          22,
-          4,
-          22,
-          8,
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(
-          16,
-          0,
-          16,
-          16,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
+        contentPadding: const EdgeInsets.fromLTRB(22, 4, 22, 8),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         title: Row(
           children: [
             Container(
@@ -513,11 +454,7 @@ class _CheckInOutCard extends StatelessWidget {
                 color: _blue.withValues(alpha: .09),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
-                Icons.login_rounded,
-                color: _blue,
-                size: 22,
-              ),
+              child: const Icon(Icons.login_rounded, color: _blue, size: 22),
             ),
             const SizedBox(width: 11),
             const Expanded(
@@ -532,14 +469,17 @@ class _CheckInOutCard extends StatelessWidget {
             ),
           ],
         ),
-        content: const Text(
-          'Are you ready to start working on this work order?\n\n'
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Are you ready to start working on this work order?\n\n'
               'Your check-in time will be recorded when you confirm.',
-          style: TextStyle(
-            fontSize: 12.5,
-            height: 1.5,
-            color: _muted,
-          ),
+              style: TextStyle(fontSize: 12.5, height: 1.5, color: _muted),
+            ),
+            SizedBox(height: 12,),
+             _buildGetSignature(controller, controller.signatureBase64CheckIn),
+          ],
         ),
         actions: [
           TextButton(
@@ -552,31 +492,39 @@ class _CheckInOutCard extends StatelessWidget {
               ),
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: () => Get.back(result: true),
-            icon: const Icon(
-              Icons.play_arrow_rounded,
-              size: 18,
-            ),
-            label: const Text(
-              'Start ',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
+
+          Obx(() {
+            final hasSignature =
+                controller.signatureBase64CheckIn.value?.isNotEmpty ?? false;
+
+            if (!hasSignature) {
+              return const SizedBox.shrink();
+            }
+
+            return ElevatedButton.icon(
+              onPressed: () => Get.back(result: true),
+              icon: const Icon(
+                Icons.play_arrow_rounded,
+                size: 18,
               ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _blue,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 15,
-                vertical: 12,
+              label: const Text(
+                'Start',
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(13),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _blue,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -591,33 +539,16 @@ class _CheckInOutCard extends StatelessWidget {
   // ==========================================================
 
   Future<void> _confirmCheckOut(
-      BuildContext context,
-      CheckinController controller,
-      ) async {
+    BuildContext context,
+    CheckinController controller,
+  ) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        titlePadding: const EdgeInsets.fromLTRB(
-          22,
-          22,
-          22,
-          8,
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(
-          22,
-          4,
-          22,
-          8,
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(
-          16,
-          0,
-          16,
-          16,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
+        contentPadding: const EdgeInsets.fromLTRB(22, 4, 22, 8),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         title: Row(
           children: [
             Container(
@@ -627,11 +558,7 @@ class _CheckInOutCard extends StatelessWidget {
                 color: _red.withValues(alpha: .09),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
-                Icons.logout_rounded,
-                color: _red,
-                size: 22,
-              ),
+              child: const Icon(Icons.logout_rounded, color: _red, size: 22),
             ),
             const SizedBox(width: 11),
             const Expanded(
@@ -646,52 +573,59 @@ class _CheckInOutCard extends StatelessWidget {
             ),
           ],
         ),
-        content: const Text(
-          'Are you sure you want to check out from this session?\n\n'
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Are you sure you want to check out from this session?\n\n'
               'Your work session will be completed and the check-out time will be recorded.',
-          style: TextStyle(
-            fontSize: 12.5,
-            height: 1.5,
-            color: _muted,
-          ),
+              style: TextStyle(fontSize: 12.5, height: 1.5, color: _muted),
+            ),
+            SizedBox(height: 12,),
+            _buildGetSignature(controller, controller.signatureBase64CheckOut),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
             child: const Text(
               'Cancel',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: _muted,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w700, color: _muted),
             ),
           ),
-          ElevatedButton.icon(
-            onPressed: () => Get.back(result: true),
-            icon: const Icon(
-              Icons.logout_rounded,
-              size: 17,
-            ),
-            label: const Text(
-              'Check Out',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
+          Obx(() {
+            final hasSignature =
+                controller.signatureBase64CheckOut.value?.isNotEmpty ?? false;
+
+            if (!hasSignature) {
+              return const SizedBox.shrink();
+            }
+
+            return ElevatedButton.icon(
+              onPressed: () => Get.back(result: true),
+              icon: const Icon(
+                Icons.logout_rounded,
+                size: 18,
               ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _red,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 15,
-                vertical: 12,
+              label: const Text(
+                'Check Out',
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(13),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _red,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
               ),
-            ),
-          ),
-        ],
+            );
+          }),
+          ],
       ),
     );
 
@@ -701,7 +635,7 @@ class _CheckInOutCard extends StatelessWidget {
   }
 
   static String _formatDuration(Duration duration) {
-    final days=duration.inDays;
+    final days = duration.inDays;
     final hours = duration.inHours.remainder(24);
     final minutes = duration.inMinutes.remainder(60);
     if (days > 0) {
@@ -715,19 +649,212 @@ class _CheckInOutCard extends StatelessWidget {
     return '${minutes}m';
   }
 
-  static Future<void> _openGoogleMaps(
-      String address
-      ) async {
+  static Future<void> _openGoogleMaps(String address) async {
     final Uri googleMapsUri;
 
     googleMapsUri = Uri.parse(address);
 
     if (await canLaunchUrl(googleMapsUri)) {
-      await launchUrl(
-        googleMapsUri,
-        mode: LaunchMode.externalApplication,
-      );
+      await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  _buildGetSignature(CheckinController controller, RxnString signatureBase64) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Obx(() {
+        final hasSignature =
+            signatureBase64.value != null && signatureBase64.value!.isNotEmpty;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Client Signature',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        hasSignature
+                            ? 'Signature has been added'
+                            : 'Please add a signature',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: hasSignature
+                              ? Colors.green.shade600
+                              : Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Add / Change button
+                OutlinedButton.icon(
+                  onPressed: () {
+                    controller.captureSignature(signatureBase64);
+                  },
+                  icon: Icon(
+                    hasSignature ? Icons.edit_rounded : Icons.add_rounded,
+                    size: 17,
+                  ),
+                  label: Text(hasSignature ? 'Change' : 'Add'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Signature Image
+            if (hasSignature)
+              Container(
+                width: double.infinity,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFAFAFA),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Stack(
+                    children: [
+                      // Signature
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Image.memory(
+                            base64Decode(signatureBase64.value!),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+
+                      // Small "Signed" badge
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.green.shade100),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle_rounded,
+                                size: 14,
+                                color: Colors.green.shade600,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Signed',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              // Empty Signature Area
+              Container(
+                width: double.infinity,
+                height: 140,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFAFAFA),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300, width: 1),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    controller.captureSignature(signatureBase64);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.draw_outlined,
+                        size: 34,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No signature added',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap "Add" to sign',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      }),
+    );
   }
 }
 
@@ -739,18 +866,12 @@ class _StatusBadge extends StatelessWidget {
   final String text;
   final Color color;
 
-  const _StatusBadge({
-    required this.text,
-    required this.color,
-  });
+  const _StatusBadge({required this.text, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: .09),
         borderRadius: BorderRadius.circular(20),
@@ -761,10 +882,7 @@ class _StatusBadge extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 5),
           Text(
@@ -785,7 +903,6 @@ class _StatusBadge extends StatelessWidget {
 // ============================================================
 // SESSION CONTAINER
 // ============================================================
-
 
 // ============================================================
 // SESSION SUMMARY ITEM
@@ -815,11 +932,7 @@ class _SessionSummaryItem extends StatelessWidget {
             color: color.withValues(alpha: .08),
             borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: color,
-          ),
+          child: Icon(icon, size: 18, color: color),
         ),
         const SizedBox(height: 7),
         Text(
@@ -856,10 +969,7 @@ class _ActiveSessionCard extends StatelessWidget {
   final WorkSessionModel session;
   final VoidCallback onCheckOut;
 
-  const _ActiveSessionCard({
-    required this.session,
-    required this.onCheckOut,
-  });
+  const _ActiveSessionCard({required this.session, required this.onCheckOut});
 
   @override
   Widget build(BuildContext context) {
@@ -868,17 +978,12 @@ class _ActiveSessionCard extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFF0FDF4),
-            Color(0xFFFFFFFF),
-          ],
+          colors: [Color(0xFFF0FDF4), Color(0xFFFFFFFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(21),
-        border: Border.all(
-          color: const Color(0xFFBBF7D0),
-        ),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF16A34A).withValues(alpha: .07),
@@ -931,10 +1036,7 @@ class _ActiveSessionCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDCFCE7),
                   borderRadius: BorderRadius.circular(20),
@@ -955,16 +1057,11 @@ class _ActiveSessionCard extends StatelessWidget {
 
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 11,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFFE2E8F0),
-              ),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: [
@@ -993,9 +1090,7 @@ class _ActiveSessionCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  _formatDateTime(
-                    session.checkInDateTime,
-                  ),
+                  _formatDateTime(session.checkInDateTime),
                   textAlign: TextAlign.right,
                   style: const TextStyle(
                     fontSize: 11,
@@ -1014,23 +1109,16 @@ class _ActiveSessionCard extends StatelessWidget {
             height: 47,
             child: OutlinedButton.icon(
               onPressed: onCheckOut,
-              icon: const Icon(
-                Icons.logout_rounded,
-                size: 18,
-              ),
+              icon: const Icon(Icons.logout_rounded, size: 18),
               label: const Text(
                 'Check Out',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w900),
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFFDC2626),
                 backgroundColor: Colors.white,
                 side: BorderSide(
-                  color: const Color(0xFFDC2626).withValues(
-                    alpha: .30,
-                  ),
+                  color: const Color(0xFFDC2626).withValues(alpha: .30),
                   width: 1.2,
                 ),
                 shape: RoundedRectangleBorder(
@@ -1047,9 +1135,7 @@ class _ActiveSessionCard extends StatelessWidget {
   static String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '--';
 
-    return DateFormat(
-      'dd MMM yyyy, hh:mm a',
-    ).format(dateTime);
+    return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
   }
 }
 
@@ -1060,9 +1146,7 @@ class _ActiveSessionCard extends StatelessWidget {
 class _SessionHistory extends StatelessWidget {
   final List<WorkSessionModel> sessions;
 
-  const _SessionHistory({
-    required this.sessions,
-  });
+  const _SessionHistory({required this.sessions});
 
   @override
   Widget build(BuildContext context) {
@@ -1071,9 +1155,7 @@ class _SessionHistory extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE5EAF1),
-        ),
+        border: Border.all(color: const Color(0xFFE5EAF1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: .025),
@@ -1083,20 +1165,10 @@ class _SessionHistory extends StatelessWidget {
         ],
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(
-          dividerColor: Colors.transparent,
-        ),
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(
-            horizontal: 15,
-            vertical: 2,
-          ),
-          childrenPadding: const EdgeInsets.fromLTRB(
-            12,
-            0,
-            12,
-            10,
-          ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
           initiallyExpanded: false,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -1147,10 +1219,7 @@ class _SessionHistory extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(15),
@@ -1167,14 +1236,12 @@ class _SessionHistory extends StatelessWidget {
             ],
           ),
           children: [
-            ...sessions.asMap().entries.map(
-                  (entry) {
-                return _SessionHistoryItem(
-                  sessionNumber: entry.key + 1,
-                  session: entry.value,
-                );
-              },
-            ),
+            ...sessions.asMap().entries.map((entry) {
+              return _SessionHistoryItem(
+                sessionNumber: entry.key + 1,
+                session: entry.value,
+              );
+            }),
           ],
         ),
       ),
@@ -1367,7 +1434,6 @@ class _SessionHistory extends StatelessWidget {
 //   }
 // }
 
-
 class _SessionHistoryItem extends StatelessWidget {
   final int sessionNumber;
   final WorkSessionModel session;
@@ -1387,9 +1453,7 @@ class _SessionHistoryItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE7ECF3),
-        ),
+        border: Border.all(color: const Color(0xFFE7ECF3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.035),
@@ -1413,14 +1477,8 @@ class _SessionHistoryItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isActive
-                          ? const [
-                        Color(0xFF16A34A),
-                        Color(0xFF22C55E),
-                      ]
-                          : const [
-                        Color(0xFF2563EB),
-                        Color(0xFF3B82F6),
-                      ],
+                          ? const [Color(0xFF16A34A), Color(0xFF22C55E)]
+                          : const [Color(0xFF2563EB), Color(0xFF3B82F6)],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -1451,9 +1509,7 @@ class _SessionHistoryItem extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        isActive
-                            ? 'Currently in progress'
-                            : 'Completed work ',
+                        isActive ? 'Currently in progress' : 'Completed work ',
                         style: const TextStyle(
                           fontSize: 11,
                           color: Color(0xFF94A3B8),
@@ -1465,18 +1521,12 @@ class _SessionHistoryItem extends StatelessWidget {
                 ),
 
                 if (isActive)
-                  const _StatusBadge(
-                    text: 'ACTIVE',
-                    color: Color(0xFF16A34A),
-                  ),
+                  const _StatusBadge(text: 'ACTIVE', color: Color(0xFF16A34A)),
               ],
             ),
           ),
 
-          const Divider(
-            height: 1,
-            color: Color(0xFFEFF2F6),
-          ),
+          const Divider(height: 1, color: Color(0xFFEFF2F6)),
 
           // ─────────────────────────────────────────────
           // Check In
@@ -1572,8 +1622,6 @@ class _SessionHistoryItem extends StatelessWidget {
     return double.tryParse(value.toString());
   }
 
-
-
   static String _formatDuration(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
@@ -1606,10 +1654,7 @@ class _LocationEvent extends StatelessWidget {
   });
 
   bool get hasLocation =>
-      latitude != null &&
-          longitude != null &&
-          latitude != 0 &&
-          longitude != 0;
+      latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   @override
   Widget build(BuildContext context) {
@@ -1626,11 +1671,7 @@ class _LocationEvent extends StatelessWidget {
                 color: color.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 16,
-                color: color,
-              ),
+              child: Icon(icon, size: 16, color: color),
             ),
           ],
         ),
@@ -1653,44 +1694,41 @@ class _LocationEvent extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  if(hasLocation)
-                  InkWell(
-                    onTap: () => _openGoogleMaps(
-                      latitude!,
-                      longitude!,
-                    ),
-                    borderRadius: BorderRadius.circular(7),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.map_rounded,
-                            size: 12,
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Map',
-                            style: TextStyle(
-                              fontSize: 9.5,
+                  if (hasLocation)
+                    InkWell(
+                      onTap: () => _openGoogleMaps(latitude!, longitude!),
+                      borderRadius: BorderRadius.circular(7),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB),
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.map_rounded,
+                              size: 12,
                               color: Colors.white,
-                              fontWeight: FontWeight.w800,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 4),
+                            Text(
+                              'Map',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 5,),
+                  SizedBox(width: 5),
                   if (isActive)
                     const Text(
                       'IN PROGRESS',
@@ -1707,9 +1745,7 @@ class _LocationEvent extends StatelessWidget {
 
               Text(
                 dateTime == null
-                    ? (isActive
-                    ? 'Still working'
-                    : 'Not available')
+                    ? (isActive ? 'Still working' : 'Not available')
                     : _formatDateTime(dateTime),
                 style: const TextStyle(
                   fontSize: 11,
@@ -1757,32 +1793,21 @@ class _LocationEvent extends StatelessWidget {
     );
   }
 
-  static Future<void> _openGoogleMaps(
-      double latitude,
-      double longitude,
-      ) async {
+  static Future<void> _openGoogleMaps(double latitude, double longitude) async {
     final Uri googleMapsUri;
 
     googleMapsUri = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
     );
 
-
-
     if (await canLaunchUrl(googleMapsUri)) {
-      await launchUrl(
-        googleMapsUri,
-        mode: LaunchMode.externalApplication,
-      );
+      await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
     }
   }
-
 
   static String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '--';
 
-    return DateFormat(
-      'dd MMM yyyy, hh:mm a',
-    ).format(dateTime);
+    return DateFormat('dd MMM yyyy, hh:mm a').format(dateTime);
   }
 }

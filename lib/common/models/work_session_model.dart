@@ -11,12 +11,15 @@ class WorkSessionModel {
   final double? checkOutLatitude;
   final double? checkOutLongitude;
   final int? submittedFrom;
+  final String? checkInSignature;
+  final String? checkOutSignature;
   final int? createdBy;
   final int? updatedBy;
   final int? deletedBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
+
   const WorkSessionModel({
     required this.id,
     required this.workOrderId,
@@ -27,6 +30,8 @@ class WorkSessionModel {
     this.checkOutLatitude,
     this.checkOutLongitude,
     this.submittedFrom,
+    this.checkInSignature,
+    this.checkOutSignature,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
@@ -60,6 +65,8 @@ class WorkSessionModel {
     double? checkOutLatitude,
     double? checkOutLongitude,
     int? submittedFrom,
+    String? checkInSignature,
+    String? checkOutSignature,
     int? createdBy,
     int? updatedBy,
     int? deletedBy,
@@ -77,6 +84,8 @@ class WorkSessionModel {
       checkOutLatitude: checkOutLatitude ?? this.checkOutLatitude,
       checkOutLongitude: checkOutLongitude ?? this.checkOutLongitude,
       submittedFrom: submittedFrom??this.submittedFrom,
+      checkInSignature: checkInSignature ?? this.checkInSignature,
+      checkOutSignature: checkOutSignature ?? this.checkOutSignature,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
@@ -103,6 +112,8 @@ class WorkSessionModel {
       checkOutLatitude: _parseDouble(json['checkout_latitude']),
       checkOutLongitude: _parseDouble(json['checkout_longitude']),
       submittedFrom: json['submitted_from'] as int?,
+      checkInSignature: json['checkin_signature'] as String?,
+      checkOutSignature: json['checkout_signature'] as String?,
       createdBy: json['created_by'] as int?,
       updatedBy: json['updated_by'] as int?,
       deletedBy: json['deleted_by'] as int?,
@@ -125,6 +136,8 @@ class WorkSessionModel {
       'checkout_latitude': checkOutLatitude,
       'checkout_longitude': checkOutLongitude,
       'submitted_from':submittedFrom,
+      'checkin_signature': checkInSignature,
+      'checkout_signature': checkOutSignature,
       'created_by': createdBy,
       'updated_by': updatedBy,
       'deleted_by': deletedBy,
