@@ -8,6 +8,7 @@ import '../../../common/models/work_session_model.dart';
 import '../../../location/location_controller.dart';
 import '../../../location/location_service.dart';
 import '../../../services/secure_storage_service.dart';
+import '../../../singature/signature_screen.dart';
 import '../../../theme/app_colors.dart';
 
 class CheckinController extends GetxController {
@@ -23,12 +24,43 @@ class CheckinController extends GetxController {
   final storage = SecureStorageService.instance;
   final locController=Get.put(LocationController());
   late Position position;
+  /// Base64 encoded PNG signature.
+  final RxnString signatureBase64CheckIn = RxnString();
+  final RxnString signatureBase64CheckOut = RxnString();
+
   @override
   void onInit() {
     super.onInit();
     getPositions();
     /// Load sessions received from API
     workSessions.assignAll(task.checkins);
+  }
+
+  Future<void> captureSignature(refPic) async {
+    final String? result = await Get.to<String>(() => const SignatureScreen(),
+    );
+
+    if (result == null || result.isEmpty) {
+      refPic.value="";
+      return;
+    }
+    if (result.isNotEmpty) {
+      refPic.value = result;
+    }
+
+
+    update();
+
+    Get.snackbar(
+      'Signature Added',
+      'Customer signature has been captured successfully.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor:AppColors.success,
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 2),
+    );
+
   }
 
   // ------------------------------------------------------------
@@ -126,6 +158,8 @@ class CheckinController extends GetxController {
       checkOutLatitude: null,
       checkInLongitude: position.longitude,
       checkOutLongitude: null,
+      checkInSignature: signatureBase64CheckIn.value,
+      checkOutSignature: null,
       createdBy: null,
       updatedBy: null,
       deletedBy: null,
@@ -142,7 +176,7 @@ class CheckinController extends GetxController {
     );
 
     await storage.updateWorkOrderData(updatedWorkOrder);
-
+    signatureBase64CheckIn.value="";
 
 
 
@@ -184,6 +218,7 @@ class CheckinController extends GetxController {
       checkOutDateTime: DateTime.now(),
       checkOutLatitude: position.latitude,
       checkOutLongitude: position.longitude,
+      checkOutSignature: signatureBase64CheckOut.value,
     );
 
     workSessions.refresh();
@@ -194,6 +229,7 @@ class CheckinController extends GetxController {
 
     await storage.updateWorkOrderData(updatedWorkOrder);
     await LocationService.stop();
+    signatureBase64CheckOut.value="";
   }
 
   final Rxn<DateTime> checkInTime = Rxn<DateTime>();

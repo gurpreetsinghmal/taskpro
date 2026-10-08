@@ -6,13 +6,14 @@ import 'package:taskpro/modules/app_routes/app_pages.dart';
 import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:taskpro/modules/splash/splash_bindings.dart';
 import 'package:taskpro/modules/splash/splash_screen.dart';
+import 'package:taskpro/services/global_sync_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
   await LocationService.initialize();
-
+  Get.put(SyncService(), permanent: true);
   Get.put(LocationController());
   runApp(const MyApp());
 }

@@ -10,12 +10,15 @@ class WorkSessionModel {
   final double? checkInLongitude;
   final double? checkOutLatitude;
   final double? checkOutLongitude;
+  final String? checkInSignature;
+  final String? checkOutSignature;
   final int? createdBy;
   final int? updatedBy;
   final int? deletedBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
+
   const WorkSessionModel({
     required this.id,
     required this.workOrderId,
@@ -25,6 +28,8 @@ class WorkSessionModel {
     this.checkInLongitude,
     this.checkOutLatitude,
     this.checkOutLongitude,
+    this.checkInSignature,
+    this.checkOutSignature,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
@@ -57,6 +62,8 @@ class WorkSessionModel {
     double? checkInLongitude,
     double? checkOutLatitude,
     double? checkOutLongitude,
+    String? checkInSignature,
+    String? checkOutSignature,
     int? createdBy,
     int? updatedBy,
     int? deletedBy,
@@ -73,6 +80,8 @@ class WorkSessionModel {
       checkInLongitude: checkInLongitude ?? this.checkInLongitude,
       checkOutLatitude: checkOutLatitude ?? this.checkOutLatitude,
       checkOutLongitude: checkOutLongitude ?? this.checkOutLongitude,
+      checkInSignature: checkInSignature ?? this.checkInSignature,
+      checkOutSignature: checkOutSignature ?? this.checkOutSignature,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
@@ -98,6 +107,8 @@ class WorkSessionModel {
       checkInLongitude: _parseDouble(json['checkin_longitude']),
       checkOutLatitude: _parseDouble(json['checkout_latitude']),
       checkOutLongitude: _parseDouble(json['checkout_longitude']),
+      checkInSignature: json['checkin_signature'] as String?,
+      checkOutSignature: json['checkout_signature'] as String?,
       createdBy: json['created_by'] as int?,
       updatedBy: json['updated_by'] as int?,
       deletedBy: json['deleted_by'] as int?,
@@ -119,6 +130,8 @@ class WorkSessionModel {
       'checkin_longitude': checkInLongitude,
       'checkout_latitude': checkOutLatitude,
       'checkout_longitude': checkOutLongitude,
+      'checkin_signature': checkInSignature,
+      'checkout_signature': checkOutSignature,
       'created_by': createdBy,
       'updated_by': updatedBy,
       'deleted_by': deletedBy,

@@ -348,7 +348,7 @@ Future<void> sendLocation() async {
     final response = await apiService.post(
       ApiRoutes.locationMonitoring,
       data: {
-        'job_id': 1,
+        'work_order_id': 1,
         'latitude': latitude,
         'longitude': longitude,
         'tracked_at': now,

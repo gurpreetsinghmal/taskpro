@@ -16,9 +16,7 @@ class SecureStorageService {
   static final SecureStorageService instance = SecureStorageService._();
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(),
     iOptions: IOSOptions(),
   );
 
@@ -72,8 +70,6 @@ class SecureStorageService {
         .toList();
     return list;
   }
-
-
 
 
   Future<void> updateWorkOrderData(WorkOrderModel updatedWorkOrder) async {
