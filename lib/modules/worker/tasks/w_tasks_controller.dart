@@ -19,6 +19,7 @@ class WorkerTasksController extends GetxController {
 
   final isApiLoading = false.obs;
   final RxMap<int, int> hardStartChangeStatus = <int, int>{}.obs;
+  final RxMap<int, String> CheckinStatus = <int, String>{}.obs;
   final proposedTime = "".obs;
   final _apiService = ApiService();
 
@@ -49,7 +50,14 @@ class WorkerTasksController extends GetxController {
           .toList();
 
       for (var task in workOrderList) {
-          hardStartChangeStatus[task.id] = task.proposed_datetime_accepted_by_manager??0;
+          hardStartChangeStatus[task.id] = task.proposedDatetimeAcceptedByManager??0;
+          final v=await areYouCheckedIn(task.id);
+          if(v){
+            CheckinStatus[task.id]="Checked";
+          }
+          else {
+            CheckinStatus[task.id]="Not Checked";
+          }
       }
 
     }
@@ -142,13 +150,13 @@ class WorkerTasksController extends GetxController {
 
     final updatedWorkOrder = task.copyWith(
           id: task.id,
-          proposed_datetime: newSchedule,
-          proposed_datetime_accepted_by_manager: 1,
-          requested_at: DateTime.now(),
-          requested_by: int.tryParse(task.technicianId),
-          approved_at: null,
-          approved_by: null,
-          proposed_reason:'Technician requested a change in hard start time.',
+          proposedDatetime: newSchedule,
+          proposedDatetimeAcceptedByManager: 1,
+          requestedAt: DateTime.now(),
+          requestedBy: int.tryParse(task.technicianId),
+          approvedAt: null,
+          approvedBy: null,
+          proposedReason:'Technician requested a change in hard start time.',
         );
         final storage = SecureStorageService.instance;
 
@@ -180,6 +188,14 @@ class WorkerTasksController extends GetxController {
       debugPrint("❌ProposedScheduleApi Error: $error");
 
     }
+  }
+
+  Future<bool> areYouCheckedIn(int id) async{
+    int? cid=await storage.isAlreadyCheckIn();
+    if(cid!=null && cid==id){
+      return true;
+    }
+    return false;
   }
 
 

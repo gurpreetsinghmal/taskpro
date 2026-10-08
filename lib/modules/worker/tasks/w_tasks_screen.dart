@@ -1,4 +1,5 @@
 
+import 'dart:ffi';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class WorkerTasksScreen extends StatefulWidget {
 
 class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     with SingleTickerProviderStateMixin {
-  final WorkerTasksController controller = Get.put(WorkerTasksController());
+  late final WorkerTasksController controller = Get.put(WorkerTasksController());
 
   final TextEditingController searchController = TextEditingController();
 
@@ -136,16 +137,19 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       return _AnimatedTaskCard(
                         index: index,
                         animationController: _animationController,
-                        child: _TaskCard(
-                          task: tasks[index],
-                          controller: controller,
-                          onTap: () async {
-                            await _showTaskDetails(context, tasks[index]);
+                        child: Obx(
+                          ()=> _TaskCard(
+                            checkin: controller.CheckinStatus[tasks[index].id] ?? "",
+                            task: tasks[index],
+                            controller: controller,
+                            onTap: () async {
+                              await _showTaskDetails(context, tasks[index]);
 
-                            if (mounted) {
-                              await controller.getTasksData();
-                            }
-                          },
+                              if (mounted) {
+                                await controller.getTasksData();
+                              }
+                            },
+                          ),
                         ),
                       );
                     },
@@ -261,7 +265,36 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       ),
                     ),
 
-                    _HeaderCount(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(13),
+                        border: Border.all(color: Colors.white.withValues(alpha: .10)),
+                      ),
+                      child: Column(
+                        children: [
+                          Obx(()=>Text(
+                            controller.workOrderList.length.toString()??"NA",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),),
+
+                          ),
+                          const Text(
+                            "JOBS",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 7,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: .7,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   ],
                 ),
               ],
@@ -1367,7 +1400,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     // ─────────────────────────────────────────────
     // Request already exists
     // ─────────────────────────────────────────────
-    var  hasRequest = task.proposed_datetime_accepted_by_manager??0;
+    var  hasRequest = task.proposedDatetimeAcceptedByManager??0;
 
 
     final bool approved =  hasRequest == 2;
@@ -1569,7 +1602,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                     Obx(()=> _ChangeTimeBox(
                       title: 'Proposed',
                       value: controller.proposedTime.value==""
-                          ? Common.getformatDate(task.proposed_datetime.toString())
+                          ? Common.getformatDate(task.proposedDatetime.toString())
                           : Common.getformatDate(controller.proposedTime.value.toString()),
                       color: statusColor,
                     ))
@@ -1578,7 +1611,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             ],
           ),
 
-          if (rejected && task.proposed_reason != null) ...[
+          if (rejected && task.proposedReason != null) ...[
             const SizedBox(height: 10),
 
             Container(
@@ -1599,7 +1632,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(
-                      task.proposed_reason!,
+                      task.proposedReason!,
                       style: const TextStyle(
                         fontSize: 10.5,
                         height: 1.35,
@@ -1898,7 +1931,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   }
 
   Widget _buildConstant(WorkOrderModel task) {
-    var  hasRequest = task.proposed_datetime_accepted_by_manager??0;
+    var  hasRequest = task.proposedDatetimeAcceptedByManager??0;
 
     final bool approved =  hasRequest == 2;
     final bool rejected =  hasRequest == 3;
@@ -2010,7 +2043,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 Obx(()=> _ChangeTimeBox(
                   title: 'Proposed',
                   value: controller.proposedTime.value ==""
-                      ? Common.getformatDate(task.proposed_datetime.toString())
+                      ? Common.getformatDate(task.proposedDatetime.toString())
                       : Common.getformatDate(controller.proposedTime.value.toString()),
                   color: statusColor,
                 ))
@@ -2019,7 +2052,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             ],
           ),
 
-          if (rejected && task.proposed_reason != null) ...[
+          if (rejected && task.proposedReason != null) ...[
             const SizedBox(height: 10),
 
             Container(
@@ -2040,7 +2073,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(
-                      task.proposed_reason!,
+                      task.proposedReason!,
                       style: const TextStyle(
                         fontSize: 10.5,
                         height: 1.35,
@@ -2163,11 +2196,13 @@ class _TaskCard extends StatefulWidget {
   final WorkOrderModel task;
   final WorkerTasksController controller;
   final VoidCallback onTap;
+  final String checkin;
 
   const _TaskCard({
     required this.task,
     required this.controller,
     required this.onTap,
+    required this.checkin
   });
 
   @override
@@ -2183,6 +2218,8 @@ class _TaskCardState extends State<_TaskCard> {
       widget.task.statusId,
       widget.controller.workOrderStatusList,
     );
+
+    final status=widget.checkin;
 
     final statusText = Common.getStatusText(
       widget.task.statusId,
@@ -2237,6 +2274,7 @@ class _TaskCardState extends State<_TaskCard> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+
                           // Icon
                           Container(
                             height: 52,
@@ -2267,16 +2305,31 @@ class _TaskCardState extends State<_TaskCard> {
                               children: [
                                 const SizedBox(height: 5),
 
-                                Text(
-                                  widget.task.workOrderTitle,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
-                                    height: 1.2,
-                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: status=="Checked"?AppColors.success:null,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: SizedBox(),
+                                    ),
+                                    SizedBox(width: 5,),
+                                    Text(
+                                      widget.task.workOrderTitle,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.textPrimary,
+                                        height: 1.2,
+                                      ),
+                                    ),
+
+                                  ],
                                 ),
 
                                 const SizedBox(height: 5),
@@ -2360,15 +2413,16 @@ class _TaskCardState extends State<_TaskCard> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    "TECHNICIAN",
-                                    style: TextStyle(
+                                  Text(
+                                    "TECHNICIAN ",
+                                    style: const TextStyle(
                                       fontSize: 8,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: .6,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
+
                                   const SizedBox(height: 2),
                                   Text(
                                     [
@@ -2711,50 +2765,6 @@ class _AnimatedActionButtonState extends State<_AnimatedActionButton> {
   }
 }
 
-// ====================================================================
-// HEADER COUNT
-// ====================================================================
-
-class _HeaderCount extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GetBuilder<WorkerTasksController>(
-      builder: (controller) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .12),
-            borderRadius: BorderRadius.circular(13),
-            border: Border.all(color: Colors.white.withValues(alpha: .10)),
-          ),
-          child: Column(
-            children: [
-              Obx(
-                () => Text(
-                  controller.workOrderList.length.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const Text(
-                "JOBS",
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 7,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: .7,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
 
 // ====================================================================
 // EMPTY STATE

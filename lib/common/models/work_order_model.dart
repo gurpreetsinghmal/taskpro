@@ -32,13 +32,13 @@ class WorkOrderModel {
   final String? scheduledEtaTo;
   final String? hardStartTime;
   // Hard Start Time Change Request
-  final DateTime? proposed_datetime;
-  final int? proposed_datetime_accepted_by_manager;
-  final DateTime? requested_at;
-  final int? requested_by;
-  final DateTime? approved_at;
-  final int? approved_by;
-  final String? proposed_reason;
+  final DateTime? proposedDatetime;
+  final int? proposedDatetimeAcceptedByManager;
+  final DateTime? requestedAt;
+  final int? requestedBy;
+  final DateTime? approvedAt;
+  final int? approvedBy;
+  final String? proposedReason;
 
   final dynamic maxHours;
   final dynamic approximateHoursToComplete;
@@ -80,13 +80,13 @@ class WorkOrderModel {
     this.scheduledEtaTo,
     this.hardStartTime,
     // Hard Start Time Change Request
-    this.proposed_datetime,//"proposed_datetime":  "2026-09-24 23:00:00",
-    this.proposed_datetime_accepted_by_manager,//proposed_datetime_accepted_by_manager
-    this.requested_at,//requested_at
-    this.requested_by,//requested_by
-    this.approved_at,//approved_at
-    this.approved_by,//approved_by
-    this.proposed_reason,//proposed_reason
+    this.proposedDatetime, //"proposed_datetime":  "2026-09-24 23:00:00",
+    this.proposedDatetimeAcceptedByManager, //proposed_datetime_accepted_by_manager
+    this.requestedAt, //requested_at
+    this.requestedBy, //requested_by
+    this.approvedAt, //approved_at
+    this.approvedBy, //approved_by
+    this.proposedReason, //proposed_reason
     this.maxHours,
     this.approximateHoursToComplete,
     this.address,
@@ -126,31 +126,34 @@ class WorkOrderModel {
       scheduledEtaFrom: json['scheduled_eta_from'] as String?,
       scheduledEtaTo: json['scheduled_eta_to'] as String?,
       hardStartTime: json['hard_start_time'] as String?,
-      proposed_datetime: json['proposed_datetime'] != null
+      proposedDatetime: json['proposed_datetime'] != null
           ? DateTime.tryParse(json['proposed_datetime'].toString())
           : null,
 
-      proposed_datetime_accepted_by_manager: json['proposed_datetime_accepted_by_manager'] == null
+      proposedDatetimeAcceptedByManager:
+          json['proposed_datetime_accepted_by_manager'] == null
           ? null
-          : int.tryParse(json['proposed_datetime_accepted_by_manager'].toString()),
+          : int.tryParse(
+              json['proposed_datetime_accepted_by_manager'].toString(),
+            ),
 
-      requested_at: json['requested_at'] != null
+      requestedAt: json['requested_at'] != null
           ? DateTime.tryParse(json['requested_at'].toString())
           : null,
 
-      requested_by: json['requested_by'] == null
+      requestedBy: json['requested_by'] == null
           ? null
           : int.tryParse(json['requested_by'].toString()),
 
-      approved_at: json['approved_at'] != null
+      approvedAt: json['approved_at'] != null
           ? DateTime.tryParse(json['approved_at'].toString())
           : null,
 
-      approved_by: json['approved_by'] == null
+      approvedBy: json['approved_by'] == null
           ? null
           : int.tryParse(json['approved_by'].toString()),
 
-      proposed_reason: json['proposed_reason']?.toString(),
+      proposedReason: json['proposed_reason']?.toString(),
       maxHours: json['max_hours'],
       approximateHoursToComplete: json['approximate_hours_to_complete'],
       address: json['address'] is Map<String, dynamic>
@@ -198,18 +201,18 @@ class WorkOrderModel {
       'scope_of_work': scopeOfWork,
       'rate_type': rateType,
       'rate_value': rateValue,
-      'travelrate':travelRate,
+      'travelrate': travelRate,
       'scheduled_eta_from': scheduledEtaFrom,
       'scheduled_eta_to': scheduledEtaTo,
       'hard_start_time': hardStartTime,
-      'proposed_datetime': proposed_datetime?.toIso8601String(),
-      'proposed_datetime_accepted_by_manager': proposed_datetime_accepted_by_manager,
-      'requested_at': requested_at
-          ?.toIso8601String(),
-      'requested_by': requested_by,
-      'approved_at': approved_at?.toIso8601String(),
-      'approved_by': approved_by,
-      'proposed_reason': proposed_reason,
+      'proposed_datetime': proposedDatetime?.toIso8601String(),
+      'proposed_datetime_accepted_by_manager':
+          proposedDatetimeAcceptedByManager,
+      'requested_at': requestedAt?.toIso8601String(),
+      'requested_by': requestedBy,
+      'approved_at': approvedAt?.toIso8601String(),
+      'approved_by': approvedBy,
+      'proposed_reason': proposedReason,
       'max_hours': maxHours,
       'approximate_hours_to_complete': approximateHoursToComplete,
       'address': address?.toJson(),
@@ -249,13 +252,13 @@ class WorkOrderModel {
     String? scheduledEtaFrom,
     String? scheduledEtaTo,
     String? hardStartTime,
-    DateTime? proposed_datetime,
-    int? proposed_datetime_accepted_by_manager,
-    DateTime? requested_at,
-    int? requested_by,
-    DateTime? approved_at,
-    int? approved_by,
-    String? proposed_reason,
+    DateTime? proposedDatetime,
+    int? proposedDatetimeAcceptedByManager,
+    DateTime? requestedAt,
+    int? requestedBy,
+    DateTime? approvedAt,
+    int? approvedBy,
+    String? proposedReason,
     dynamic maxHours,
     dynamic approximateHoursToComplete,
     WorkOrderAddressModel? address,
@@ -302,26 +305,21 @@ class WorkOrderModel {
       scheduledEtaTo: scheduledEtaTo ?? this.scheduledEtaTo,
       hardStartTime: hardStartTime ?? this.hardStartTime,
 
-      proposed_datetime:
-          proposed_datetime ?? this.proposed_datetime,
+      proposedDatetime: proposedDatetime ?? this.proposedDatetime,
 
-      proposed_datetime_accepted_by_manager:
-          proposed_datetime_accepted_by_manager ?? this.proposed_datetime_accepted_by_manager,
+      proposedDatetimeAcceptedByManager:
+          proposedDatetimeAcceptedByManager ??
+          this.proposedDatetimeAcceptedByManager,
 
-      requested_at:
-          requested_at ?? this.requested_at,
+      requestedAt: requestedAt ?? this.requestedAt,
 
-      requested_by:
-          requested_by ?? this.requested_by,
+      requestedBy: requestedBy ?? this.requestedBy,
 
-      approved_at:
-          approved_at ?? this.approved_at,
+      approvedAt: approvedAt ?? this.approvedAt,
 
-      approved_by:
-          approved_by ?? this.approved_by,
+      approvedBy: approvedBy ?? this.approvedBy,
 
-      proposed_reason:
-          proposed_reason ?? this.proposed_reason,
+      proposedReason: proposedReason ?? this.proposedReason,
 
       maxHours: maxHours ?? this.maxHours,
       approximateHoursToComplete:

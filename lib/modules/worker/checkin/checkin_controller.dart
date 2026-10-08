@@ -93,6 +93,18 @@ class CheckinController extends GetxController {
   // ------------------------------------------------------------
 
   Future<void> checkIn() async {
+    int? id=await storage.isAlreadyCheckIn();
+    if(id!=null && id!=task.id){
+      Get.snackbar(
+        'Already Checked In',
+        'You are Already Checked In for Other($id) Work Order, First Checked Out to Start Work',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
     if(!await LocationService.start())
     {
       Get.snackbar(
@@ -129,6 +141,7 @@ class CheckinController extends GetxController {
       checkOutLatitude: null,
       checkInLongitude: position.longitude,
       checkOutLongitude: null,
+      submittedFrom: 1,
       createdBy: null,
       updatedBy: null,
       deletedBy: null,
@@ -187,6 +200,7 @@ class CheckinController extends GetxController {
       checkOutDateTime: DateTime.now(),
       checkOutLatitude: position.latitude,
       checkOutLongitude: position.longitude,
+      submittedFrom: 1
     );
 
     workSessions.refresh();
@@ -1210,16 +1224,16 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   // ------------------------------------------------------------
 
   bool get _hasHardStartRequest {
-    return workOrder.proposed_datetime != null ||
-        workOrder.requested_at != null ||
-        workOrder.approved_at != null ||
-        (workOrder.proposed_reason != null &&
-            workOrder.proposed_reason!.trim().isNotEmpty);
+    return workOrder.proposedDatetime != null ||
+        workOrder.requestedAt != null ||
+        workOrder.approvedAt != null ||
+        (workOrder.proposedReason != null &&
+            workOrder.proposedReason!.trim().isNotEmpty);
   }
 
   Widget _buildHardStartRequest() {
     final accepted =
-        workOrder.proposed_datetime_accepted_by_manager == 1;
+        workOrder.proposedDatetimeAcceptedByManager == 1;
 
     return Container(
       padding: const EdgeInsets.all(17),
@@ -1296,39 +1310,39 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
 
           const SizedBox(height: 15),
 
-          if (workOrder.proposed_datetime != null)
+          if (workOrder.proposedDatetime != null)
             _requestRow(
               Icons.event_rounded,
               'Proposed Time',
-              workOrder.proposed_datetime
+              workOrder.proposedDatetime
                   .toString()
                   .replaceFirst('T', ' '),
             ),
 
-          if (workOrder.requested_at != null)
+          if (workOrder.requestedAt != null)
             _requestRow(
               Icons.send_rounded,
               'Requested At',
-              workOrder.requested_at
+              workOrder.requestedAt
                   .toString()
                   .replaceFirst('T', ' '),
             ),
 
-          if (workOrder.approved_at != null)
+          if (workOrder.approvedAt != null)
             _requestRow(
               Icons.verified_rounded,
               'Approved At',
-              workOrder.approved_at
+              workOrder.approvedAt
                   .toString()
                   .replaceFirst('T', ' '),
             ),
 
-          if (workOrder.proposed_reason != null &&
-              workOrder.proposed_reason!.trim().isNotEmpty)
+          if (workOrder.proposedReason != null &&
+              workOrder.proposedReason!.trim().isNotEmpty)
             _requestRow(
               Icons.chat_bubble_outline_rounded,
               'Reason',
-              workOrder.proposed_reason!,
+              workOrder.proposedReason!,
             ),
         ],
       ),

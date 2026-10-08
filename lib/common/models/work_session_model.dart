@@ -10,6 +10,7 @@ class WorkSessionModel {
   final double? checkInLongitude;
   final double? checkOutLatitude;
   final double? checkOutLongitude;
+  final int? submittedFrom;
   final int? createdBy;
   final int? updatedBy;
   final int? deletedBy;
@@ -25,6 +26,7 @@ class WorkSessionModel {
     this.checkInLongitude,
     this.checkOutLatitude,
     this.checkOutLongitude,
+    this.submittedFrom,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
@@ -57,6 +59,7 @@ class WorkSessionModel {
     double? checkInLongitude,
     double? checkOutLatitude,
     double? checkOutLongitude,
+    int? submittedFrom,
     int? createdBy,
     int? updatedBy,
     int? deletedBy,
@@ -73,6 +76,7 @@ class WorkSessionModel {
       checkInLongitude: checkInLongitude ?? this.checkInLongitude,
       checkOutLatitude: checkOutLatitude ?? this.checkOutLatitude,
       checkOutLongitude: checkOutLongitude ?? this.checkOutLongitude,
+      submittedFrom: submittedFrom??this.submittedFrom,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
@@ -98,6 +102,7 @@ class WorkSessionModel {
       checkInLongitude: _parseDouble(json['checkin_longitude']),
       checkOutLatitude: _parseDouble(json['checkout_latitude']),
       checkOutLongitude: _parseDouble(json['checkout_longitude']),
+      submittedFrom: json['submitted_from'] as int?,
       createdBy: json['created_by'] as int?,
       updatedBy: json['updated_by'] as int?,
       deletedBy: json['deleted_by'] as int?,
@@ -119,6 +124,7 @@ class WorkSessionModel {
       'checkin_longitude': checkInLongitude,
       'checkout_latitude': checkOutLatitude,
       'checkout_longitude': checkOutLongitude,
+      'submitted_from':submittedFrom,
       'created_by': createdBy,
       'updated_by': updatedBy,
       'deleted_by': deletedBy,

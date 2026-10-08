@@ -9,6 +9,7 @@ import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
 import '../common/models/work_order_model.dart';
+import '../common/models/work_session_model.dart';
 
 class SecureStorageService {
   SecureStorageService._();
@@ -73,9 +74,6 @@ class SecureStorageService {
     return list;
   }
 
-
-
-
   Future<void> updateWorkOrderData(WorkOrderModel updatedWorkOrder) async {
     final workOrderList = await read(StorageKeys.workOrderList);
 
@@ -102,6 +100,45 @@ class SecureStorageService {
           .toList(),
     ));
   }
+
+  Future<WorkOrderModel?> findThisWorkOrder(int id) async {
+    final workOrderList = await read(StorageKeys.workOrderList);
+
+    if (workOrderList == null) {
+      return null;
+    }
+
+    final List<WorkOrderModel> list = (jsonDecode(workOrderList) as List)
+        .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    final index = list.indexWhere(
+          (item) => item.id == id,
+    );
+
+    if (index == -1) {
+      return null;
+    }
+
+    return list[index];
+  }
+
+  Future<int?> isAlreadyCheckIn() async{
+    final List<WorkOrderModel> list=await getWorkOrderList()??[];
+    if(list.isEmpty) return null;
+    List<WorkSessionModel> sessions=[];
+    for(final task in list){
+       sessions=task.checkins;
+       for (final session in sessions) {
+         if (session.isActive) {
+           return task.id;
+           break;
+         }
+       }
+    }
+    return null;
+  }
+
 
 }
 

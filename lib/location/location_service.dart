@@ -9,6 +9,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/network/api_service.dart';
+import 'package:taskpro/services/secure_storage_service.dart';
+import 'package:taskpro/services/storage_keys.dart';
 
 class LocationService {
   static const String notificationChannelId = 'taskpro_location_channel';
@@ -344,11 +346,12 @@ Future<void> sendLocation() async {
     // -------------------------------------------------------------
 
     final apiService = ApiService();
-
+    final storage = SecureStorageService.instance;
+    int? id= await storage.isAlreadyCheckIn();
     final response = await apiService.post(
       ApiRoutes.locationMonitoring,
       data: {
-        'job_id': 1,
+        'work_order_id': id??"0",
         'latitude': latitude,
         'longitude': longitude,
         'tracked_at': now,
