@@ -120,7 +120,7 @@ class WorkerDataService {
     } on Exception catch (error) {
       return 'Check-ins: $error';
     }
-
+/*
     try {
       final sowResponse = await api.post(
         ApiRoutes.workOrderSowItemsSync,
@@ -144,7 +144,7 @@ class WorkerDataService {
     } on Exception catch (error) {
       return 'SOW items: $error';
     }
-
+*
     try {
       final workOrderFields = task.toJson()
         ..remove('checkins')
@@ -167,7 +167,7 @@ class WorkerDataService {
           : 'Work-order details: ${error.message}';
     } on Exception catch (error) {
       return 'Work-order details: $error';
-    }
+    }*/
     return null;
   }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -415,6 +416,8 @@ class DashboardTabScreen extends StatelessWidget {
               ),
             );
           }),
+          // Show only in debug mode
+          if (kDebugMode)
           PendingSyncOrdersWidget(controller: controller),
           const SizedBox(height: 20),
 
