@@ -2657,7 +2657,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
                           Expanded(
                             child: Text(
-                              item.completedAt!.toString(),
+                              Common.formatToLocalUS(item.completedAt.toString()),
                               style: const TextStyle(
                                 color: Color(0xFF7A869A),
                                 fontSize: 9.5,

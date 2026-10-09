@@ -122,18 +122,7 @@ class CheckinController extends GetxController {
   // ------------------------------------------------------------
 
   Future<void> checkIn() async {
-    int? id=await storage.isAlreadyCheckIn();
-    if(id!=null && id!=task.id){
-      Get.snackbar(
-        'Already Checked In',
-        'You are Already Checked In for Other($id) Work Order, First Checked Out to Start Work',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-      return;
-    }
+
     if(!await LocationService.start())
     {
       Get.snackbar(

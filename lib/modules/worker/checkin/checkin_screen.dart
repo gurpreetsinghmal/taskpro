@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_controller.dart';
@@ -9,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../common/helpers/app_helper.dart';
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/work_session_model.dart';
+import '../../../services/secure_storage_service.dart';
 import '../../../theme/app_colors.dart';
 
 class CheckInScreen extends StatelessWidget {
@@ -423,7 +425,20 @@ class _CheckInOutCard extends StatelessWidget {
             : 'Start New Check In',
         icon: const Icon(Icons.login_rounded, size: 20, color: Colors.white),
         backgroundColor: _blue,
-        onPressed: () {
+        onPressed: () async{
+          final storage = SecureStorageService.instance;
+          int? id=await storage.isAlreadyCheckIn();
+          if(id!=null && id!=task.id){
+            Get.snackbar(
+              'Already Checked In',
+              'You are Already Checked In for Other Work Order, First Checked Out to Start Work',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+            return;
+          }
           _confirmCheckIn(context, controller);
         },
       ),
