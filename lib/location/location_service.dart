@@ -10,7 +10,7 @@ import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
-import 'package:taskpro/services/storage_keys.dart';
+
 
 class LocationService {
   static const String notificationChannelId = 'taskpro_location_channel';
@@ -253,11 +253,6 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  // ---------------------------------------------------------------
-  // Send location immediately
-  // ---------------------------------------------------------------
-
-  await sendLocation();
 
   // ---------------------------------------------------------------
   // Periodic location
