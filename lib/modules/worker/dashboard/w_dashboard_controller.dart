@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -79,7 +80,7 @@ class WorkerDashboardController extends GetxController {
 
   Future<bool> hitOnlineSyncApi(WorkOrderModel task) async {
     try {
-
+      log(task.checkins.map((e)=>e.toJson()).toList().toString());
       final value = await _apiService.post(ApiRoutes.workOrderCheckInSync,data:{
         "checkins":task.checkins.map((e)=>e.toJson()).toList()
       }, isLoaderShow: false);

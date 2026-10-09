@@ -133,7 +133,6 @@ class SecureStorageService {
        for (final session in sessions) {
          if (session.isActive) {
            return task.id;
-           break;
          }
        }
     }
