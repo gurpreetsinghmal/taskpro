@@ -661,7 +661,7 @@ class _CheckInOutCard extends StatelessWidget {
 
   _buildGetSignature(CheckinController controller, RxnString signatureBase64) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -690,9 +690,9 @@ class _CheckInOutCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Client Signature',
+                        'Customer Representative Signature',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1E293B),
                         ),

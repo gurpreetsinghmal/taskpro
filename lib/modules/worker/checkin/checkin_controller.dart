@@ -51,15 +51,15 @@ class CheckinController extends GetxController {
 
     update();
 
-    Get.snackbar(
-      'Signature Added',
-      'Customer signature has been captured successfully.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor:AppColors.success,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(16),
-      duration: const Duration(seconds: 2),
-    );
+    // Get.snackbar(
+    //   'Signature Added',
+    //   'Customer signature has been captured successfully.',
+    //   snackPosition: SnackPosition.BOTTOM,
+    //   backgroundColor:AppColors.success,
+    //   colorText: Colors.white,
+    //   margin: const EdgeInsets.all(16),
+    //   duration: const Duration(seconds: 2),
+    // );
 
   }
 
@@ -429,7 +429,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
 
                   _sectionTitle(
                     icon: Icons.groups_rounded,
-                    title: 'People',
+                    title: 'On Site POC',
                   ),
 
                   const SizedBox(height: 10),
@@ -991,6 +991,18 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   Widget _buildPeopleSection() {
     return Column(
       children: [
+        _personCard(
+          icon: Icons.person_2_outlined,
+          title: 'Client POC',
+          name: (workOrder.contactFirstName == null && workOrder.contactLastName == null)
+              ? "-"
+              : "${workOrder.contactFirstName ?? '-'} ${workOrder.contactLastName ?? '-'}",
+          email: "",
+          phone: workOrder.phone??"-",
+          color: Colors.orange,
+        ),
+
+        const SizedBox(height: 10),
         _personCard(
           icon: Icons.manage_accounts_rounded,
           title: 'Manager',

@@ -5,6 +5,10 @@ class WorkOrderModel {
   final String workOrderNo;
   final int leadId;
   final String leadTitle;
+  final String? contactFirstName;
+  final String? contactLastName;
+  final String? companyName;
+  final String? phone;
   final int managerId;
   final String managerFirstName;
   final String? managerMiddleName;
@@ -54,6 +58,10 @@ class WorkOrderModel {
     required this.id,
     required this.workOrderNo,
     required this.leadId,
+    required this.contactFirstName,
+    required this.contactLastName,
+    required this.companyName,
+    required this.phone,
     required this.leadTitle,
     required this.managerId,
     required this.managerFirstName,
@@ -102,6 +110,10 @@ class WorkOrderModel {
       id: json['id'] as int? ?? 0,
       workOrderNo: json['work_order_no']?.toString() ?? '',
       leadId: json['lead_id'] as int? ?? 0,
+      contactFirstName: json['contact_first_name'] as String? ?? '',
+      contactLastName: json['contact_last_name'] as String? ?? '',
+      companyName: json['company_name'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
       leadTitle: json['lead_title'] as String? ?? '',
       managerId: json['manager_id'] as int? ?? 0,
       managerFirstName: json['manager_first_name'] as String? ?? '',
@@ -190,6 +202,10 @@ class WorkOrderModel {
       'id': id,
       'work_order_no': workOrderNo,
       'lead_id': leadId,
+      'contact_first_name': contactFirstName,
+      'contact_last_name': contactLastName,
+      'company_name': companyName,
+      'phone': phone,
       'lead_title': leadTitle,
       'manager_id': managerId,
       'manager_first_name': managerFirstName,
@@ -238,6 +254,10 @@ class WorkOrderModel {
     int? id,
     String? workOrderNo,
     int? leadId,
+    String? contactFirstName,
+    String? contactLastName,
+    String? companyName,
+    String? phone,
     String? leadTitle,
     int? managerId,
     String? managerFirstName,
@@ -283,6 +303,10 @@ class WorkOrderModel {
       id: id ?? this.id,
       workOrderNo: workOrderNo ?? this.workOrderNo,
       leadId: leadId ?? this.leadId,
+      contactFirstName: contactFirstName ?? this.contactFirstName,
+      contactLastName: contactLastName ?? this.contactLastName,
+      companyName: companyName ?? this.companyName,
+      phone: phone ?? this.phone,
       leadTitle: leadTitle ?? this.leadTitle,
 
       managerId: managerId ?? this.managerId,
@@ -346,7 +370,107 @@ class WorkOrderModel {
     );
   }
 }
+class SowAttachmentModel {
+  final int id;
+  final int workOrderId;
+  final int sowItemId;
+  final String disk;
+  final String filePath;
+  final String originalName;
+  final String mimeType;
+  final int fileSize;
+  final int? uploadedBy;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
 
+  SowAttachmentModel({
+    required this.id,
+    required this.workOrderId,
+    required this.sowItemId,
+    required this.disk,
+    required this.filePath,
+    required this.originalName,
+    required this.mimeType,
+    required this.fileSize,
+    this.uploadedBy,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  factory SowAttachmentModel.fromJson(Map<String, dynamic> json) {
+    return SowAttachmentModel(
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      workOrderId: int.tryParse(json['work_order_id']?.toString() ?? '') ?? 0,
+      sowItemId: int.tryParse(json['sow_item_id']?.toString() ?? '') ?? 0,
+      disk: json['disk']?.toString() ?? '',
+      filePath: json['file_path']?.toString() ?? '',
+      originalName: json['original_name']?.toString() ?? '',
+      mimeType: json['mime_type']?.toString() ?? '',
+      fileSize: int.tryParse(json['file_size']?.toString() ?? '') ?? 0,
+      uploadedBy: json['uploaded_by'] != null
+          ? int.tryParse(json['uploaded_by'].toString())
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.tryParse(json['deleted_at'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'work_order_id': workOrderId,
+      'sow_item_id': sowItemId,
+      'disk': disk,
+      'file_path': filePath,
+      'original_name': originalName,
+      'mime_type': mimeType,
+      'file_size': fileSize,
+      'uploaded_by': uploadedBy,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+    };
+  }
+
+  SowAttachmentModel copyWith({
+    int? id,
+    int? workOrderId,
+    int? sowItemId,
+    String? disk,
+    String? filePath,
+    String? originalName,
+    String? mimeType,
+    int? fileSize,
+    int? uploadedBy,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? deletedAt,
+  }) {
+    return SowAttachmentModel(
+      id: id ?? this.id,
+      workOrderId: workOrderId ?? this.workOrderId,
+      sowItemId: sowItemId ?? this.sowItemId,
+      disk: disk ?? this.disk,
+      filePath: filePath ?? this.filePath,
+      originalName: originalName ?? this.originalName,
+      mimeType: mimeType ?? this.mimeType,
+      fileSize: fileSize ?? this.fileSize,
+      uploadedBy: uploadedBy ?? this.uploadedBy,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+}
 class SowItemModel {
   final int id;
   final int workOrderId;
@@ -358,6 +482,7 @@ class SowItemModel {
   final int? completedBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final List<SowAttachmentModel> attachments;
 
   SowItemModel({
     required this.id,
@@ -370,6 +495,7 @@ class SowItemModel {
     this.completedBy,
     this.createdAt,
     this.updatedAt,
+    this.attachments = const [],
   });
 
   bool get isCompleted => status == 1;
@@ -400,6 +526,11 @@ class SowItemModel {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'].toString())
           : null,
+      attachments: json['attachments'] != null && json['attachments'] is List
+          ? (json['attachments'] as List)
+          .map((e) => SowAttachmentModel.fromJson(e as Map<String, dynamic>))
+          .toList()
+          : [],
     );
   }
 
@@ -415,6 +546,7 @@ class SowItemModel {
       'completed_by': completedBy,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'attachments': attachments.map((e) => e.toJson()).toList(),
     };
   }
   SowItemModel copyWith({
@@ -428,6 +560,7 @@ class SowItemModel {
     int? completedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<SowAttachmentModel>? attachments,
   }) {
     return SowItemModel(
       id: id ?? this.id,
@@ -440,6 +573,7 @@ class SowItemModel {
       completedBy: completedBy ?? this.completedBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      attachments: attachments ?? this.attachments,
     );
   }
 }

@@ -1,5 +1,4 @@
 
-import 'dart:ffi';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -275,7 +274,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       child: Column(
                         children: [
                           Obx(()=>Text(
-                            controller.workOrderList.length.toString()??"NA",
+                            controller.workOrderList.length.toString(),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -544,7 +543,8 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   Future<void> _showTaskDetails(
     BuildContext context,
     WorkOrderModel task,
-  ) async {
+  ) async
+  {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -657,7 +657,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
                         _modernSection(
                           icon: Icons.directions_car_outlined,
-                          title: "Pricing Information",
+                          title: "Pay Rate",
                           color: AppColors.chartCyan,
                           children: [
                             Row(
@@ -2882,15 +2882,15 @@ class _TaskCardState extends State<_TaskCard> {
                             ),
                           ),
 
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 5),
 
                           Expanded(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+
                               children: [
-                                const SizedBox(height: 5),
 
                                 Row(
+
                                   children: [
                                     Container(
                                       width: 10,
@@ -2899,18 +2899,20 @@ class _TaskCardState extends State<_TaskCard> {
                                         color: status=="Checked"?AppColors.success:null,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: SizedBox(),
+                                      child: SizedBox.shrink(),
                                     ),
-                                    SizedBox(width: 5,),
-                                    Text(
-                                      widget.task.workOrderTitle,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.textPrimary,
-                                        height: 1.2,
+                                    const SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(
+                                        widget.task.workOrderTitle,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        softWrap: true,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+
+                                        ),
                                       ),
                                     ),
 
