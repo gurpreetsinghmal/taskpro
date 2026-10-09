@@ -6,7 +6,6 @@ import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 
-
 class DioClient {
   static final DioClient _instance = DioClient._internal();
 
@@ -15,8 +14,9 @@ class DioClient {
   }
 
   late final Dio dio;
+  Future<void> Function()? onSessionExpired;
 
-  final  _tokenStorage = SecureStorageService.instance;
+  final _tokenStorage = SecureStorageService.instance;
 
   DioClient._internal() {
     dio = Dio(
@@ -25,9 +25,7 @@ class DioClient {
         connectTimeout: const Duration(seconds: 15),
         sendTimeout: const Duration(seconds: 90),
         receiveTimeout: const Duration(seconds: 90),
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: {'Accept': 'application/json'},
       ),
     );
 
@@ -46,15 +44,13 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Some APIs may not require authentication.
-          final requiresAuth =
-              options.extra['requiresAuth'] ?? true;
+          final requiresAuth = options.extra['requiresAuth'] ?? true;
 
           if (requiresAuth) {
             final token = await _tokenStorage.getAccessToken();
 
             if (token != null && token.isNotEmpty) {
-              options.headers['Authorization'] =
-              'Bearer $token';
+              options.headers['Authorization'] = 'Bearer $token';
             }
           }
 
@@ -70,9 +66,9 @@ class DioClient {
           print("||✅ RESPONSE");
           print("||DATA: ${response.data}");
           print("===================================================");
-          if(response.data['success'] == false && response.data["status_code"].toString()=='999'){
-            final storage=SecureStorageService.instance;
-            storage.loggedOut();
+          if (response.data['success'] == false &&
+              response.data["status_code"].toString() == '999') {
+            onSessionExpired?.call();
           }
           handler.next(response);
         },

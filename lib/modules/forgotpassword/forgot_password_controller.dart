@@ -1,11 +1,10 @@
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/modules/forgotpassword/forgot_password_model.dart';
-import 'package:taskpro/modules/login/login_screen.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
-
 
 class ForgotPasswordController extends GetxController {
   // Reactive State Variables
@@ -16,8 +15,10 @@ class ForgotPasswordController extends GetxController {
 
   // Text Controllers
   final emailController = TextEditingController();
-  final List<TextEditingController> otpControllers =
-  List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> otpFocusNodes = List.generate(6, (_) => FocusNode());
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
@@ -25,7 +26,7 @@ class ForgotPasswordController extends GetxController {
   // Form Keys
   final emailFormKey = GlobalKey<FormState>();
   final passwordFormKey = GlobalKey<FormState>();
-  String reset_token="";
+  String reset_token = "";
   final _apiService = ApiService();
 
   void clearOtpFields() {
@@ -38,8 +39,7 @@ class ForgotPasswordController extends GetxController {
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void onClose() {
     emailController.dispose();
     for (var controller in otpControllers) {
       controller.dispose();
@@ -60,134 +60,140 @@ class ForgotPasswordController extends GetxController {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   }
 
-  Future<void> api_send_Email_OTP() async{
-    _apiService.post(ApiRoutes.sendEmailOtp, data: {
-      'email': emailController.text,
-    }).then((value) async {
-      isLoading.value = false;
-      if (value.data['success']) {
-        Get.snackbar(
-          'Success',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.success,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-        currentStep.value = ForgotPasswordModel.otp;
-      }
-      else{
-        Get.snackbar(
-          'Failed',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-      }
-    }).catchError((error) {
-      isLoading.value = false;
-      Get.snackbar(
-        'Failed',
-        'something went wrong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    });
+  Future<void> api_send_Email_OTP() async {
+    await _apiService
+        .post(ApiRoutes.sendEmailOtp, data: {'email': emailController.text})
+        .then((value) async {
+          isLoading.value = false;
+          if (value.data['success']) {
+            Get.snackbar(
+              'Success',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.success,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+            currentStep.value = ForgotPasswordModel.otp;
+          } else {
+            Get.snackbar(
+              'Failed',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+        })
+        .catchError((error) {
+          isLoading.value = false;
+          Get.snackbar(
+            'Failed',
+            'something went wrong',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        });
   }
 
-  Future<void> api_Verify_Email_OTP(otp) async{
-    _apiService.post(ApiRoutes.verifyEmailOtp, data: {
-      'email': emailController.text,
-      "otp": otp
-    }).then((value) async {
-      isLoading.value = false;
-      if (value.data['success']) {
-        reset_token = value.data['data']['reset_token'].toString();
-        Get.snackbar(
-          'Success',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.success,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-        currentStep.value = ForgotPasswordModel.newPassword;
-      }
-      else{
-        clearOtpFields();
-        Get.snackbar(
-          'Failed',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-      }
-    }).catchError((error) {
-      isLoading.value = false;
-      Get.snackbar(
-        'Failed',
-        'something went wrong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    });
+  Future<void> api_Verify_Email_OTP(otp) async {
+    await _apiService
+        .post(
+          ApiRoutes.verifyEmailOtp,
+          data: {'email': emailController.text, "otp": otp},
+        )
+        .then((value) async {
+          isLoading.value = false;
+          if (value.data['success']) {
+            reset_token = value.data['data']['reset_token'].toString();
+            Get.snackbar(
+              'Success',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.success,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+            currentStep.value = ForgotPasswordModel.newPassword;
+          } else {
+            clearOtpFields();
+            Get.snackbar(
+              'Failed',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+        })
+        .catchError((error) {
+          isLoading.value = false;
+          Get.snackbar(
+            'Failed',
+            'something went wrong',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        });
   }
 
-  Future<void> api_reset_Password() async{
-    _apiService.post(ApiRoutes.resetPassword, data: {
-      "reset_token": reset_token,
-      "password": newPasswordController.text,
-      "password_confirmation": confirmPasswordController.text
-    }).then((value) async {
-      isLoading.value = false;
-      if (value.data['success']) {
-        Get.snackbar(
-          'Success',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.success,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-        Get.offAll(() => const LoginScreen());
-      }
-      else{
-        Get.snackbar(
-          'Failed',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-      }
-    }).catchError((error) {
-      isLoading.value = false;
-      Get.snackbar(
-        'Failed',
-        'something went wrong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    });
+  Future<void> api_reset_Password() async {
+    await _apiService
+        .post(
+          ApiRoutes.resetPassword,
+          data: {
+            "reset_token": reset_token,
+            "password": newPasswordController.text,
+            "password_confirmation": confirmPasswordController.text,
+          },
+        )
+        .then((value) async {
+          isLoading.value = false;
+          if (value.data['success']) {
+            Get.snackbar(
+              'Success',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.success,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+            Get.offAllNamed(AppRoutes.login);
+          } else {
+            Get.snackbar(
+              'Failed',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+        })
+        .catchError((error) {
+          isLoading.value = false;
+          Get.snackbar(
+            'Failed',
+            'something went wrong',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        });
   }
 
   // Step 1: Submit Email
   Future<void> submitEmail() async {
     if (emailFormKey.currentState!.validate()) {
       isLoading.value = true;
-      await api_send_Email_OTP();// Simulate API call
-
+      await api_send_Email_OTP(); // Simulate API call
     }
   }
 
@@ -205,9 +211,8 @@ class ForgotPasswordController extends GetxController {
       return;
     }
     isLoading.value = true;
-    reset_token="";
+    reset_token = "";
     await api_Verify_Email_OTP(otp); // Simulate API call
-
   }
 
   // Step 3: Reset Password
@@ -215,7 +220,6 @@ class ForgotPasswordController extends GetxController {
     if (passwordFormKey.currentState!.validate()) {
       isLoading.value = true;
       await api_reset_Password(); // Simulate API call
-
     }
   }
 

@@ -53,6 +53,7 @@ class WorkOrderModel {
   // Multiple check-in / check-out sessions
   final List<WorkSessionModel> checkins;
   int sync;
+  final List<String> syncErrors;
 
   WorkOrderModel({
     required this.id,
@@ -103,6 +104,7 @@ class WorkOrderModel {
     this.sowItems = const [],
     this.checkins = const [],
     this.sync = 1,
+    this.syncErrors = const [],
   });
 
   factory WorkOrderModel.fromJson(Map<String, dynamic> json) {
@@ -177,13 +179,11 @@ class WorkOrderModel {
             )
           : null,
       sowItems:
-      (json['sow_items'] as List<dynamic>?)
-          ?.map(
-            (item) => SowItemModel.fromJson(
-          item as Map<String, dynamic>,
-        ),
-      )
-          .toList() ??
+          (json['sow_items'] as List<dynamic>?)
+              ?.map(
+                (item) => SowItemModel.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
           [],
       checkins:
           (json['checkins'] as List<dynamic>?)
@@ -194,6 +194,11 @@ class WorkOrderModel {
               .toList() ??
           [],
       sync: json['sync'] as int? ?? 1,
+      syncErrors:
+          (json['sync_errors'] as List<dynamic>?)
+              ?.map((error) => error.toString())
+              .toList() ??
+          const [],
     );
   }
 
@@ -247,6 +252,7 @@ class WorkOrderModel {
       'sow_items': sowItems.map((item) => item.toJson()).toList(),
       'checkins': checkins.map((session) => session.toJson()).toList(),
       'sync': sync,
+      'sync_errors': syncErrors,
     };
   }
 
@@ -298,6 +304,7 @@ class WorkOrderModel {
     List<SowItemModel>? sowItems,
     List<WorkSessionModel>? checkins,
     int? sync,
+    List<String>? syncErrors,
   }) {
     return WorkOrderModel(
       id: id ?? this.id,
@@ -367,9 +374,11 @@ class WorkOrderModel {
       checkins: checkins ?? this.checkins,
 
       sync: sync ?? this.sync,
+      syncErrors: syncErrors ?? this.syncErrors,
     );
   }
 }
+
 class SowAttachmentModel {
   final int id;
   final int workOrderId;
@@ -471,6 +480,7 @@ class SowAttachmentModel {
     );
   }
 }
+
 class SowItemModel {
   final int id;
   final int workOrderId;
@@ -490,7 +500,7 @@ class SowItemModel {
     required this.type,
     required this.sortOrder,
     required this.description,
-    this.status=0,
+    this.status = 0,
     this.completedAt,
     this.completedBy,
     this.createdAt,
@@ -507,11 +517,9 @@ class SowItemModel {
   factory SowItemModel.fromJson(Map<String, dynamic> json) {
     return SowItemModel(
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
-      workOrderId:
-      int.tryParse(json['work_order_id']?.toString() ?? '') ?? 0,
+      workOrderId: int.tryParse(json['work_order_id']?.toString() ?? '') ?? 0,
       type: json['type']?.toString() ?? '',
-      sortOrder:
-      int.tryParse(json['sort_order']?.toString() ?? '') ?? 0,
+      sortOrder: int.tryParse(json['sort_order']?.toString() ?? '') ?? 0,
       description: json['description']?.toString() ?? '',
       status: int.tryParse(json['status']?.toString() ?? '') ?? 0,
       completedAt: json['completed_at'] != null
@@ -528,8 +536,10 @@ class SowItemModel {
           : null,
       attachments: json['attachments'] != null && json['attachments'] is List
           ? (json['attachments'] as List)
-          .map((e) => SowAttachmentModel.fromJson(e as Map<String, dynamic>))
-          .toList()
+                .map(
+                  (e) => SowAttachmentModel.fromJson(e as Map<String, dynamic>),
+                )
+                .toList()
           : [],
     );
   }
@@ -549,6 +559,7 @@ class SowItemModel {
       'attachments': attachments.map((e) => e.toJson()).toList(),
     };
   }
+
   SowItemModel copyWith({
     int? id,
     int? workOrderId,

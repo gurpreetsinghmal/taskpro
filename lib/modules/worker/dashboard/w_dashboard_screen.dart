@@ -1,22 +1,17 @@
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import 'package:taskpro/common/helpers/helper_methods.dart';
-import 'package:taskpro/modules/changepassword/change_password_screen.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_controller.dart';
-import 'package:taskpro/modules/worker/tasks/w_tasks_screen.dart';
 import 'package:get/get.dart';
-import 'package:taskpro/modules/worker/profile/profile_screen.dart';
-import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
-class WorkerDashboardScreen extends StatelessWidget {
+class WorkerDashboardScreen extends GetView<WorkerDashboardController> {
   const WorkerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(WorkerDashboardController());
-
     return Stack(
       children: [
         Scaffold(
@@ -80,6 +75,162 @@ class WorkerDashboardScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class PendingSyncOrdersWidget extends StatelessWidget {
+  const PendingSyncOrdersWidget({super.key, required this.controller});
+
+  final WorkerDashboardController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final pendingOrders = controller.workOrderList
+          .where((order) => order.sync == 0 || order.syncErrors.isNotEmpty)
+          .toList();
+      if (pendingOrders.isEmpty) return const SizedBox.shrink();
+
+      return Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.24)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.cloud_upload_outlined,
+                  size: 20,
+                  color: Colors.orange.shade800,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Work orders needing attention',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.orange.shade900,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${pendingOrders.length}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.orange.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...List.generate(pendingOrders.length, (index) {
+              final order = pendingOrders[index];
+              final failures = {
+                ...order.syncErrors,
+                if (controller.syncFailures[order.id] case final String failure)
+                  failure,
+              }.toList();
+              return Column(
+                children: [
+                  if (index > 0)
+                    Divider(
+                      height: 16,
+                      color: Colors.orange.withValues(alpha: 0.18),
+                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.assignment_outlined,
+                        size: 17,
+                        color: Colors.orange.shade700,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              order.workOrderTitle.isEmpty
+                                  ? 'Work order ${order.workOrderNo}'
+                                  : order.workOrderTitle,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              order.sync == 0
+                                  ? 'WO ${order.workOrderNo} · Local '
+                                        'work-order data is waiting to sync'
+                                  : 'WO ${order.workOrderNo} · '
+                                        'Work-order sync issue',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            for (final failure in failures) ...[
+                              const SizedBox(height: 5),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.error_outline_rounded,
+                                    size: 14,
+                                    color: Colors.red.shade700,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      failure.startsWith('Photo upload:')
+                                          ? failure.replaceFirst(
+                                              'Photo upload: ',
+                                              '',
+                                            )
+                                          : 'Sync failed: $failure',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        height: 1.35,
+                                        color: Colors.red.shade800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -264,6 +415,7 @@ class DashboardTabScreen extends StatelessWidget {
               ),
             );
           }),
+          PendingSyncOrdersWidget(controller: controller),
           const SizedBox(height: 20),
 
           _buildTodaysOverviewSection(controller),
@@ -359,7 +511,7 @@ class DashboardTabScreen extends StatelessWidget {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(14),
                           onTap: () async {
-                            await Get.to(() => const WorkerTasksScreen());
+                            await Get.toNamed(AppRoutes.workerTasks);
 
                             controller.fetchSyncStatus();
                           },
@@ -425,7 +577,6 @@ class DashboardTabScreen extends StatelessWidget {
                         vertical: 28,
                       ),
                       decoration: BoxDecoration(
-
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: AppColors.primary.withValues(alpha: 0.08),
@@ -597,8 +748,6 @@ class DashboardTabScreen extends StatelessWidget {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-
-
                                               // Title
                                               Text(
                                                 workOrder.workOrderTitle,
@@ -1497,17 +1646,17 @@ class RightProfileDrawer extends StatelessWidget {
                 _buildDrawerItem(
                   icon: Icons.person_outline,
                   title: "My Profile",
-                  onTap: () => Get.to(() => WorkerProfileScreen()),
+                  onTap: () => Get.toNamed(AppRoutes.workerProfile),
                 ),
                 _buildDrawerItem(
                   icon: Icons.check_box_outlined,
                   title: "All Tasks",
-                  onTap: () => Get.to(() => const WorkerTasksScreen()),
+                  onTap: () => Get.toNamed(AppRoutes.workerTasks),
                 ),
                 _buildDrawerItem(
                   icon: Icons.edit_note,
                   title: "Change Password",
-                  onTap: () => Get.to(() => ChangePasswordScreen()),
+                  onTap: () => Get.toNamed(AppRoutes.changePassword),
                 ),
                 _buildDrawerItem(
                   icon: Icons.account_balance_wallet_outlined,
@@ -1554,8 +1703,7 @@ class RightProfileDrawer extends StatelessWidget {
               ),
               onPressed: () {
                 Navigator.pop(context);
-                final storage = SecureStorageService.instance;
-                storage.loggedOut();
+                controller.logout();
               },
               icon: Icon(Icons.logout, color: Colors.red.shade700, size: 18),
               label: Text(

@@ -218,7 +218,7 @@ class _LoginBodyState extends State<_LoginBody>
   @override
   Widget build(BuildContext context) {
     // Register controller dynamically
-    final controller = Get.put(LoginController());
+    final controller = Get.find<LoginController>();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

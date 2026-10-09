@@ -8,10 +8,9 @@ class StorageKeys {
   static const deviceId = "device_id";
   static const language = "language";
   static const workerProfile = "workerProfile";
+  static const dashboardStats = "dashboardStats";
   static const onboardingCompleted = "onboardingCompleted";
 
   static const workOrderList = "workOrderList";
   static const workOrderStatusesList = "workOrderStatusesList";
-
-
 }

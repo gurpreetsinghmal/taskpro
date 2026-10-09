@@ -8,7 +8,6 @@ class ChangePasswordScreen extends GetView<ChangePasswordController> {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(ChangePasswordController());
 
     return Scaffold(
       backgroundColor: AppColors.background,

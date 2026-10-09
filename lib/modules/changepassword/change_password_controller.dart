@@ -1,7 +1,7 @@
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
-import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
@@ -46,6 +46,7 @@ class ChangePasswordController extends GetxController {
     ohasNumber.value = text.contains(RegExp(r'[0-9]'));
     ohasSpecialChar.value = text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
   }
+
   void _validateNewPasswordPolicy() {
     final text = newPasswordController.text;
     hasMinLength.value = text.length >= 8;
@@ -57,17 +58,17 @@ class ChangePasswordController extends GetxController {
 
   bool get isOldPasswordPolicyValid =>
       ohasMinLength.value &&
-          ohasUppercase.value &&
-          ohasLowercase.value &&
-          ohasNumber.value &&
-          ohasSpecialChar.value;
+      ohasUppercase.value &&
+      ohasLowercase.value &&
+      ohasNumber.value &&
+      ohasSpecialChar.value;
 
   bool get isPasswordPolicyValid =>
       hasMinLength.value &&
-          hasUppercase.value &&
-          hasLowercase.value &&
-          hasNumber.value &&
-          hasSpecialChar.value;
+      hasUppercase.value &&
+      hasLowercase.value &&
+      hasNumber.value &&
+      hasSpecialChar.value;
 
   void toggleOldPasswordVisibility() => isOldPasswordVisible.toggle();
   void toggleNewPasswordVisibility() => isNewPasswordVisible.toggle();
@@ -94,7 +95,7 @@ class ChangePasswordController extends GetxController {
     }
   }
 
-  Future<void> api_ChangePassword() async{
+  Future<void> api_ChangePassword() async {
     final _apiService = ApiService();
 
     final Map<String, dynamic> payload = {
@@ -103,43 +104,44 @@ class ChangePasswordController extends GetxController {
       "confirm_password": confirmPasswordController.text,
     };
 
-    _apiService.post(ApiRoutes.changePassword, data: payload).then((value) async {
-      isLoading.value = false;
-      if (value.data['success']) {
-        Get.snackbar(
-          'Success',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: AppColors.textWhite,
-          margin: const EdgeInsets.all(16),
-        );
+    await _apiService
+        .post(ApiRoutes.changePassword, data: payload)
+        .then((value) async {
+          isLoading.value = false;
+          if (value.data['success']) {
+            Get.snackbar(
+              'Success',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: AppColors.textWhite,
+              margin: const EdgeInsets.all(16),
+            );
 
-
-        Get.offAll(()=>WorkerDashboardScreen());
-      }
-      else{
-        Get.snackbar(
-          'Failed',
-          value.data['message'],
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-      }
-      _clearForm();
-    }).catchError((error) {
-      isLoading.value = false;
-      Get.snackbar(
-        'Failed',
-        'something went wrong',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.error,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    });
+            Get.offAllNamed(AppRoutes.workerdashboard);
+          } else {
+            Get.snackbar(
+              'Failed',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+          _clearForm();
+        })
+        .catchError((error) {
+          isLoading.value = false;
+          Get.snackbar(
+            'Failed',
+            'something went wrong',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        });
   }
 
   void _clearForm() {

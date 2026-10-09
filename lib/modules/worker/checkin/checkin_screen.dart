@@ -1,28 +1,28 @@
-import 'dart:convert';
+import 'package:taskpro/modules/app_routes/app_routes.dart';
+import '../../../common/widgets/signature_card.dart';
+import 'widgets/work_order_details_sheet.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_controller.dart';
-import 'package:taskpro/modules/worker/photoupload/task_completion_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../../services/map_service.dart';
 import '../../../common/helpers/app_helper.dart';
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/work_session_model.dart';
-import '../../../services/secure_storage_service.dart';
 import '../../../theme/app_colors.dart';
 
-class CheckInScreen extends StatelessWidget {
-  final WorkOrderModel task;
+class CheckInScreen extends GetView<CheckinController> {
+  WorkOrderModel get task => controller.task;
 
-  const CheckInScreen({super.key, required this.task});
+  const CheckInScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CheckinController(task: task));
 
-    return Scaffold(
+    return Obx(() {
+      final task = controller.task;
+      return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: _buildAppBar(context),
       body: SafeArea(
@@ -40,6 +40,7 @@ class CheckInScreen extends StatelessWidget {
         ),
       ),
     );
+    });
   }
 
   // ==========================================================
@@ -256,7 +257,7 @@ class _CheckInOutCard extends StatelessWidget {
           findButton(
             title: 'Navigate to Location',
             icon: Icon(Icons.location_on_outlined, color: Colors.white),
-            onPressed: () => _openGoogleMaps(task.address!.googleMapLink),
+            onPressed: () => MapService.openUrl(task.address!.googleMapLink),
             backgroundColor: AppColors.success,
             textColor: AppColors.textWhite,
           ),
@@ -333,7 +334,7 @@ class _CheckInOutCard extends StatelessWidget {
       child: findButton(
         title: "Work Completion Check List",
         onPressed: () {
-          Get.to(() => TaskCompletionScreen(task: controller.task));
+          Get.toNamed(AppRoutes.taskCompletion, arguments: controller.task);
         },
         backgroundColor: const Color(0xFF172033),
         icon: const Icon(
@@ -426,19 +427,7 @@ class _CheckInOutCard extends StatelessWidget {
         icon: const Icon(Icons.login_rounded, size: 20, color: Colors.white),
         backgroundColor: _blue,
         onPressed: () async{
-          final storage = SecureStorageService.instance;
-          int? id=await storage.isAlreadyCheckIn();
-          if(id!=null && id!=task.id){
-            Get.snackbar(
-              'Already Checked In',
-              'You are Already Checked In for Other Work Order, First Checked Out to Start Work',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.error,
-              colorText: Colors.white,
-              margin: const EdgeInsets.all(16),
-            );
-            return;
-          }
+          if (!await controller.canStartCheckIn() || !context.mounted) return;
           _confirmCheckIn(context, controller);
         },
       ),
@@ -664,211 +653,15 @@ class _CheckInOutCard extends StatelessWidget {
     return '${minutes}m';
   }
 
-  static Future<void> _openGoogleMaps(String address) async {
-    final Uri googleMapsUri;
-
-    googleMapsUri = Uri.parse(address);
-
-    if (await canLaunchUrl(googleMapsUri)) {
-      await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
-    }
-  }
-
-  _buildGetSignature(CheckinController controller, RxnString signatureBase64) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+  Widget _buildGetSignature(
+    CheckinController controller,
+    RxnString signatureBase64,
+  ) {
+    return Obx(
+      () => SignatureCard(
+        signature: signatureBase64.value,
+        onCapture: () => controller.captureSignature(signatureBase64),
       ),
-      child: Obx(() {
-        final hasSignature =
-            signatureBase64.value != null && signatureBase64.value!.isNotEmpty;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Customer Representative Signature',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        hasSignature
-                            ? 'Signature has been added'
-                            : 'Please add a signature',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: hasSignature
-                              ? Colors.green.shade600
-                              : Colors.grey.shade500,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Add / Change button
-                OutlinedButton.icon(
-                  onPressed: () {
-                    controller.captureSignature(signatureBase64);
-                  },
-                  icon: Icon(
-                    hasSignature ? Icons.edit_rounded : Icons.add_rounded,
-                    size: 17,
-                  ),
-                  label: Text(hasSignature ? 'Change' : 'Add'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.35),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 9,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Signature Image
-            if (hasSignature)
-              Container(
-                width: double.infinity,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAFAFA),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Stack(
-                    children: [
-                      // Signature
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Image.memory(
-                            base64Decode(signatureBase64.value!),
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-
-                      // Small "Signed" badge
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.green.shade100),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                size: 14,
-                                color: Colors.green.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Signed',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              // Empty Signature Area
-              Container(
-                width: double.infinity,
-                height: 140,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAFAFA),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    controller.captureSignature(signatureBase64);
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.draw_outlined,
-                        size: 34,
-                        color: Colors.grey.shade400,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No signature added',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tap "Add" to sign',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      }),
     );
   }
 }
@@ -1146,7 +939,6 @@ class _ActiveSessionCard extends StatelessWidget {
       ),
     );
   }
-
   static String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return '--';
 
@@ -1711,7 +1503,7 @@ class _LocationEvent extends StatelessWidget {
                   const Spacer(),
                   if (hasLocation)
                     InkWell(
-                      onTap: () => _openGoogleMaps(latitude!, longitude!),
+                      onTap: () => MapService.openCoordinates(latitude!, longitude!),
                       borderRadius: BorderRadius.circular(7),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -1806,18 +1598,6 @@ class _LocationEvent extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  static Future<void> _openGoogleMaps(double latitude, double longitude) async {
-    final Uri googleMapsUri;
-
-    googleMapsUri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
-    );
-
-    if (await canLaunchUrl(googleMapsUri)) {
-      await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
-    }
   }
 
   static String _formatDateTime(DateTime? dateTime) {

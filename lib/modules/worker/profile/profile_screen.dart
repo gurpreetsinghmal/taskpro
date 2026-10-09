@@ -10,7 +10,6 @@ class WorkerProfileScreen extends GetView<WorkerProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(WorkerProfileController());
 
     return Scaffold(
       backgroundColor: AppColors.background,

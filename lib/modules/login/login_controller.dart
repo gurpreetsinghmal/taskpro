@@ -1,12 +1,9 @@
-import 'dart:convert';
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:dio/dio.dart' as dio;
-import 'package:taskpro/location/location_service.dart';
-import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
-import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
@@ -76,57 +73,58 @@ class LoginController extends GetxController {
     }
 
     isLoading.value = true;
-      var formData = dio.FormData.fromMap({
-        'email': usernameController.text,
-        'password': passwordController.text,
-      });
+    var formData = dio.FormData.fromMap({
+      'email': usernameController.text,
+      'password': passwordController.text,
+    });
     final storage = SecureStorageService.instance;
 
-      final _apiService = ApiService();
-      await _apiService.post(ApiRoutes.loginEndpoint, data: formData).then((value) async {
-        isLoading.value = false;
+    final _apiService = ApiService();
+    await _apiService
+        .post(ApiRoutes.loginEndpoint, data: formData)
+        .then((value) async {
+          isLoading.value = false;
 
-        if (value.data['success']) {
-          Get.snackbar(
-            'Success',
-            'Logged in successfully!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.success,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-          );
+          if (value.data['success']) {
+            Get.snackbar(
+              'Success',
+              'Logged in successfully!',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.success,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
 
-          await storage.write(StorageKeys.accessToken, value.data['token']);
-          Get.offAll(() => WorkerDashboardScreen());
-        } else {
+            await storage.write(StorageKeys.accessToken, value.data['token']);
+            Get.offAllNamed(AppRoutes.workerdashboard);
+          } else {
+            Get.snackbar(
+              'Failed',
+              value.data['message'],
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.error,
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+            );
+          }
+        })
+        .catchError((error) {
+          isLoading.value = false;
           Get.snackbar(
             'Failed',
-            value.data['message'],
+            error.message,
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: AppColors.error,
             colorText: Colors.white,
             margin: const EdgeInsets.all(16),
           );
-        }
-
-      }).catchError((error) {
-        isLoading.value = false;
-        Get.snackbar(
-          'Failed',
-          error.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-        );
-      });
-
+        });
   }
 
   @override
   void onClose() {
-    usernameController.clear();
-    passwordController.clear();
+    usernameController.dispose();
+    passwordController.dispose();
     super.onClose();
   }
 }

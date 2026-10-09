@@ -8,13 +8,14 @@ import 'api_exception.dart';
 import 'dio_client.dart';
 
 class ApiService {
-  final Dio _dio = DioClient().dio;
+  ApiService({Dio? dio}) : _dio = dio ?? DioClient().dio;
+  final Dio _dio;
 
   Future<bool> checkInternet() async {
     try {
       // 1. checkConnectivity() now returns List<ConnectivityResult>
-      final List<ConnectivityResult> connectivityResult =
-      await Connectivity().checkConnectivity();
+      final List<ConnectivityResult> connectivityResult = await Connectivity()
+          .checkConnectivity();
 
       // 2. Check if the list contains 'none' or is empty
       if (connectivityResult.contains(ConnectivityResult.none) ||
@@ -23,8 +24,9 @@ class ApiService {
       }
 
       // 3. Perform DNS lookup
-      final result = await InternetAddress.lookup('google.com')
-          .timeout(const Duration(seconds: 3));
+      final result = await InternetAddress.lookup(
+        'google.com',
+      ).timeout(const Duration(seconds: 3));
 
       return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
     } catch (_) {
@@ -37,37 +39,23 @@ class ApiService {
   // ============================================================
 
   Future<Response<T>> get<T>(
-      String endpoint, {
-        Map<String, dynamic>? queryParameters,
-        Map<String, dynamic>? headers,
-        Options? options,
-        CancelToken? cancelToken,
-        bool isLoaderShow = false,
-      }) async {
-    bool showedLoader = false;
-    try {
-      if (isLoaderShow) {
-        LoadingService.show("Processing...");
-        showedLoader = true;
-      }
-      final response = await _dio.get<T>(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    Options? options,
+    CancelToken? cancelToken,
+    bool isLoaderShow = false,
+  }) async {
+    return _execute(
+      () => _dio.get<T>(
         endpoint,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: _mergeOptions(
-          options,
-          headers,
-        ),
-      );
-
-      return response;
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } finally {
-      if (showedLoader) {
-        LoadingService.hide();
-      }
-    }
+        options: _mergeOptions(options, headers),
+      ),
+      showLoader: isLoaderShow,
+      message: "Processing...",
+    );
   }
 
   // ============================================================
@@ -75,39 +63,25 @@ class ApiService {
   // ============================================================
 
   Future<Response<T>> post<T>(
-      String endpoint, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Map<String, dynamic>? headers,
-        Options? options,
-        CancelToken? cancelToken,
-        bool isLoaderShow = false,
-      }) async {
-    bool showedLoader = false;
-    try {
-      if (isLoaderShow) {
-        LoadingService.show("Processing...");
-        showedLoader = true;
-      }
-      final response = await _dio.post<T>(
+    String endpoint, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    Options? options,
+    CancelToken? cancelToken,
+    bool isLoaderShow = false,
+  }) async {
+    return _execute(
+      () => _dio.post<T>(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: _mergeOptions(
-          options,
-          headers,
-        ),
-      );
-
-      return response;
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } finally {
-      if (showedLoader) {
-        LoadingService.hide();
-      }
-    }
+        options: _mergeOptions(options, headers),
+      ),
+      showLoader: isLoaderShow,
+      message: "Processing...",
+    );
   }
 
   // ============================================================
@@ -115,44 +89,30 @@ class ApiService {
   // ============================================================
 
   Future<Response<T>> postMultipart<T>(
-      String endpoint, {
-        required FormData data,
-        Map<String, dynamic>? headers,
-        Options? options,
-        CancelToken? cancelToken,
-        ProgressCallback? onSendProgress,
-        ProgressCallback? onReceiveProgress,
-        bool isLoaderShow = false,
-      }) async {
-    bool showedLoader = false;
-    try {
-      if (isLoaderShow) {
-        LoadingService.show("Uploading...");
-        showedLoader = true;
-      }
-      final response = await _dio.post<T>(
+    String endpoint, {
+    required FormData data,
+    Map<String, dynamic>? headers,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+    bool isLoaderShow = false,
+  }) async {
+    return _execute(
+      () => _dio.post<T>(
         endpoint,
         data: data,
         cancelToken: cancelToken,
         onSendProgress: onSendProgress,
         onReceiveProgress: onReceiveProgress,
-        options: _mergeOptions(
-          options,
-          {
-            ...?headers,
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
-      );
-
-      return response;
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } finally {
-      if (showedLoader) {
-        LoadingService.hide();
-      }
-    }
+        options: _mergeOptions(options, {
+          ...?headers,
+          'Content-Type': 'multipart/form-data',
+        }),
+      ),
+      showLoader: isLoaderShow,
+      message: "Uploading...",
+    );
   }
 
   // ============================================================
@@ -160,39 +120,25 @@ class ApiService {
   // ============================================================
 
   Future<Response<T>> put<T>(
-      String endpoint, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Map<String, dynamic>? headers,
-        Options? options,
-        CancelToken? cancelToken,
-        bool isLoaderShow = false,
-      }) async {
-    bool showedLoader = false;
-    try {
-      if (isLoaderShow) {
-        LoadingService.show("Updating...");
-        showedLoader = true;
-      }
-      final response = await _dio.put<T>(
+    String endpoint, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    Options? options,
+    CancelToken? cancelToken,
+    bool isLoaderShow = false,
+  }) async {
+    return _execute(
+      () => _dio.put<T>(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: _mergeOptions(
-          options,
-          headers,
-        ),
-      );
-
-      return response;
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } finally {
-      if (showedLoader) {
-        LoadingService.hide();
-      }
-    }
+        options: _mergeOptions(options, headers),
+      ),
+      showLoader: isLoaderShow,
+      message: "Updating...",
+    );
   }
 
   // ============================================================
@@ -200,53 +146,48 @@ class ApiService {
   // ============================================================
 
   Future<Response<T>> delete<T>(
-      String endpoint, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Map<String, dynamic>? headers,
-        Options? options,
-        CancelToken? cancelToken,
-        bool isLoaderShow = false,
-      }) async {
-    bool showedLoader = false;
-    try {
-      if (isLoaderShow) {
-        LoadingService.show("Deleting...");
-        showedLoader = true;
-      }
-      final response = await _dio.delete<T>(
+    String endpoint, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+    Options? options,
+    CancelToken? cancelToken,
+    bool isLoaderShow = false,
+  }) async {
+    return _execute(
+      () => _dio.delete<T>(
         endpoint,
         data: data,
         queryParameters: queryParameters,
         cancelToken: cancelToken,
-        options: _mergeOptions(
-          options,
-          headers,
-        ),
-      );
-
-      return response;
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } finally {
-      if (showedLoader) {
-        LoadingService.hide();
-      }
-    }
+        options: _mergeOptions(options, headers),
+      ),
+      showLoader: isLoaderShow,
+      message: "Deleting...",
+    );
   }
 
   // ============================================================
   // OPTIONS
   // ============================================================
 
-  Options _mergeOptions(
-      Options? options,
-      Map<String, dynamic>? headers,
-      ) {
-    final mergedHeaders = <String, dynamic>{
-      ...?options?.headers,
-      ...?headers,
-    };
+  Future<Response<T>> _execute<T>(
+    Future<Response<T>> Function() request, {
+    required bool showLoader,
+    required String message,
+  }) async {
+    try {
+      if (showLoader) LoadingService.show(message);
+      return await request();
+    } on DioException catch (error) {
+      throw _handleDioException(error);
+    } finally {
+      if (showLoader) LoadingService.hide();
+    }
+  }
+
+  Options _mergeOptions(Options? options, Map<String, dynamic>? headers) {
+    final mergedHeaders = <String, dynamic>{...?options?.headers, ...?headers};
 
     return Options(
       method: options?.method,
@@ -254,8 +195,7 @@ class ApiService {
       responseType: options?.responseType,
       contentType: options?.contentType,
       validateStatus: options?.validateStatus,
-      receiveDataWhenStatusError:
-      options?.receiveDataWhenStatusError,
+      receiveDataWhenStatusError: options?.receiveDataWhenStatusError,
       sendTimeout: options?.sendTimeout,
       receiveTimeout: options?.receiveTimeout,
       extra: options?.extra,
@@ -271,19 +211,14 @@ class ApiService {
   // ERROR HANDLING
   // ============================================================
 
-  ApiException _handleDioException(
-      DioException error,
-      ) {
+  ApiException _handleDioException(DioException error) {
     final response = error.response;
 
     final statusCode = response?.statusCode;
 
     if (statusCode == 400) {
       return ApiException(
-        message: _getServerMessage(
-          response?.data,
-          'Invalid request.',
-        ),
+        message: _getServerMessage(response?.data, 'Invalid request.'),
         statusCode: statusCode,
         data: response?.data,
       );
@@ -361,10 +296,7 @@ class ApiService {
     }
   }
 
-  String _getServerMessage(
-      dynamic data,
-      String fallback,
-      ) {
+  String _getServerMessage(dynamic data, String fallback) {
     if (data is Map<String, dynamic>) {
       final message = data['message'];
 
@@ -376,5 +308,3 @@ class ApiService {
     return fallback;
   }
 }
-
-

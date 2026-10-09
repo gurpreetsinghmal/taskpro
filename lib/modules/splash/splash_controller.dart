@@ -1,17 +1,12 @@
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taskpro/location/location_screen.dart';
-import 'package:taskpro/modules/onboarding/onboarding_screen.dart';
-import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 
-import '../login/login_screen.dart';
-
 class SplashController extends GetxController {
-
   final _storage = SecureStorageService.instance;
 
   @override
@@ -28,11 +23,14 @@ class SplashController extends GetxController {
     // Check User Role
     // Load Master Data
 
+    if (isClosed) return;
     final loggedIn = await _storage.isLoggedIn();
-    final pref=await SharedPreferences.getInstance();
-    final  bool onboardingCompleted = await pref.getBool(StorageKeys.onboardingCompleted)??false;
-    if(!onboardingCompleted){
-      Get.offAll(()=>OnboardingScreen());
+    final pref = await SharedPreferences.getInstance();
+    final bool onboardingCompleted =
+        pref.getBool(StorageKeys.onboardingCompleted) ?? false;
+    if (isClosed) return;
+    if (!onboardingCompleted) {
+      Get.offAllNamed(AppRoutes.onboarding);
       return;
     }
 
@@ -40,12 +38,11 @@ class SplashController extends GetxController {
     // Get.offAll(() => LocationScreen());
     // return;
     if (loggedIn) {
-      Get.offAll(() => WorkerDashboardScreen());
+      Get.offAllNamed(AppRoutes.workerdashboard);
     } else {
       Future.delayed(const Duration(seconds: 5), () {
-        Get.offAll(() => const LoginScreen());
+        if (!isClosed) Get.offAllNamed(AppRoutes.login);
       });
     }
-
   }
 }

@@ -1,3 +1,4 @@
+import 'package:taskpro/modules/app_routes/app_routes.dart';
 
 import 'dart:math' as math;
 
@@ -8,8 +9,6 @@ import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/app_helper.dart';
 import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
-import 'package:taskpro/modules/worker/checkin/checkin_screen.dart';
-import 'package:taskpro/modules/worker/dashboard/w_dashboard_screen.dart';
 import 'package:taskpro/modules/worker/tasks/w_tasks_controller.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
@@ -22,11 +21,9 @@ class WorkerTasksScreen extends StatefulWidget {
 
 class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     with SingleTickerProviderStateMixin {
-  late final WorkerTasksController controller = Get.put(WorkerTasksController());
+  late final WorkerTasksController controller = Get.find<WorkerTasksController>();
 
-  final TextEditingController searchController = TextEditingController();
-
-  String selectedFilter = "All";
+  TextEditingController get searchController => controller.searchController;
 
   late AnimationController _animationController;
 
@@ -45,47 +42,12 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    searchController.dispose();
     super.dispose();
   }
 
   // ================================================================
   // FILTERED TASKS
   // ================================================================
-
-  List<WorkOrderModel> get filteredTasks {
-    final query = searchController.text.trim().toLowerCase();
-
-    return controller.workOrderList.where((task) {
-      final matchesSearch =
-          query.isEmpty ||
-          task.workOrderTitle.toLowerCase().contains(query) ||
-          task.workOrderNo.toString().toLowerCase().contains(query) ||
-          task.serviceTypeName.toLowerCase().contains(query) ||
-          "${task.managerFirstName} ${task.managerLastName}"
-              .toLowerCase()
-              .contains(query);
-
-      if (!matchesSearch) {
-        return false;
-      }
-
-      if (selectedFilter == "All") {
-        return true;
-      }
-
-      if (selectedFilter == task.statusName?.toString()) {
-        return true;
-      }
-
-      final statusText = Common.getStatusText(
-        task.statusId,
-        controller.workOrderStatusList,
-      );
-
-      return statusText.toLowerCase() == selectedFilter.toLowerCase();
-    }).toList();
-  }
 
   // ================================================================
   // BUILD
@@ -100,7 +62,10 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           children: [
             _buildAnimatedHeader(),
 
-            _buildSearch(),
+            Obx(() {
+              controller.searchQuery.value;
+              return _buildSearch();
+            }),
 
             const SizedBox(height: 14),
 
@@ -114,7 +79,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   return const _AnimatedLoading();
                 }
 
-                final tasks = filteredTasks;
+                final tasks = controller.filteredTasks;
 
                 if (tasks.isEmpty) {
                   return const _EmptyTasks();
@@ -328,9 +293,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         ),
         child: TextField(
           controller: searchController,
-          onChanged: (_) {
-            setState(() {});
-          },
+
           textInputAction: TextInputAction.search,
           style: const TextStyle(
             fontSize: 13,
@@ -360,7 +323,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 ? IconButton(
                     onPressed: () {
                       searchController.clear();
-                      setState(() {});
+
                     },
                     icon: const Icon(Icons.close_rounded, size: 19),
                   )
@@ -378,6 +341,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   // ================================================================
 
   Widget _buildFilters() {
+    final selectedFilter = controller.selectedFilter.value;
     final filters = [
       "All",
       ...controller.workOrderStatusList
@@ -402,9 +366,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             onTap: () {
               HapticFeedback.selectionClick();
 
-              setState(() {
-                selectedFilter = filter;
-              });
+              controller.selectedFilter.value = filter;
             },
             child: AnimatedPhysicalModel(
               duration: const Duration(milliseconds: 220),
@@ -552,7 +514,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .55),
       builder: (context) {
-        return DraggableScrollableSheet(
+        return Obx(() {
+          final currentTask = controller.local.findOrder(task.id) ?? task;
+          return DraggableScrollableSheet(
           expand: false,
           initialChildSize: .91,
           minChildSize: .55,
@@ -585,11 +549,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       physics: const BouncingScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(16, 17, 16, 30),
                       children: [
-                        _buildDetailHeader(task),
+                        _buildDetailHeader(currentTask),
 
                         const SizedBox(height: 15),
 
-                        _buildStatusPriority(task),
+                        _buildStatusPriority(currentTask),
 
                         const SizedBox(height: 22),
 
@@ -601,19 +565,19 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                             _modernInfoTile(
                               icon: Icons.category_outlined,
                               title: "Service Type",
-                              value: task.serviceTypeName,
+                              value: currentTask.serviceTypeName,
                             ),
 
                             _modernInfoTile(
                               icon: Icons.engineering_outlined,
                               title: "Assigned Technician",
                               value:
-                                  "${task.technicianFirstName} ${task.technicianLastName}",
+                                  "${currentTask.technicianFirstName} ${currentTask.technicianLastName}",
                             ),
 
-                            _psnManagerDetails(task),
+                            _psnManagerDetails(currentTask),
 
-                            buildSowSection(task),
+                            buildSowSection(currentTask),
 
                           ],
                         ),
@@ -628,15 +592,15 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                             _modernInfoTile(
                               icon: Icons.location_city_outlined,
                               title: "Service Location",
-                              value: task.address?.fullAddress ?? "-",
+                              value: currentTask.address?.fullAddress ?? "-",
                               multiline: true,
                             ),
 
                             _modernLocationButton(
                               onTap: () {
-                                if (task.address?.googleMapLink != null) {
+                                if (currentTask.address?.googleMapLink != null) {
                                   controller.loadMap(
-                                    task.address!.googleMapLink,
+                                    currentTask.address!.googleMapLink,
                                   );
                                 }
                               },
@@ -650,7 +614,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                           icon: Icons.calendar_month_outlined,
                           title: "Schedule Information",
                           color: const Color(0xFFF59E0B),
-                          children: [_buildScheduleGrid(task)],
+                          children: [_buildScheduleGrid(currentTask)],
                         ),
 
                         const SizedBox(height: 14),
@@ -666,7 +630,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                                   child: _InfoTile(
                                     icon: Icons.route_outlined,
                                     title: "Rate Type",
-                                    value: _rateType(task.rateType),
+                                    value: _rateType(currentTask.rateType),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -674,7 +638,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                                   child: _InfoTile(
                                     icon: Icons.attach_money_rounded,
                                     title: "Rate Value",
-                                    value: task.rateValue,
+                                    value: currentTask.rateValue,
                                   ),
                                 ),
                               ],
@@ -686,7 +650,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                                   child: _InfoTile(
                                     icon: Icons.timer_outlined,
                                     title: "Estimated Hours",
-                                    value: task.approximateHoursToComplete,
+                                    value: currentTask.approximateHoursToComplete,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -694,7 +658,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                                   child: _InfoTile(
                                     icon: Icons.hourglass_bottom_rounded,
                                     title: "Maximum Hours",
-                                    value: task.maxHours,
+                                    value: currentTask.maxHours,
                                   ),
                                 ),
                               ],
@@ -703,15 +667,15 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                             _InfoTile(
                               icon: Icons.directions_car_outlined,
                               title: "Travel Rates",
-                              value: task.travelRate??"-",
+                              value: currentTask.travelRate??"-",
                             ),
 
                             _InfoTile(
                               icon: Icons.payments_rounded,
                               title: "Maximum Payout",
-                              value: task.rateType == 2
-                                  ? task.rateValue
-                                  : "\$ ${((double.tryParse(task.maxHours) ?? 0) * (double.tryParse(task.rateValue) ?? 0)).toStringAsFixed(2)}",
+                              value: currentTask.rateType == 2
+                                  ? currentTask.rateValue
+                                  : "\$ ${((double.tryParse(currentTask.maxHours) ?? 0) * (double.tryParse(currentTask.rateValue) ?? 0)).toStringAsFixed(2)}",
                               customColor: AppColors.income,
                             ),
                           ],
@@ -720,11 +684,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         const SizedBox(height: 22),
                          Obx(() {
 
-                          if (controller.hardStartChangeStatus[task.id]==0) {
-                            return  _buildActions(task);
+                          if (controller.hardStartChangeStatus[currentTask.id]==0) {
+                            return  _buildActions(currentTask);
                           }
-                          if (controller.hardStartChangeStatus[task.id]!>1) {
-                            return  _buildActions(task);
+                          if ((controller.hardStartChangeStatus[currentTask.id] ?? 0)>1) {
+                            return  _buildActions(currentTask);
                           }
                           return const SizedBox.shrink();
                         })
@@ -736,6 +700,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             );
           },
         );
+        });
       },
     );
   }
@@ -977,7 +942,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         task.workOrderNo,
                       );
 
-                      Get.offAll(() => const WorkerDashboardScreen());
+                      Get.offAllNamed(AppRoutes.workerdashboard);
                     }
                   },
                 ),
@@ -1013,7 +978,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         result?.remarks ?? ""
                       );
 
-                      Get.offAll(() => const WorkerDashboardScreen());
+                      Get.offAllNamed(AppRoutes.workerdashboard);
                     }
                   },
                 ),
@@ -1034,7 +999,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
           Get.back();
 
-          Get.to(() => CheckInScreen(task: task));
+          Get.toNamed(AppRoutes.checkIn, arguments: task);
         },
       );
     }
@@ -1287,26 +1252,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
               onTap: () {
-                final contact = [
-                  if (task.managerEmail?.isNotEmpty == true) task.managerEmail!,
-                  if (task.managerPhoneNumber?.isNotEmpty == true)
-                    task.managerPhoneNumber!,
-                ].join("\n");
-
-                if (contact.isNotEmpty) {
-                  Clipboard.setData(ClipboardData(text: contact));
-
-                  Get.snackbar(
-                    "Copied",
-                    "Manager contact copied",
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: AppColors.chartPurple,
-                    colorText: Colors.white,
-                    borderRadius: 12,
-                    margin: const EdgeInsets.all(12),
-                    duration: const Duration(seconds: 2),
-                  );
-                }
+                controller.copyManagerContact(task);
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1595,9 +1541,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 child:
                     Obx(()=> _ChangeTimeBox(
                       title: 'Proposed',
-                      value: controller.proposedTime.value==""
+                      value: controller.proposedTimeFor(task.id)==""
                           ? Common.getformatDate(task.proposedDatetime.toString())
-                          : Common.getformatDate(controller.proposedTime.value.toString()),
+                          : Common.getformatDate(controller.proposedTimeFor(task.id).toString()),
                       color: statusColor,
                     ))
                ,
@@ -1762,7 +1708,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         lastDate: lastDate,
                       );
 
-                      if (date == null) return;
+                      if (date == null || !context.mounted) return;
 
 // ─────────────────────────────────────────────
 // Select Time
@@ -1814,15 +1760,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         time.minute,
                       );
 
-                      if (!proposedDateTime.isAfter(now)) {
-                        Get.snackbar(
-                          'Invalid Time',
-                          'Proposed Hard Start Time must be in the future.',
-                          backgroundColor: AppColors.error,
-                          colorText: Colors.white,
-                        );
-                        return;
-                      }
+                      if (!controller.validateProposedTime(proposedDateTime, now)) return;
 
                       setState(() {
                         selectedDateTime = proposedDateTime;
@@ -2036,9 +1974,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 child:
                 Obx(()=> _ChangeTimeBox(
                   title: 'Proposed',
-                  value: controller.proposedTime.value ==""
+                  value: controller.proposedTimeFor(task.id) ==""
                       ? Common.getformatDate(task.proposedDatetime.toString())
-                      : Common.getformatDate(controller.proposedTime.value.toString()),
+                      : Common.getformatDate(controller.proposedTimeFor(task.id).toString()),
                   color: statusColor,
                 ))
                 ,

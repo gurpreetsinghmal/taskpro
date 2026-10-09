@@ -1,4 +1,4 @@
-import 'dart:convert';
+import '../../../common/widgets/signature_card.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -10,12 +10,11 @@ import 'package:taskpro/modules/worker/photoupload/task_completion_controller.da
 import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
-import '../tasks/w_tasks_controller.dart';
 
-class TaskCompletionScreen extends StatelessWidget {
-  final WorkOrderModel task;
+class TaskCompletionScreen extends GetView<TaskCompletionController> {
+  WorkOrderModel get task => controller.task;
 
-  const TaskCompletionScreen({super.key, required this.task});
+  const TaskCompletionScreen({super.key});
 
   static const Color _background = AppColors.background;
   static const Color _text = AppColors.textPrimary;
@@ -25,13 +24,251 @@ class TaskCompletionScreen extends StatelessWidget {
   static const Color _green = AppColors.success;
 
 
+  Future<void> _pickPhoto(BuildContext context, TaskCompletionController controller,
+      ImageSource source) => controller.pickPhoto(source,
+    confirmPhoto: (file, name, size) async {
+      if (!context.mounted) return false;
+      return await _showSelectedPhotoPreview(context: context, file: file,
+        fileName: name, fileSize: size, source: source) ?? false;
+    });
+
+  Future<bool?> _showSelectedPhotoPreview({
+    required BuildContext context,
+    required File file,
+    required String fileName,
+    required int fileSize,
+    required ImageSource source,
+  })
+  {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 28,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Preview Photo',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(maxHeight: 430),
+                      color: const Color(0xFFF1F5F9),
+                      child: InteractiveViewer(
+                        minScale: 1,
+                        maxScale: 4,
+                        child: Image.file(
+                          file,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox(
+                              height: 280,
+                              child: Center(
+                                child: Text('Unable to preview this photo.'),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    fileName.isEmpty ? file.path.split(Platform.pathSeparator).last : fileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${source == ImageSource.camera ? 'Camera' : 'Gallery'} • ${_readableFileSize(fileSize)}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48),
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: const Icon(Icons.check_rounded),
+                          label: const Text('Use Photo'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(
+      BuildContext context,
+      TaskCompletionController controller,
+      String? serverMessage,
+      )
+  {
+    showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF2563EB),
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Task Completed!',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  serverMessage?.trim().isNotEmpty == true
+                      ? serverMessage!.trim()
+                      : 'Task ${controller.taskId.value} was submitted with ${controller.uploadedPhotos.length} photo proof(s).',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      Get.back();
+                    },
+                    child: const Text(
+                      'Return to Dashboard',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _readableFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+
+    final kilobytes = bytes / 1024;
+    if (kilobytes < 1024) {
+      return '${kilobytes.toStringAsFixed(1)} KB';
+    }
+
+    return '${(kilobytes / 1024).toStringAsFixed(1)} MB';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final completionController = Get.put(TaskCompletionController(task: task));
+    final completionController = controller;
 
-    Get.put(WorkerTasksController());
 
-    return Scaffold(
+    return Obx(() => Scaffold(
       backgroundColor: _background,
       appBar: _buildAppBar(context),
       body: SafeArea(
@@ -82,7 +319,7 @@ class TaskCompletionScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -678,7 +915,10 @@ class TaskCompletionScreen extends StatelessWidget {
             child: ElevatedButton(
               onPressed: controller.isSubmitting.value
                   ? null
-                  : () => controller.submitTaskCompletion(context),
+                  : () => controller.submitTaskCompletion(onSuccess: () {
+                      if (context.mounted) _showSuccessDialog(context, controller,
+                        'Task completed successfully');
+                    }),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _blue,
                 disabledBackgroundColor: _blue.withValues(alpha: .55),
@@ -976,7 +1216,7 @@ class TaskCompletionScreen extends StatelessWidget {
                   subtitle: 'Capture a new work-completion photo',
                   onTap: () async {
                     Navigator.pop(sheetContext);
-                    await controller.pickPhoto(context, ImageSource.camera);
+                    await _pickPhoto(context, controller, ImageSource.camera);
                   },
                 ),
 
@@ -989,7 +1229,7 @@ class TaskCompletionScreen extends StatelessWidget {
                   subtitle: 'Select an existing image from your device',
                   onTap: () async {
                     Navigator.pop(sheetContext);
-                    await controller.pickPhoto(context, ImageSource.gallery);
+                    await _pickPhoto(context, controller, ImageSource.gallery);
                   },
                 ),
               ],
@@ -1055,235 +1295,9 @@ class TaskCompletionScreen extends StatelessWidget {
     );
   }
 
-  _buildGetSignature(completionController) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.shade200,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Obx(() {
-        final hasSignature =
-            completionController.signatureBase64.value != null &&
-                completionController.signatureBase64.value!.isNotEmpty;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  height: 42,
-                  width: 42,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.draw_rounded,
-                    color: AppColors.primary,
-                    size: 22,
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Technician Signature',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        hasSignature
-                            ? 'Signature has been added'
-                            : 'Please add a signature',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: hasSignature
-                              ? Colors.green.shade600
-                              : Colors.grey.shade500,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Add / Change button
-                OutlinedButton.icon(
-                  onPressed: () {
-                    completionController.captureSignature();
-                  },
-                  icon: Icon(
-                    hasSignature
-                        ? Icons.edit_rounded
-                        : Icons.add_rounded,
-                    size: 17,
-                  ),
-                  label: Text(
-                    hasSignature ? 'Change' : 'Add',
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.35),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 9,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // Signature Image
-            if (hasSignature)
-              Container(
-                width: double.infinity,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAFAFA),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Stack(
-                    children: [
-                      // Signature
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Image.memory(
-                            base64Decode(
-                              completionController
-                                  .signatureBase64
-                                  .value!,
-                            ),
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-
-                      // Small "Signed" badge
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.green.shade100,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                size: 14,
-                                color: Colors.green.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Signed',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-            // Empty Signature Area
-              Container(
-                width: double.infinity,
-                height: 140,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFAFAFA),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.grey.shade300,
-                    width: 1,
-                  ),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    completionController.captureSignature();
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.draw_outlined,
-                        size: 34,
-                        color: Colors.grey.shade400,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No signature added',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tap "Add" to sign',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      }),
-    );
+  Widget _buildGetSignature(TaskCompletionController controller) {
+    return Obx(() => SignatureCard(signature: controller.signatureBase64.value,
+      onCapture: controller.captureSignature, showIcon: true));
   }
 
   Widget _buildChecklistSection1(

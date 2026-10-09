@@ -11,14 +11,13 @@ import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
 
-
 class LocationService {
   static const String notificationChannelId = 'taskpro_location_channel';
 
   static const int notificationId = 888;
 
   // Send location every 10 minutes.
-  static const Duration locationInterval = Duration(minutes:10);
+  static const Duration locationInterval = Duration(minutes: 10);
 
   static final FlutterLocalNotificationsPlugin notifications =
       FlutterLocalNotificationsPlugin();
@@ -37,7 +36,11 @@ class LocationService {
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings =
-        InitializationSettings(android: androidSettings,iOS: DarwinInitializationSettings(),macOS: DarwinInitializationSettings(),);
+        InitializationSettings(
+          android: androidSettings,
+          iOS: DarwinInitializationSettings(),
+          macOS: DarwinInitializationSettings(),
+        );
 
     await notifications.initialize(settings: initializationSettings);
 
@@ -74,8 +77,8 @@ class LocationService {
           // Do not start automatically when configure() is called.
           autoStart: false,
 
-          // Restart service after Android device reboot.
-          autoStartOnBoot: true,
+          // Tracking is resumed only after the app confirms an active session.
+          autoStartOnBoot: false,
 
           notificationChannelId: notificationChannelId,
 
@@ -87,18 +90,14 @@ class LocationService {
         ),
 
         iosConfiguration: IosConfiguration(
-          autoStart: true,
+          autoStart: false,
 
           onForeground: onStart,
 
           onBackground: onIosBackground,
         ),
       );
-
     }
-
-
-
   }
 
   // ============================================================
@@ -109,6 +108,11 @@ class LocationService {
     final service = FlutterBackgroundService();
 
     try {
+      if (await SecureStorageService.instance.isAlreadyCheckIn() == null) {
+        await stop();
+        return false;
+      }
+
       final running = await service.isRunning();
 
       if (running) {
@@ -116,49 +120,7 @@ class LocationService {
         return true;
       }
 
-      // ----------------------------------------------------------
-      // Check GPS
-      // ----------------------------------------------------------
-
-      final gpsEnabled = await Geolocator.isLocationServiceEnabled();
-
-      if (!gpsEnabled) {
-        print('GPS is OFF');
-
-        await Geolocator.openLocationSettings();
-
-        return false;
-      }
-
-      // ----------------------------------------------------------
-      // Check permission
-      // ----------------------------------------------------------
-
-      var permission = await Geolocator.checkPermission();
-
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        print('Location permission denied');
-        return false;
-      }
-
-      // ----------------------------------------------------------
-      // Android background location permission
-      // ----------------------------------------------------------
-
-      if (permission == LocationPermission.whileInUse) {
-        print('WARNING: Background location permission is not granted.');
-
-        // The user should select:
-        // "Allow all the time"
-        //
-        // Do not automatically open settings here because
-        // this can create a poor user experience.
-      }
+      if (!await requestLocationAccess()) return false;
 
       // ----------------------------------------------------------
       // Start foreground service
@@ -170,6 +132,36 @@ class LocationService {
       return true;
     } catch (e, stackTrace) {
       print('Unable to start location service: $e');
+      print(stackTrace);
+      return false;
+    }
+  }
+
+  static Future<bool> requestLocationAccess() async {
+    try {
+      final gpsEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!gpsEnabled) {
+        print('GPS is OFF');
+        await Geolocator.openLocationSettings();
+        return false;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        print('Location permission denied');
+        return false;
+      }
+
+      if (permission == LocationPermission.whileInUse) {
+        print('WARNING: Background location permission is not granted.');
+      }
+      return true;
+    } catch (e, stackTrace) {
+      print('Unable to access location: $e');
       print(stackTrace);
       return false;
     }
@@ -198,7 +190,7 @@ class LocationService {
     }
   }
 
-  static Future<Position>getLatLong() async{
+  static Future<Position> getLatLong() async {
     final position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
@@ -225,6 +217,11 @@ void onStart(ServiceInstance service) async {
   // IMPORTANT:
   // Required when using plugins from a background isolate.
   DartPluginRegistrant.ensureInitialized();
+
+  if (await SecureStorageService.instance.isAlreadyCheckIn() == null) {
+    service.stopSelf();
+    return;
+  }
 
   print('========================================');
   print('TaskPro Location Service Started');
@@ -253,13 +250,18 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-
   // ---------------------------------------------------------------
   // Periodic location
   // ---------------------------------------------------------------
 
   Timer.periodic(LocationService.locationInterval, (timer) async {
     try {
+      if (await SecureStorageService.instance.isAlreadyCheckIn() == null) {
+        timer.cancel();
+        service.stopSelf();
+        return;
+      }
+
       // Make sure service has not been stopped.
       if (service is AndroidServiceInstance) {
         final isForeground = await service.isForegroundService();
@@ -288,6 +290,13 @@ void onStart(ServiceInstance service) async {
 @pragma('vm:entry-point')
 Future<void> sendLocation() async {
   try {
+    final activeWorkOrderId = await SecureStorageService.instance
+        .isAlreadyCheckIn();
+    if (activeWorkOrderId == null) {
+      print('No active work session; skipping location update.');
+      return;
+    }
+
     // -------------------------------------------------------------
     // Check GPS
     // -------------------------------------------------------------
@@ -330,7 +339,6 @@ Future<void> sendLocation() async {
     print('Longitude : $longitude');
     print('Global DateTime  : $now');
     print(
-
       'Local time  : ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.parse(now).toLocal())} \n'
       'Local time  : ${Common.formatToLocalUS(now)}',
     );
@@ -341,12 +349,10 @@ Future<void> sendLocation() async {
     // -------------------------------------------------------------
 
     final apiService = ApiService();
-    final storage = SecureStorageService.instance;
-    int? id= await storage.isAlreadyCheckIn();
     final response = await apiService.post(
       ApiRoutes.locationMonitoring,
       data: {
-        'work_order_id': id??"0",
+        'work_order_id': activeWorkOrderId,
         'latitude': latitude,
         'longitude': longitude,
         'tracked_at': now,

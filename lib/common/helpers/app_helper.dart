@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/theme/app_colors.dart';
+
 class ConfirmationResult {
   final bool confirmed;
   final String? remarks;
 
-  const ConfirmationResult({
-    required this.confirmed,
-    this.remarks,
-  });
+  const ConfirmationResult({required this.confirmed, this.remarks});
 }
+
 Future<ConfirmationResult?> showConfirmationDialog({
   required BuildContext context,
   required String title,
@@ -21,8 +20,7 @@ Future<ConfirmationResult?> showConfirmationDialog({
 }) async {
   final theme = Theme.of(context);
 
-  final primaryColor =
-  isDestructive ? AppColors.error : AppColors.success;
+  final primaryColor = isDestructive ? AppColors.error : AppColors.success;
 
   final remarksController = TextEditingController();
 
@@ -40,12 +38,7 @@ Future<ConfirmationResult?> showConfirmationDialog({
               borderRadius: BorderRadius.circular(26),
             ),
             backgroundColor: theme.colorScheme.surface,
-            contentPadding: const EdgeInsets.fromLTRB(
-              22,
-              20,
-              22,
-              22,
-            ),
+            contentPadding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -75,7 +68,6 @@ Future<ConfirmationResult?> showConfirmationDialog({
                   // ------------------------------------------------
                   // TITLE
                   // ------------------------------------------------
-
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -91,14 +83,12 @@ Future<ConfirmationResult?> showConfirmationDialog({
                   // ------------------------------------------------
                   // MESSAGE
                   // ------------------------------------------------
-
                   Text(
                     message,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13.5,
-                      color:
-                      theme.colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.onSurfaceVariant,
                       height: 1.4,
                     ),
                   ),
@@ -106,7 +96,6 @@ Future<ConfirmationResult?> showConfirmationDialog({
                   // ------------------------------------------------
                   // REMARKS
                   // ------------------------------------------------
-
                   if (requireRemarks) ...[
                     const SizedBox(height: 20),
 
@@ -146,8 +135,7 @@ Future<ConfirmationResult?> showConfirmationDialog({
                       controller: remarksController,
                       maxLines: 4,
                       minLines: 3,
-                      textCapitalization:
-                      TextCapitalization.sentences,
+                      textCapitalization: TextCapitalization.sentences,
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -155,7 +143,7 @@ Future<ConfirmationResult?> showConfirmationDialog({
                       ),
                       decoration: InputDecoration(
                         hintText:
-                        "Enter reason for rejecting this work order...",
+                            "Enter reason for rejecting this work order...",
                         hintStyle: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade400,
@@ -163,18 +151,13 @@ Future<ConfirmationResult?> showConfirmationDialog({
                         ),
                         filled: true,
                         fillColor: const Color(0xFFF7F8FC),
-                        contentPadding:
-                        const EdgeInsets.all(13),
+                        contentPadding: const EdgeInsets.all(13),
                         border: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.circular(15),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade200,
-                          ),
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide(
                             color: hasError
                                 ? primaryColor
@@ -182,8 +165,7 @@ Future<ConfirmationResult?> showConfirmationDialog({
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius:
-                          BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide(
                             color: primaryColor,
                             width: 1.5,
@@ -201,34 +183,24 @@ Future<ConfirmationResult?> showConfirmationDialog({
                   // ------------------------------------------------
                   // BUTTONS
                   // ------------------------------------------------
-
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            Navigator.of(dialogContext)
-                                .pop(null);
+                            Navigator.of(dialogContext).pop(null);
                           },
                           style: OutlinedButton.styleFrom(
-                            padding:
-                            const EdgeInsets.symmetric(
-                              vertical: 13,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            shape:
-                            RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(14),
-                            ),
-                            side: BorderSide(
-                              color: Colors.grey.shade300,
-                            ),
+                            side: BorderSide(color: Colors.grey.shade300),
                           ),
                           child: Text(
                             "Cancel",
                             style: TextStyle(
-                              color:
-                              theme.colorScheme.onSurface,
+                              color: theme.colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -240,11 +212,9 @@ Future<ConfirmationResult?> showConfirmationDialog({
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            final remarks =
-                            remarksController.text.trim();
+                            final remarks = remarksController.text.trim();
 
-                            if (requireRemarks &&
-                                remarks.isEmpty) {
+                            if (requireRemarks && remarks.isEmpty) {
                               setState(() {
                                 hasError = true;
                               });
@@ -254,10 +224,7 @@ Future<ConfirmationResult?> showConfirmationDialog({
                             Navigator.of(dialogContext).pop(
                               ConfirmationResult(
                                 confirmed: true,
-                                remarks:
-                                remarks.isEmpty
-                                    ? null
-                                    : remarks,
+                                remarks: remarks.isEmpty ? null : remarks,
                               ),
                             );
                           },
@@ -265,19 +232,13 @@ Future<ConfirmationResult?> showConfirmationDialog({
                             backgroundColor: primaryColor,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding:
-                            const EdgeInsets.symmetric(
-                              vertical: 13,
-                            ),
-                            shape:
-                            RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(14),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           child: Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 isDestructive
@@ -307,14 +268,10 @@ Future<ConfirmationResult?> showConfirmationDialog({
     },
   );
 
-
   return result;
 }
-extension _LetColor<T> on T {
-  R let<R>(R Function(T) block) => block(this);
-}
 
-findButton({
+Widget findButton({
   required String title,
   VoidCallback? onPressed,
   Color? backgroundColor,
@@ -329,28 +286,29 @@ findButton({
       borderRadius: BorderRadius.circular(30),
     ),
     child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          shadowColor: Colors.transparent,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 15),
-        ),
-        onPressed: onPressed ?? () {},
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            icon??SizedBox(),
-            SizedBox(width: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: textColor ?? colorScheme.onPrimary,
-                backgroundColor: Colors.transparent,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 15),
+      ),
+      onPressed: onPressed ?? () {},
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          icon ?? SizedBox(),
+          SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              color: textColor ?? colorScheme.onPrimary,
+              backgroundColor: Colors.transparent,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
             ),
-          ],)
+          ),
+        ],
+      ),
     ),
   );
 }
