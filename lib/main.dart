@@ -18,7 +18,8 @@ void main() async {
   await LocalDataService.instance.initialize();
   Get.put(LocalDataService.instance, permanent: true);
   Get.put(SessionController(), permanent: true);
-  DioClient().onSessionExpired = Get.find<SessionController>().logout;
+  DioClient().onSessionExpired = () =>
+      Get.find<SessionController>().logout(confirm: false);
   await LocationService.initialize();
   Get.put(SyncService(), permanent: true);
   Get.put(LocationController(), permanent: true);

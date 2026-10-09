@@ -11,6 +11,8 @@ class WorkerDataService {
   WorkerDataService({ApiService? api, LocalDataService? local})
     : api = api ?? ApiService(),
       local = local ?? LocalDataService.instance;
+  static Future<Map<int, String>>? _pendingSync;
+
   final ApiService api;
   final LocalDataService local;
 
@@ -170,6 +172,19 @@ class WorkerDataService {
   }
 
   Future<Map<int, String>> syncPendingOrders() async {
+    final activeSync = _pendingSync;
+    if (activeSync != null) return activeSync;
+
+    final sync = _syncPendingOrders();
+    _pendingSync = sync;
+    try {
+      return await sync;
+    } finally {
+      if (identical(_pendingSync, sync)) _pendingSync = null;
+    }
+  }
+
+  Future<Map<int, String>> _syncPendingOrders() async {
     final orders = await local.storage.getWorkOrderList();
     if (orders == null) return {};
     final pendingOrders = orders.where((order) => order.sync == 0);

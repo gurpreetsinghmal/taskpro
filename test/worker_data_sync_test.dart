@@ -136,37 +136,56 @@ void main() {
     },
   );
 
-  test('marks order synced only after all three APIs succeed', () async {
-    FlutterSecureStorage.setMockInitialValues({});
-    final local = LocalDataService(
-      storage: SecureStorageService(storage: const FlutterSecureStorage()),
-    );
-    await local.initialize();
-    await local.storage.write(
-      StorageKeys.workOrderList,
-      jsonEncode([_workOrder().toJson()]),
-    );
+  test(
+    'coalesces concurrent syncs and marks the order synced after success',
+    () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final local = LocalDataService(
+        storage: SecureStorageService(storage: const FlutterSecureStorage()),
+      );
+      await local.initialize();
+      await local.storage.write(
+        StorageKeys.workOrderList,
+        jsonEncode([_workOrder().toJson()]),
+      );
 
-    final dio = Dio(BaseOptions(baseUrl: 'https://example.test'));
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          final data = options.path == ApiRoutes.workOrderCheckInSync
-              ? {'status': true, 'synced_count': 1}
-              : {'success': true};
-          handler.resolve(
-            Response(requestOptions: options, statusCode: 200, data: data),
-          );
-        },
-      ),
-    );
-    final service = WorkerDataService(api: OnlineApiService(dio), local: local);
+      final requests = <String>[];
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.test'));
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            requests.add(options.path);
+            final data = options.path == ApiRoutes.workOrderCheckInSync
+                ? {'status': true, 'synced_count': 1}
+                : {'success': true};
+            handler.resolve(
+              Response(requestOptions: options, statusCode: 200, data: data),
+            );
+          },
+        ),
+      );
+      final service = WorkerDataService(
+        api: OnlineApiService(dio),
+        local: local,
+      );
 
-    await service.syncPendingOrders();
+      await Future.wait([
+        service.syncPendingOrders(),
+        WorkerDataService(
+          api: OnlineApiService(dio),
+          local: local,
+        ).syncPendingOrders(),
+      ]);
 
-    expect((await local.storage.findThisWorkOrder(42))?.sync, 1);
-    local.onClose();
-  });
+      expect((await local.storage.findThisWorkOrder(42))?.sync, 1);
+      expect(requests, [
+        ApiRoutes.workOrderCheckInSync,
+        ApiRoutes.workOrderSowItemsSync,
+        ApiRoutes.workOrderFieldsSync,
+      ]);
+      local.onClose();
+    },
+  );
 
   test(
     'maps SOW and work-order errors to item and variable references',

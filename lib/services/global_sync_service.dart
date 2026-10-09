@@ -1,100 +1,86 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:taskpro/common/helpers/api_routes.dart';
-import 'package:taskpro/network/api_service.dart';
+import 'package:taskpro/services/worker_data_service.dart';
 
-class SyncService extends GetxService {
+class SyncService extends GetxService with WidgetsBindingObserver {
+  SyncService({WorkerDataService? workerDataService})
+    : _workerDataService = workerDataService ?? WorkerDataService();
+
+  final WorkerDataService _workerDataService;
   StreamSubscription<List<ConnectivityResult>>? _subscription;
-
   bool _isSyncing = false;
+  bool _syncRequested = false;
 
   @override
   void onInit() {
     super.onInit();
-
+    WidgetsBinding.instance.addObserver(this);
     _subscription = Connectivity().onConnectivityChanged.listen(
-          (List<ConnectivityResult> results) async {
-        final hasNetwork = results.any(
-              (result) => result != ConnectivityResult.none,
-        );
-
-        if (hasNetwork) {
-          await syncData();
+      (results) {
+        if (results.any((result) => result != ConnectivityResult.none)) {
+          unawaited(syncData());
         }
       },
+      onError: (Object error) {
+        debugPrint('Unable to monitor connectivity changes: $error');
+      },
     );
-
-    // Also check when service starts
-    checkAndSync();
+    unawaited(checkAndSync());
   }
 
   Future<void> checkAndSync() async {
-    final results = await Connectivity().checkConnectivity();
-
-    final hasNetwork = results.any(
-          (result) => result != ConnectivityResult.none,
-    );
-
-    if (hasNetwork) {
-      await syncData();
+    try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.any((result) => result != ConnectivityResult.none)) {
+        await syncData();
+      }
+    } catch (error) {
+      debugPrint('Unable to check connectivity: $error');
     }
   }
 
-  Future<bool> isServerAvailable() async {
-    try {
-      final api=ApiService();
-      final response = await api.get(
-        ApiRoutes.dashboardStats,
-      );
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(checkAndSync());
     }
   }
 
   Future<void> syncData() async {
-    if (_isSyncing) return;
+    if (_isSyncing) {
+      _syncRequested = true;
+      return;
+    }
 
+    _isSyncing = true;
     try {
-      _isSyncing = true;
-      if (!await isServerAvailable()) {
+      if (!await _workerDataService.api.checkInternet() ||
+          !await _workerDataService.local.storage.isLoggedIn()) {
         return;
       }
-      print("Internet available. Starting sync...");
 
-      // 1. First upload pending offline data
-      await uploadPendingData();
-
-      // 2. Then download latest server data
-      await downloadLatestData();
-
-      print("Sync completed successfully.");
-    } catch (e) {
-      print("Sync failed: $e");
+      final failures = await _workerDataService.syncPendingOrders();
+      if (failures.isNotEmpty) {
+        debugPrint('Some pending work orders could not be synced: $failures');
+      }
+    } catch (error) {
+      debugPrint('Sync failed: $error');
     } finally {
       _isSyncing = false;
+      if (_syncRequested) {
+        _syncRequested = false;
+        unawaited(syncData());
+      }
     }
-  }
-
-  Future<void> uploadPendingData() async {
-    // Upload:
-    // pending check-ins
-    // pending check-outs
-    // pending installation completion
-    // pending photos
-    // pending status changes
-  }
-
-  Future<void> downloadLatestData() async {
-    // Call API
-    // Save response to local storage
   }
 
   @override
   void onClose() {
     _subscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.onClose();
   }
 }
