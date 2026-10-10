@@ -7,6 +7,7 @@ import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/modules/worker/dashboard/w_dashboard_controller.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/theme/app_colors.dart';
+import 'package:taskpro/modules/worker/dashboard/work_order_details_widget.dart';
 
 class WorkerDashboardScreen extends GetView<WorkerDashboardController> {
   const WorkerDashboardScreen({super.key});
@@ -417,8 +418,7 @@ class DashboardTabScreen extends StatelessWidget {
             );
           }),
           // Show only in debug mode
-          if (kDebugMode)
-          PendingSyncOrdersWidget(controller: controller),
+          if (kDebugMode) PendingSyncOrdersWidget(controller: controller),
           const SizedBox(height: 20),
 
           _buildTodaysOverviewSection(controller),
@@ -1060,6 +1060,11 @@ class DashboardTabScreen extends StatelessWidget {
                     },
                   );
                 }),
+                Obx(
+                  () => WorkOrderDetailsWidget(
+                    workOrders: controller.workOrderList.toList(),
+                  ),
+                ),
               ],
             ),
           ),

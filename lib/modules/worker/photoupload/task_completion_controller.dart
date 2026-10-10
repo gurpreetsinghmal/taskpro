@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
@@ -279,21 +278,13 @@ class TaskCompletionController extends GetxController {
     }
   }
 
-  Future<List<SowItemEvidenceModel>> pickSowItemImages() async {
+  Future<List<SowAttachmentModel>> pickSowItemImages() async {
     if (isPickingSowImages.value || isSubmitting.value) return const [];
-    final images = <SowItemEvidenceModel>[];
+    final images = <SowAttachmentModel>[];
 
     try {
       isPickingSowImages.value = true;
       final selectedFiles = await _imagePicker.pickMultiImage();
-      final appDirectory = await getApplicationDocumentsDirectory();
-      final evidenceDirectory = Directory(
-        '${appDirectory.path}${Platform.pathSeparator}'
-        '${SowItemResponseModel.evidenceDirectoryName}'
-        '${Platform.pathSeparator}${task.id}',
-      );
-      await evidenceDirectory.create(recursive: true);
-
       for (final selectedFile in selectedFiles) {
         final file = File(selectedFile.path);
         if (!await file.exists()) {
@@ -312,23 +303,18 @@ class TaskCompletionController extends GetxController {
           continue;
         }
 
-        final safeName = selectedFile.name.replaceAll(
-          RegExp(r'[^A-Za-z0-9._-]'),
-          '_',
-        );
-        final savedFile = await file.copy(
-          '${evidenceDirectory.path}${Platform.pathSeparator}'
-          '${DateTime.now().microsecondsSinceEpoch}_$safeName',
-        );
         images.add(
-          SowItemEvidenceModel(
-            filePath: savedFile.path,
-            fileName: selectedFile.name.isEmpty
+          SowAttachmentModel(
+            id: 0,
+            workOrderId: task.id,
+            sowItemId: 0,
+            disk: '',
+            filePath: base64Encode(await file.readAsBytes()),
+            originalName: selectedFile.name.isEmpty
                 ? _fileNameFromPath(selectedFile.path)
                 : selectedFile.name,
-            fileSizeBytes: size,
-            source: 'Gallery',
-            timestamp: _formatDateTime(DateTime.now()),
+            mimeType: '',
+            fileSize: size,
           ),
         );
       }
@@ -356,17 +342,8 @@ class TaskCompletionController extends GetxController {
     }
   }
 
-  Future<void> discardSowItemImages(
-    Iterable<SowItemEvidenceModel> images,
-  ) async {
-    for (final image in images) {
-      try {
-        final file = File(image.filePath);
-        if (await file.exists()) await file.delete();
-      } on FileSystemException catch (error) {
-        debugPrint('Unable to remove unsaved SOW evidence: $error');
-      }
-    }
+  Future<void> discardSowItemImages(Iterable<SowAttachmentModel> images) async {
+    // SOW images are stored as Base64, so there are no local files to remove.
   }
 
   Future<void> _loadSowItemResponses() async {
@@ -383,8 +360,7 @@ class TaskCompletionController extends GetxController {
   }
 
   bool isSowItemNotApplicable(SowItemModel item) =>
-      sowItemResponses[item.id]?.status ==
-      SowItemResponseStatus.notApplicable;
+      sowItemResponses[item.id]?.status == SowItemResponseStatus.notApplicable;
 
   bool isSowItemResolved(SowItemModel item) =>
       item.status == 1 || sowItemResponses[item.id] != null;
@@ -396,8 +372,8 @@ class TaskCompletionController extends GetxController {
 
       final response = sowItemResponses[item.id];
       final images = <String>[];
-      for (final image in response?.images ?? const <SowItemEvidenceModel>[]) {
-        images.add(base64Encode(await File(image.filePath).readAsBytes()));
+      for (final image in response?.images ?? const <SowAttachmentModel>[]) {
+        images.add(image.filePath);
       }
 
       payload.add({
@@ -422,6 +398,21 @@ class TaskCompletionController extends GetxController {
         sowItems: current.sowItems.map((item) {
           if (item.id != response.sowItemId) return item;
           return item.copyWith(
+            remarks: response.comments,
+            attachments: response.images
+                .map(
+                  (image) => SowAttachmentModel(
+                    id: 0,
+                    workOrderId: item.workOrderId,
+                    sowItemId: item.id,
+                    disk: '',
+                    filePath: image.filePath,
+                    originalName: image.originalName,
+                    mimeType: '',
+                    fileSize: image.fileSize,
+                  ),
+                )
+                .toList(),
             status: status,
             completedAt: status == 1 ? DateTime.now() : null,
           );
@@ -437,7 +428,9 @@ class TaskCompletionController extends GetxController {
     );
     sowItemResponses.assignAll(updatedResponses);
 
-    final retainedPaths = response.images.map((image) => image.filePath).toSet();
+    final retainedPaths = response.images
+        .map((image) => image.filePath)
+        .toSet();
     for (final image in previousResponse?.images ?? const []) {
       if (retainedPaths.contains(image.filePath)) continue;
       try {
@@ -531,10 +524,7 @@ class TaskCompletionController extends GetxController {
       // ==========================================================
 
       formData.fields.add(
-        MapEntry(
-          'sow_items',
-          jsonEncode(await buildSowItemsSubmission()),
-        ),
+        MapEntry('sow_items', jsonEncode(await buildSowItemsSubmission())),
       );
 
       // ==========================================================

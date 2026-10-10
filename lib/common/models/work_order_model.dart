@@ -47,6 +47,8 @@ class WorkOrderModel {
   final dynamic maxHours;
   final dynamic approximateHoursToComplete;
   final WorkOrderAddressModel? address;
+  final List<WorkOrderProductModel> products;
+  final WorkOrderProgressModel? progress;
   //sow
   List<SowItemModel> sowItems;
 
@@ -101,6 +103,8 @@ class WorkOrderModel {
     this.maxHours,
     this.approximateHoursToComplete,
     this.address,
+    this.products = const [],
+    this.progress,
     this.sowItems = const [],
     this.checkins = const [],
     this.sync = 1,
@@ -178,6 +182,15 @@ class WorkOrderModel {
               json['address'] as Map<String, dynamic>,
             )
           : null,
+      products: (json['products'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(WorkOrderProductModel.fromJson)
+          .toList(),
+      progress: json['progress'] is Map<String, dynamic>
+          ? WorkOrderProgressModel.fromJson(
+              json['progress'] as Map<String, dynamic>,
+            )
+          : null,
       sowItems:
           (json['sow_items'] as List<dynamic>?)
               ?.map(
@@ -249,6 +262,8 @@ class WorkOrderModel {
       'max_hours': maxHours,
       'approximate_hours_to_complete': approximateHoursToComplete,
       'address': address?.toJson(),
+      'products': products.map((product) => product.toJson()).toList(),
+      'progress': progress?.toJson(),
       'sow_items': sowItems.map((item) => item.toJson()).toList(),
       'checkins': checkins.map((session) => session.toJson()).toList(),
       'sync': sync,
@@ -301,6 +316,8 @@ class WorkOrderModel {
     dynamic maxHours,
     dynamic approximateHoursToComplete,
     WorkOrderAddressModel? address,
+    List<WorkOrderProductModel>? products,
+    WorkOrderProgressModel? progress,
     List<SowItemModel>? sowItems,
     List<WorkSessionModel>? checkins,
     int? sync,
@@ -370,6 +387,8 @@ class WorkOrderModel {
       approximateHoursToComplete:
           approximateHoursToComplete ?? this.approximateHoursToComplete,
       address: address ?? this.address,
+      products: products ?? this.products,
+      progress: progress ?? this.progress,
       sowItems: sowItems ?? this.sowItems,
       checkins: checkins ?? this.checkins,
 
@@ -487,6 +506,7 @@ class SowItemModel {
   final String type;
   final int sortOrder;
   final String description;
+  String remarks;
   int status;
   final DateTime? completedAt;
   final int? completedBy;
@@ -500,6 +520,7 @@ class SowItemModel {
     required this.type,
     required this.sortOrder,
     required this.description,
+    this.remarks = '',
     this.status = 0,
     this.completedAt,
     this.completedBy,
@@ -521,6 +542,7 @@ class SowItemModel {
       type: json['type']?.toString() ?? '',
       sortOrder: int.tryParse(json['sort_order']?.toString() ?? '') ?? 0,
       description: json['description']?.toString() ?? '',
+      remarks: json['remarks']?.toString() ?? '',
       status: int.tryParse(json['status']?.toString() ?? '') ?? 0,
       completedAt: json['completed_at'] != null
           ? DateTime.tryParse(json['completed_at'].toString())
@@ -551,6 +573,7 @@ class SowItemModel {
       'type': type,
       'sort_order': sortOrder,
       'description': description,
+      'remarks': remarks,
       'status': status,
       'completed_at': completedAt?.toIso8601String(),
       'completed_by': completedBy,
@@ -566,6 +589,7 @@ class SowItemModel {
     String? type,
     int? sortOrder,
     String? description,
+    String? remarks,
     int? status,
     DateTime? completedAt,
     int? completedBy,
@@ -579,12 +603,91 @@ class SowItemModel {
       type: type ?? this.type,
       sortOrder: sortOrder ?? this.sortOrder,
       description: description ?? this.description,
+      remarks: remarks ?? this.remarks,
       status: status ?? this.status,
       completedAt: completedAt ?? this.completedAt,
       completedBy: completedBy ?? this.completedBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       attachments: attachments ?? this.attachments,
+    );
+  }
+}
+
+class WorkOrderProductModel {
+  final int id;
+  final String name;
+  final int quantity;
+
+  const WorkOrderProductModel({
+    required this.id,
+    required this.name,
+    required this.quantity,
+  });
+
+  factory WorkOrderProductModel.fromJson(Map<String, dynamic> json) {
+    return WorkOrderProductModel(
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      name: json['name']?.toString() ?? '',
+      quantity: int.tryParse(json['quantity']?.toString() ?? '') ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'quantity': quantity,
+  };
+
+  WorkOrderProductModel copyWith({int? id, String? name, int? quantity}) {
+    return WorkOrderProductModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      quantity: quantity ?? this.quantity,
+    );
+  }
+}
+
+class WorkOrderProgressModel {
+  final int total;
+  final int completed;
+  final int pending;
+  final double percentage;
+
+  const WorkOrderProgressModel({
+    required this.total,
+    required this.completed,
+    required this.pending,
+    required this.percentage,
+  });
+
+  factory WorkOrderProgressModel.fromJson(Map<String, dynamic> json) {
+    return WorkOrderProgressModel(
+      total: int.tryParse(json['total']?.toString() ?? '') ?? 0,
+      completed: int.tryParse(json['completed']?.toString() ?? '') ?? 0,
+      pending: int.tryParse(json['pending']?.toString() ?? '') ?? 0,
+      percentage: double.tryParse(json['percentage']?.toString() ?? '') ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'total': total,
+    'completed': completed,
+    'pending': pending,
+    'percentage': percentage,
+  };
+
+  WorkOrderProgressModel copyWith({
+    int? total,
+    int? completed,
+    int? pending,
+    double? percentage,
+  }) {
+    return WorkOrderProgressModel(
+      total: total ?? this.total,
+      completed: completed ?? this.completed,
+      pending: pending ?? this.pending,
+      percentage: percentage ?? this.percentage,
     );
   }
 }

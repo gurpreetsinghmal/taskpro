@@ -1,5 +1,6 @@
 import '../../../common/widgets/signature_card.dart';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,7 +11,6 @@ import 'package:taskpro/common/models/sow_item_response_model.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 import 'package:taskpro/theme/app_colors.dart';
-
 
 class TaskCompletionScreen extends GetView<TaskCompletionController> {
   WorkOrderModel get task => controller.task;
@@ -24,14 +24,24 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   static const Color _blue = AppColors.primary;
   static const Color _green = AppColors.success;
 
-
-  Future<void> _pickPhoto(BuildContext context, TaskCompletionController controller,
-      ImageSource source) => controller.pickPhoto(source,
+  Future<void> _pickPhoto(
+    BuildContext context,
+    TaskCompletionController controller,
+    ImageSource source,
+  ) => controller.pickPhoto(
+    source,
     confirmPhoto: (file, name, size) async {
       if (!context.mounted) return false;
-      return await _showSelectedPhotoPreview(context: context, file: file,
-        fileName: name, fileSize: size, source: source) ?? false;
-    });
+      return await _showSelectedPhotoPreview(
+            context: context,
+            file: file,
+            fileName: name,
+            fileSize: size,
+            source: source,
+          ) ??
+          false;
+    },
+  );
 
   Future<bool?> _showSelectedPhotoPreview({
     required BuildContext context,
@@ -39,8 +49,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
     required String fileName,
     required int fileSize,
     required ImageSource source,
-  })
-  {
+  }) {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -106,7 +115,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    fileName.isEmpty ? file.path.split(Platform.pathSeparator).last : fileName,
+                    fileName.isEmpty
+                        ? file.path.split(Platform.pathSeparator).last
+                        : fileName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -166,11 +177,10 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   }
 
   void _showSuccessDialog(
-      BuildContext context,
-      TaskCompletionController controller,
-      String? serverMessage,
-      )
-  {
+    BuildContext context,
+    TaskCompletionController controller,
+    String? serverMessage,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       isDismissible: false,
@@ -268,59 +278,52 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   Widget build(BuildContext context) {
     final completionController = controller;
 
+    return Obx(
+      () => Scaffold(
+        backgroundColor: _background,
+        appBar: _buildAppBar(context),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  children: [
+                    const SizedBox(height: 16),
 
-    return Obx(() => Scaffold(
-      backgroundColor: _background,
-      appBar: _buildAppBar(context),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+                    _buildTaskSummaryCard(completionController),
 
-              Column(
-                children: [
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  _buildTaskSummaryCard(completionController),
+                    _buildImageUploadSection(context, completionController),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  _buildImageUploadSection(
-                    context,
-                    completionController,
-                  ),
+                    _buildChecklistSection1(context, completionController),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
+                    _buildNotesSection(completionController),
 
-                  _buildChecklistSection1(context, completionController),
+                    const SizedBox(height: 16),
 
-                  const SizedBox(height: 16),
+                    _buildGetSignature(completionController),
 
-                  _buildNotesSection(completionController),
+                    const SizedBox(height: 20),
 
-                  const SizedBox(height: 16),
+                    _buildSubmitButton(context, completionController),
 
-                  _buildGetSignature(completionController),
-
-                  const SizedBox(height: 20),
-
-                  _buildSubmitButton(context, completionController),
-
-                  const SizedBox(height: 12),
-                ],
-              ),
-
-
-
-            ],
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -378,8 +381,6 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
       ),
     );
   }
-
-
 
   Widget _buildTaskSummaryCard(TaskCompletionController controller) {
     return _ModernCard(
@@ -664,7 +665,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: .55),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withValues(alpha: .25)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: .25),
+                    ),
                   ),
                   child: const Icon(
                     Icons.close_rounded,
@@ -736,7 +739,6 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
       ),
     );
   }
-
 
   Widget _buildNotesSection(TaskCompletionController controller) {
     return _ModernCard(
@@ -916,10 +918,16 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
             child: ElevatedButton(
               onPressed: controller.isSubmitting.value
                   ? null
-                  : () => controller.submitTaskCompletion(onSuccess: () {
-                      if (context.mounted) _showSuccessDialog(context, controller,
-                        'Task completed successfully');
-                    }),
+                  : () => controller.submitTaskCompletion(
+                      onSuccess: () {
+                        if (context.mounted)
+                          _showSuccessDialog(
+                            context,
+                            controller,
+                            'Task completed successfully',
+                          );
+                      },
+                    ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _blue,
                 disabledBackgroundColor: _blue.withValues(alpha: .55),
@@ -1297,30 +1305,28 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   }
 
   Widget _buildGetSignature(TaskCompletionController controller) {
-    return Obx(() => SignatureCard(signature: controller.signatureBase64.value,
-      onCapture: controller.captureSignature, showIcon: true));
+    return Obx(
+      () => SignatureCard(
+        signature: controller.signatureBase64.value,
+        onCapture: controller.captureSignature,
+        showIcon: true,
+      ),
+    );
   }
 
   Widget _buildChecklistSection1(
-      BuildContext context,
-      TaskCompletionController controller,
-      ) {
+    BuildContext context,
+    TaskCompletionController controller,
+  ) {
     return Obx(() {
       final items = controller.sowItems;
 
-      final preInstallItems = items
-          .where((e) => e.type == 'pre_install')
-          .toList()
-        ..sort(
-              (a, b) => a.sortOrder.compareTo(b.sortOrder),
-        );
+      final preInstallItems =
+          items.where((e) => e.type == 'pre_install').toList()
+            ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-      final installItems = items
-          .where((e) => e.type == 'install')
-          .toList()
-        ..sort(
-              (a, b) => a.sortOrder.compareTo(b.sortOrder),
-        );
+      final installItems = items.where((e) => e.type == 'install').toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
       final total = items.length;
 
@@ -1450,9 +1456,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                                   ? Icons.check_circle_rounded
                                   : Icons.pending_actions_rounded,
                               size: 13,
-                              color: completed == total
-                                  ? _green
-                                  : _blue,
+                              color: completed == total ? _green : _blue,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -1460,9 +1464,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
-                                color: completed == total
-                                    ? _green
-                                    : _blue,
+                                color: completed == total ? _green : _blue,
                               ),
                             ),
                           ],
@@ -1482,13 +1484,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 6,
-                            backgroundColor:
-                            const Color(0xFFE9EDF3),
-                            valueColor:
-                            AlwaysStoppedAnimation<Color>(
-                              completed == total
-                                  ? _green
-                                  : _blue,
+                            backgroundColor: const Color(0xFFE9EDF3),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              completed == total ? _green : _blue,
                             ),
                           ),
                         ),
@@ -1504,9 +1502,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
-                            color: completed == total
-                                ? _green
-                                : _blue,
+                            color: completed == total ? _green : _blue,
                           ),
                         ),
                       ),
@@ -1516,15 +1512,11 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
               ),
             ),
 
-            const Divider(
-              height: 1,
-              color: _border,
-            ),
+            const Divider(height: 1, color: _border),
 
             // ========================================================
             // PRE INSTALLATION
             // ========================================================
-
             if (preInstallItems.isNotEmpty)
               _buildSowGroup(
                 context: context,
@@ -1538,13 +1530,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
             // ========================================================
             // INSTALLATION
             // ========================================================
-
             if (installItems.isNotEmpty) ...[
               if (preInstallItems.isNotEmpty)
-                const Divider(
-                  height: 1,
-                  color: _border,
-                ),
+                const Divider(height: 1, color: _border),
 
               _buildSowGroup(
                 context: context,
@@ -1568,9 +1556,6 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
     });
   }
 
-
-
-
   Widget _buildSowGroup({
     required BuildContext context,
     required TaskCompletionController controller,
@@ -1582,8 +1567,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   }) {
     final completed = items.where(controller.isSowItemResolved).length;
 
-    final bool allCompleted =
-        completed == items.length;
+    final bool allCompleted = completed == items.length;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -1606,12 +1590,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  allCompleted
-                      ? Icons.check_rounded
-                      : icon,
+                  allCompleted ? Icons.check_rounded : icon,
                   size: 18,
-                  color:
-                  allCompleted ? _green : _blue,
+                  color: allCompleted ? _green : _blue,
                 ),
               ),
 
@@ -1619,8 +1600,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
@@ -1646,10 +1626,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
               ),
 
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: allCompleted
                       ? const Color(0xFFE9F8F0)
@@ -1661,8 +1638,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,
-                    color:
-                    allCompleted ? _green : _blue,
+                    color: allCompleted ? _green : _blue,
                   ),
                 ),
               ),
@@ -1674,22 +1650,18 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
           // ========================================================
           // SOW ITEMS
           // ========================================================
+          ...List.generate(items.length, (index) {
+            final item = items[index];
 
-          ...List.generate(
-            items.length,
-                (index) {
-              final item = items[index];
-
-              return _buildSowChecklistItem(
-                context: context,
-                controller: controller,
-                item: item,
-                index: index,
-                isLast: index == items.length - 1,
-                isLocked: isLocked,
-              );
-            },
-          ),
+            return _buildSowChecklistItem(
+              context: context,
+              controller: controller,
+              item: item,
+              index: index,
+              isLast: index == items.length - 1,
+              isLocked: isLocked,
+            );
+          }),
         ],
       ),
     );
@@ -1712,42 +1684,38 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
         borderRadius: BorderRadius.circular(12),
         onTap: isLocked
             ? () {
-          Get.snackbar(
-            'Installation Locked',
-            'Complete all Pre-Installation items first.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange.shade800,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-            icon: const Icon(
-              Icons.lock_outline_rounded,
-              color: Colors.white,
-            ),
-          );
-        }
+                Get.snackbar(
+                  'Installation Locked',
+                  'Complete all Pre-Installation items first.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.orange.shade800,
+                  colorText: Colors.white,
+                  margin: const EdgeInsets.all(16),
+                  icon: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.white,
+                  ),
+                );
+              }
             : () async {
-          if (!await controller.canOpenSowItem(item) || !context.mounted) {
-            return;
-          }
-          await showDialog<void>(
-            context: context,
-            barrierDismissible: false,
-            builder: (dialogContext) => _SowItemResponseDialog(
-              controller: controller,
-              item: item,
-              initialResponse: controller.sowItemResponses[item.id],
-            ),
-          );
-        },
-      
+                if (!await controller.canOpenSowItem(item) ||
+                    !context.mounted) {
+                  return;
+                }
+                await showDialog<void>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => _SowItemResponseDialog(
+                    controller: controller,
+                    item: item,
+                    initialResponse: controller.sowItemResponses[item.id],
+                  ),
+                );
+              },
+
         child: Container(
-          margin: EdgeInsets.only(
-            bottom: isLast ? 0 : 8,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 11,
-            vertical: 11,
-          ),
+          margin: EdgeInsets.only(bottom: isLast ? 0 : 8),
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 11),
           decoration: BoxDecoration(
             color: notApplicable
                 ? const Color(0xFFFFFAEB)
@@ -1769,10 +1737,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
               // ======================================================
               // CHECKBOX
               // ======================================================
-      
+
               AnimatedContainer(
-                duration:
-                const Duration(milliseconds: 180),
+                duration: const Duration(milliseconds: 180),
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
@@ -1793,23 +1760,21 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                 ),
                 child: checked
                     ? const Icon(
-                  Icons.check_rounded,
-                  color: Colors.white,
-                  size: 16,
-                )
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      )
                     : null,
               ),
-      
+
               const SizedBox(width: 11),
-      
+
               // ======================================================
               // DESCRIPTION
               // ======================================================
-      
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       item.description,
@@ -1822,23 +1787,21 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                             : _text,
                       ),
                     ),
-      
+
                     // COMPLETED STATUS
                     if (checked) ...[
                       const SizedBox(height: 6),
-      
+
                       Row(
                         children: [
                           Icon(
                             Icons.verified_rounded,
                             size: 12,
-                            color: notApplicable
-                                ? Color(0xFFD99A00)
-                                : _green,
+                            color: notApplicable ? Color(0xFFD99A00) : _green,
                           ),
-      
+
                           const SizedBox(width: 4),
-      
+
                           Text(
                             notApplicable ? "Not Applicable" : "Completed",
                             style: TextStyle(
@@ -1849,10 +1812,10 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                                   : _green,
                             ),
                           ),
-      
+
                           if (!notApplicable && item.completedAt != null) ...[
                             const SizedBox(width: 5),
-      
+
                             const Text(
                               "•",
                               style: TextStyle(
@@ -1860,22 +1823,17 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                                 fontSize: 9,
                               ),
                             ),
-      
+
                             const SizedBox(width: 5),
-      
+
                             Flexible(
                               child: Text(
-                                _formatSowDate(
-                                  item.completedAt!,
-                                ),
-                                overflow:
-                                TextOverflow.ellipsis,
+                                _formatSowDate(item.completedAt!),
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 8.5,
-                                  fontWeight:
-                                  FontWeight.w500,
-                                  color:
-                                  Color(0xFF8993A4),
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF8993A4),
                                 ),
                               ),
                             ),
@@ -1886,18 +1844,17 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                   ],
                 ),
               ),
-      
+
               const SizedBox(width: 8),
-      
+
               // ======================================================
               // STATUS
               // ======================================================
-      
               Icon(
                 checked
                     ? notApplicable
-                        ? Icons.do_not_disturb_on_rounded
-                        : Icons.check_circle_rounded
+                          ? Icons.do_not_disturb_on_rounded
+                          : Icons.check_circle_rounded
                     : Icons.radio_button_unchecked_rounded,
                 size: 18,
                 color: notApplicable
@@ -1916,8 +1873,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   String _formatSowDate(DateTime date) {
     final d = date.toLocal();
 
-    String two(int value) =>
-        value.toString().padLeft(2, '0');
+    String two(int value) => value.toString().padLeft(2, '0');
 
     return "${two(d.day)}/${two(d.month)}/${d.year} "
         "${two(d.hour)}:${two(d.minute)}";
@@ -1945,8 +1901,8 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
   static const Color _dialogBlue = AppColors.primary;
 
   late final TextEditingController _commentsController;
-  late final List<SowItemEvidenceModel> _images;
-  final List<SowItemEvidenceModel> _newImages = [];
+  late final List<SowAttachmentModel> _images;
+  final List<SowAttachmentModel> _newImages = [];
   SowItemResponseStatus? _status;
   bool _isSaving = false;
 
@@ -1957,9 +1913,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
     _status =
         response?.status ??
         (widget.item.status == 1 ? SowItemResponseStatus.completed : null);
-    _commentsController = TextEditingController(
-      text: response?.comments ?? '',
-    );
+    _commentsController = TextEditingController(text: response?.comments ?? '');
     _images = [...?response?.images];
   }
 
@@ -1972,7 +1926,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
     });
   }
 
-  Future<void> _removeImage(SowItemEvidenceModel image) async {
+  Future<void> _removeImage(SowAttachmentModel image) async {
     setState(() => _images.remove(image));
     if (_newImages.remove(image)) {
       await widget.controller.discardSowItemImages([image]);
@@ -2025,7 +1979,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
     }
   }
 
-  void _previewImage(SowItemEvidenceModel image) {
+  void _previewImage(SowAttachmentModel image) {
     showDialog<void>(
       context: context,
       builder: (previewContext) => Dialog(
@@ -2033,8 +1987,8 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
         child: Stack(
           children: [
             InteractiveViewer(
-              child: Image.file(
-                File(image.filePath),
+              child: Image(
+                image: MemoryImage(base64Decode(image.filePath)),
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const SizedBox(
                   height: 280,
@@ -2137,8 +2091,8 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                           onSelected: _isSaving
                               ? null
                               : (_) => setState(
-                                  () => _status =
-                                      SowItemResponseStatus.completed,
+                                  () =>
+                                      _status = SowItemResponseStatus.completed,
                                 ),
                         ),
                         ChoiceChip(
@@ -2204,10 +2158,13 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                                       InkWell(
                                         onTap: () => _previewImage(image),
                                         child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          child: Image.file(
-                                            File(image.filePath),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          child: Image(
+                                            image: MemoryImage(
+                                              base64Decode(image.filePath),
+                                            ),
                                             width: 88,
                                             height: 76,
                                             fit: BoxFit.cover,
@@ -2245,7 +2202,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
-                                    image.fileName,
+                                    image.originalName,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -2263,10 +2220,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                         padding: EdgeInsets.only(top: 4),
                         child: Text(
                           'Select multiple images from your gallery. Images are saved locally.',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: _dialogMuted,
-                          ),
+                          style: TextStyle(fontSize: 10, color: _dialogMuted),
                         ),
                       ),
                   ],
