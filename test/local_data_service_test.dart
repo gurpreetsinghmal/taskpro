@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
+import 'package:taskpro/common/helpers/sow_image_compressor.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/common/models/sow_item_response_model.dart';
 import 'package:taskpro/common/widgets/sow_item_response_details.dart';
@@ -422,6 +425,39 @@ void main() {
 
     expect(find.text('Not present at site.'), findsOneWidget);
     expect(find.text('evidence.jpg'), findsOneWidget);
+  });
+
+  test('SOW image compression outputs a valid image no larger than 150 KB', () {
+    final random = Random(12);
+    final source = img.Image(width: 1024, height: 1024);
+    for (var y = 0; y < source.height; y++) {
+      for (var x = 0; x < source.width; x++) {
+        source.setPixelRgb(
+          x,
+          y,
+          random.nextInt(256),
+          random.nextInt(256),
+          random.nextInt(256),
+        );
+      }
+    }
+    final sourceBytes = img.encodePng(source);
+    expect(sourceBytes.length, greaterThan(maxSowImageBytes));
+
+    final compressed = compressSowImage(sourceBytes);
+
+    expect(compressed.length, lessThanOrEqualTo(maxSowImageBytes));
+    expect(img.decodeImage(compressed), isNotNull);
+  });
+
+  test('SOW image compression fills transparent pixels with white', () {
+    final transparent = img.Image(width: 1, height: 1, numChannels: 4);
+    final compressed = compressSowImage(img.encodePng(transparent));
+    final pixel = img.decodeImage(compressed)!.getPixel(0, 0);
+
+    expect(pixel.r, greaterThan(240));
+    expect(pixel.g, greaterThan(240));
+    expect(pixel.b, greaterThan(240));
   });
 
   test('profile refresh preserves a draft until editing is canceled', () async {

@@ -4,11 +4,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
+import 'package:taskpro/common/helpers/sow_image_compressor.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/singature/signature_screen.dart';
@@ -84,6 +86,7 @@ class TaskCompletionController extends GetxController {
 
   static const int maxPhotos = 4;
   static const int maxPhotoSizeBytes = 5 * 1024 * 1024;
+  static const int maxSowImageSourceBytes = 25 * 1024 * 1024;
 
   final ImagePicker _imagePicker = ImagePicker();
   SecureStorageService get storage => local.storage;
@@ -279,7 +282,11 @@ class TaskCompletionController extends GetxController {
 
     try {
       isPickingSowImages.value = true;
-      final selectedFiles = await _imagePicker.pickMultiImage();
+      final selectedFiles = await _imagePicker.pickMultiImage(
+        imageQuality: 100,
+        maxWidth: 2560,
+        maxHeight: 2560,
+      );
       for (final selectedFile in selectedFiles) {
         final file = File(selectedFile.path);
         if (!await file.exists()) {
@@ -290,26 +297,30 @@ class TaskCompletionController extends GetxController {
           _showError('Invalid Photo', 'A selected image is empty or damaged.');
           continue;
         }
-        if (size > maxPhotoSizeBytes) {
+        if (size > maxSowImageSourceBytes) {
           _showError(
             'Photo Too Large',
-            '${selectedFile.name} exceeds the 5 MB per-image limit.',
+            '${selectedFile.name} exceeds the 25 MB source-image limit.',
           );
           continue;
         }
 
+        final compressedBytes = await compute(
+          compressSowImage,
+          await file.readAsBytes(),
+        );
         images.add(
           SowAttachmentModel(
             id: 0,
             workOrderId: task.id,
             sowItemId: 0,
             disk: '',
-            filePath: base64Encode(await file.readAsBytes()),
+            filePath: base64Encode(compressedBytes),
             originalName: selectedFile.name.isEmpty
                 ? _fileNameFromPath(selectedFile.path)
                 : selectedFile.name,
-            mimeType: '',
-            fileSize: size,
+            mimeType: 'image/jpeg',
+            fileSize: compressedBytes.lengthInBytes,
           ),
         );
       }
