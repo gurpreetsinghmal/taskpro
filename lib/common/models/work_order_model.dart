@@ -412,7 +412,7 @@ class SowAttachmentModel {
   final DateTime? updatedAt;
   final DateTime? deletedAt;
 
-  SowAttachmentModel({
+  const SowAttachmentModel({
     required this.id,
     required this.workOrderId,
     required this.sowItemId,

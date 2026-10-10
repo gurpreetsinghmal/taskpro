@@ -272,12 +272,15 @@ void main() {
           status: SowItemResponseStatus.completed,
           comments: 'Installed and tested.',
           images: [
-            SowItemEvidenceModel(
+            SowAttachmentModel(
+              id: 0,
+              workOrderId: 0,
+              sowItemId: 10,
+              disk: 'Gallery',
               filePath: image.path,
-              fileName: 'proof.jpg',
-              fileSizeBytes: 4,
-              source: 'Gallery',
-              timestamp: 'Today',
+              originalName: 'proof.jpg',
+              mimeType: '',
+              fileSize: 4,
             ),
           ],
         ),
@@ -288,7 +291,9 @@ void main() {
           'id': 10,
           'status': 1,
           'comments': 'Installed and tested.',
-          'images': [base64Encode([1, 2, 3, 4])],
+          'images': [
+            base64Encode([1, 2, 3, 4]),
+          ],
         },
       ]);
 
@@ -310,12 +315,15 @@ void main() {
           status: SowItemResponseStatus.notApplicable,
           comments: 'This equipment is not installed at this site.',
           images: [
-            SowItemEvidenceModel(
+            SowAttachmentModel(
+              id: 0,
+              workOrderId: 0,
+              sowItemId: 10,
+              disk: 'Gallery',
               filePath: '/local/evidence.jpg',
-              fileName: 'evidence.jpg',
-              fileSizeBytes: 1024,
-              source: 'Gallery',
-              timestamp: 'Today',
+              originalName: 'evidence.jpg',
+              mimeType: '',
+              fileSize: 1024,
             ),
           ],
         ),

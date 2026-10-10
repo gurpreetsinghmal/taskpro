@@ -373,7 +373,12 @@ class TaskCompletionController extends GetxController {
       final response = sowItemResponses[item.id];
       final images = <String>[];
       for (final image in response?.images ?? const <SowAttachmentModel>[]) {
-        images.add(image.filePath);
+        final file = File(image.filePath);
+        images.add(
+          await file.exists()
+              ? base64Encode(await file.readAsBytes())
+              : image.filePath,
+        );
       }
 
       payload.add({
