@@ -4,18 +4,19 @@ import '../../../../services/local_data_service.dart';
 import 'package:get/get.dart';
 
 class WorkOrderDetailsModal {
-  static void show(
-      BuildContext context,
-      WorkOrderModel workOrder,
-      ) {
+  static void show(BuildContext context, WorkOrderModel workOrder) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha:0.55),
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       builder: (_) {
-        return Obx(() => _WorkOrderDetailsSheet(
-          workOrder: LocalDataService.instance.findOrder(workOrder.id) ?? workOrder));
+        return Obx(
+          () => _WorkOrderDetailsSheet(
+            workOrder:
+                LocalDataService.instance.findOrder(workOrder.id) ?? workOrder,
+          ),
+        );
       },
     );
   }
@@ -24,9 +25,7 @@ class WorkOrderDetailsModal {
 class _WorkOrderDetailsSheet extends StatelessWidget {
   final WorkOrderModel workOrder;
 
-  const _WorkOrderDetailsSheet({
-    required this.workOrder,
-  });
+  const _WorkOrderDetailsSheet({required this.workOrder});
 
   Color get _primary => const Color(0xFF1769E0);
   Color get _darkBlue => const Color(0xFF123A73);
@@ -102,9 +101,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
       height: MediaQuery.of(context).size.height * 0.93,
       decoration: const BoxDecoration(
         color: Color(0xFFF6F8FC),
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(30),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       child: Column(
         children: [
@@ -113,12 +110,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(
-                18,
-                18,
-                18,
-                25 + bottom,
-              ),
+              padding: EdgeInsets.fromLTRB(18, 18, 18, 25 + bottom),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -145,7 +137,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   _buildScheduleCard(),
-
 
                   const SizedBox(height: 20),
 
@@ -209,7 +200,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   ],
 
                   const SizedBox(height: 20),
-
                 ],
               ),
             ),
@@ -230,18 +220,12 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            _primary,
-            const Color(0xFF0D47A1),
-            _darkBlue,
-          ],
+          colors: [_primary, const Color(0xFF0D47A1), _darkBlue],
         ),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(30),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
-            color: _primary.withValues(alpha:0.30),
+            color: _primary.withValues(alpha: 0.30),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -254,7 +238,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
               width: 42,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha:0.45),
+                color: Colors.white.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -268,10 +252,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha:0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha:0.20),
+                    color: Colors.white.withValues(alpha: 0.20),
                   ),
                 ),
                 child: const Icon(
@@ -316,13 +300,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha:0.14),
+                    color: Colors.white.withValues(alpha: 0.14),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.close_rounded,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.close_rounded, color: Colors.white),
                 ),
               ),
             ],
@@ -345,7 +326,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.055),
+            color: Colors.black.withValues(alpha: 0.055),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -400,12 +381,9 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
 
   Widget _statusBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: _statusColor.withValues(alpha:0.11),
+        color: _statusColor.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -440,22 +418,15 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   }) {
     return Flexible(
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 7,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withValues(alpha:0.09),
+          color: color.withValues(alpha: 0.09),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 14,
-              color: color,
-            ),
+            Icon(icon, size: 14, color: color),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
@@ -566,21 +537,17 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha:0.11),
+                  color: color.withValues(alpha: 0.11),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  size: 17,
-                  color: color,
-                ),
+                child: Icon(icon, size: 17, color: color),
               ),
 
               if (!isLast)
                 Container(
                   width: 2,
                   height: 28,
-                  color: color.withValues(alpha:0.18),
+                  color: color.withValues(alpha: 0.18),
                 ),
             ],
           ),
@@ -631,15 +598,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFEAF4FF),
-            Color(0xFFF4F8FF),
-          ],
+          colors: [Color(0xFFEAF4FF), Color(0xFFF4F8FF)],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: _primary.withValues(alpha:0.10),
-        ),
+        border: Border.all(color: _primary.withValues(alpha: 0.10)),
       ),
       child: Column(
         children: [
@@ -654,7 +616,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: _primary.withValues(alpha:0.25),
+                      color: _primary.withValues(alpha: 0.25),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -691,27 +653,18 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                 onPressed: () {
                   // Keep your existing map functionality here.
                 },
-                icon: const Icon(
-                  Icons.directions_rounded,
-                  size: 18,
-                ),
+                icon: const Icon(Icons.directions_rounded, size: 18),
                 label: const Text(
                   'Open Location',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _primary,
-                  side: BorderSide(
-                    color: _primary.withValues(alpha:0.25),
-                  ),
+                  side: BorderSide(color: _primary.withValues(alpha: 0.25)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ),
@@ -731,11 +684,13 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         _personCard(
           icon: Icons.person_2_outlined,
           title: 'Client POC',
-          name: (workOrder.contactFirstName == null && workOrder.contactLastName == null)
+          name:
+              (workOrder.contactFirstName == null &&
+                  workOrder.contactLastName == null)
               ? "-"
               : "${workOrder.contactFirstName ?? '-'} ${workOrder.contactLastName ?? '-'}",
           email: "",
-          phone: workOrder.phone??"-",
+          phone: workOrder.phone ?? "-",
           color: Colors.orange,
         ),
 
@@ -778,7 +733,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(19),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.045),
+            color: Colors.black.withValues(alpha: 0.045),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -790,14 +745,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withValues(alpha:0.11),
+              color: color.withValues(alpha: 0.11),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
 
           const SizedBox(width: 12),
@@ -828,8 +779,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   ),
                 ),
 
-                if (email != null &&
-                    email.trim().isNotEmpty) ...[
+                if (email != null && email.trim().isNotEmpty) ...[
                   const SizedBox(height: 3),
                   Text(
                     email,
@@ -842,8 +792,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   ),
                 ],
 
-                if (phone != null &&
-                    phone.trim().isNotEmpty) ...[
+                if (phone != null && phone.trim().isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     phone,
@@ -897,8 +846,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   icon: Icons.timelapse_rounded,
                   title: 'Approx. Hours',
                   value:
-                  workOrder.approximateHoursToComplete?.toString() ??
-                      '—',
+                      workOrder.approximateHoursToComplete?.toString() ?? '—',
                   color: const Color(0xFFE67E22),
                 ),
               ),
@@ -952,7 +900,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 5),
           ),
@@ -965,14 +913,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: color.withValues(alpha:0.11),
+              color: color.withValues(alpha: 0.11),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: color,
-            ),
+            child: Icon(icon, size: 18, color: color),
           ),
 
           const SizedBox(height: 11),
@@ -1016,8 +960,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   }
 
   Widget _buildHardStartRequest() {
-    final accepted =
-        workOrder.proposedDatetimeAcceptedByManager == 1;
+    final accepted = workOrder.proposedDatetimeAcceptedByManager == 1;
 
     return Container(
       padding: const EdgeInsets.all(17),
@@ -1026,12 +969,12 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: accepted
-              ? const Color(0xFF16A085).withValues(alpha:0.25)
-              : const Color(0xFFFF9800).withValues(alpha:0.25),
+              ? const Color(0xFF16A085).withValues(alpha: 0.25)
+              : const Color(0xFFFF9800).withValues(alpha: 0.25),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -1045,10 +988,11 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: (accepted
-                      ? const Color(0xFF16A085)
-                      : const Color(0xFFFF9800))
-                      .withValues(alpha:0.11),
+                  color:
+                      (accepted
+                              ? const Color(0xFF16A085)
+                              : const Color(0xFFFF9800))
+                          .withValues(alpha: 0.11),
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Icon(
@@ -1098,27 +1042,21 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
             _requestRow(
               Icons.event_rounded,
               'Proposed Time',
-              workOrder.proposedDatetime
-                  .toString()
-                  .replaceFirst('T', ' '),
+              workOrder.proposedDatetime.toString().replaceFirst('T', ' '),
             ),
 
           if (workOrder.requestedAt != null)
             _requestRow(
               Icons.send_rounded,
               'Requested At',
-              workOrder.requestedAt
-                  .toString()
-                  .replaceFirst('T', ' '),
+              workOrder.requestedAt.toString().replaceFirst('T', ' '),
             ),
 
           if (workOrder.approvedAt != null)
             _requestRow(
               Icons.verified_rounded,
               'Approved At',
-              workOrder.approvedAt
-                  .toString()
-                  .replaceFirst('T', ' '),
+              workOrder.approvedAt.toString().replaceFirst('T', ' '),
             ),
 
           if (workOrder.proposedReason != null &&
@@ -1133,21 +1071,13 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _requestRow(
-      IconData icon,
-      String title,
-      String value,
-      ) {
+  Widget _requestRow(IconData icon, String title, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 17,
-            color: _primary,
-          ),
+          Icon(icon, size: 17, color: _primary),
 
           const SizedBox(width: 9),
 
@@ -1185,10 +1115,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   // COMMON WIDGETS
   // ------------------------------------------------------------
 
-  Widget _sectionTitle({
-    required IconData icon,
-    required String title,
-  }) {
+  Widget _sectionTitle({required IconData icon, required String title}) {
     return Row(
       children: [
         Container(
@@ -1198,11 +1125,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
             color: _lightBlue,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            icon,
-            size: 17,
-            color: _primary,
-          ),
+          child: Icon(icon, size: 17, color: _primary),
         ),
 
         const SizedBox(width: 9),
@@ -1219,9 +1142,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _card({
-    required Widget child,
-  }) {
+  Widget _card({required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -1230,7 +1151,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:0.045),
+            color: Colors.black.withValues(alpha: 0.045),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -1252,14 +1173,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: color.withValues(alpha:0.10),
+            color: color.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 18,
-          ),
+          child: Icon(icon, color: color, size: 18),
         ),
 
         const SizedBox(width: 11),
@@ -1297,10 +1214,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   Widget _divider() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 13),
-      child: Divider(
-        height: 1,
-        color: Colors.grey.shade100,
-      ),
+      child: Divider(height: 1, color: Colors.grey.shade100),
     );
   }
 
@@ -1317,14 +1231,10 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: color.withValues(alpha:0.10),
+            color: color.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            icon,
-            size: 19,
-            color: color,
-          ),
+          child: Icon(icon, size: 19, color: color),
         ),
 
         const SizedBox(width: 11),
@@ -1367,16 +1277,12 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha:0.065),
+        color: color.withValues(alpha: 0.065),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 19,
-          ),
+          Icon(icon, color: color, size: 19),
 
           const SizedBox(width: 8),
 
@@ -1410,35 +1316,27 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   }
 
   Widget buildSowSection(WorkOrderModel task) {
-    final preInstall = task.sowItems
-        .where((e) => e.type == 'pre_install')
-        .toList()
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final preInstall =
+        task.sowItems.where((e) => e.type == 'pre_install').toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-    final installation = task.sowItems
-        .where((e) => e.type == 'install')
-        .toList()
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final installation =
+        task.sowItems.where((e) => e.type == 'install').toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     final total = task.sowItems.length;
-    final completed =
-        task.sowItems.where((e) => e.status == 1).length;
+    final completed = task.sowItems.where(_isResolvedSowItem).length;
 
     final progress = total == 0 ? 0.0 : completed / total;
 
     if (total == 0) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 24,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: const Color(0xFFE5EAF1),
-          ),
+          border: Border.all(color: const Color(0xFFE5EAF1)),
         ),
         child: Column(
           children: [
@@ -1485,16 +1383,11 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
             const SizedBox(height: 14),
 
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 11,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE5EAF1),
-                ),
+                border: Border.all(color: const Color(0xFFE5EAF1)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1524,7 +1417,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         // =========================================================
         // HEADER / OVERALL PROGRESS
         // =========================================================
@@ -1533,17 +1425,14 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF0F5FA6),
-                Color(0xFF1976C9),
-              ],
+              colors: [Color(0xFF0F5FA6), Color(0xFF1976C9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F5FA6).withValues(alpha:.15),
+                color: const Color(0xFF0F5FA6).withValues(alpha: .15),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -1551,15 +1440,13 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           ),
           child: Column(
             children: [
-
               Row(
                 children: [
-
                   Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha:.15),
+                      color: Colors.white.withValues(alpha: .15),
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
@@ -1575,7 +1462,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Text(
                           "Scope of Work",
                           style: TextStyle(
@@ -1605,7 +1491,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha:.15),
+                      color: Colors.white.withValues(alpha: .15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -1627,11 +1513,8 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 7,
-                  backgroundColor: Colors.white.withValues(alpha:.20),
-                  valueColor:
-                  const AlwaysStoppedAnimation<Color>(
-                    Colors.white,
-                  ),
+                  backgroundColor: Colors.white.withValues(alpha: .20),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
 
@@ -1640,7 +1523,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-
                   Text(
                     "$completed tasks completed",
                     style: const TextStyle(
@@ -1668,7 +1550,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         // =========================================================
         // PRE INSTALL
         // =========================================================
-
         if (preInstall.isNotEmpty)
           _buildSowGroup(
             title: "Pre-Installation",
@@ -1683,7 +1564,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
         // =========================================================
         // INSTALLATION
         // =========================================================
-
         if (installation.isNotEmpty)
           _buildSowGroup(
             title: "Installation & Testing",
@@ -1700,41 +1580,30 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     required String subtitle,
     required IconData icon,
     required List<SowItemModel> items,
-  })
-  {
-    final completed =
-        items.where((item) => item.status == 1).length;
+  }) {
+    final completed = items.where(_isResolvedSowItem).length;
 
-    final allCompleted =
-        items.isNotEmpty && completed == items.length;
+    final allCompleted = items.isNotEmpty && completed == items.length;
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE5EAF1),
-        ),
+        border: Border.all(color: const Color(0xFFE5EAF1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:.035),
+            color: Colors.black.withValues(alpha: .035),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Theme(
-        data: ThemeData(
-          dividerColor: Colors.transparent,
-        ),
+        data: ThemeData(dividerColor: Colors.transparent),
         child: ExpansionTile(
-
           initiallyExpanded: false,
 
-          tilePadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 5,
-          ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
 
           childrenPadding: const EdgeInsets.only(
             left: 14,
@@ -1752,9 +1621,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              allCompleted
-                  ? Icons.check_circle_rounded
-                  : icon,
+              allCompleted ? Icons.check_circle_rounded : icon,
               color: allCompleted
                   ? const Color(0xFF22A06B)
                   : const Color(0xFF1769AA),
@@ -1784,10 +1651,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           ),
 
           trailing: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 9,
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             decoration: BoxDecoration(
               color: allCompleted
                   ? const Color(0xFFE8F7EF)
@@ -1807,21 +1671,13 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           ),
 
           children: [
-
-            const Divider(
-              height: 10,
-              color: Color(0xFFEEF1F5),
-            ),
+            const Divider(height: 10, color: Color(0xFFEEF1F5)),
 
             const SizedBox(height: 6),
 
             ...List.generate(
               items.length,
-                  (index) => _buildSowItem(
-                items[index],
-                index,
-                items.length,
-              ),
+              (index) => _buildSowItem(items[index], index, items.length),
             ),
           ],
         ),
@@ -1829,19 +1685,16 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildSowItem(
-      SowItemModel item,
-      int index,
-      int total,
-      )
-  {
-    final completed = item.status == 1;
+  Widget _buildSowItem(SowItemModel item, int index, int total) {
+    final completed = _isResolvedSowItem(item);
+    final notApplicable =
+        item.status != 1 &&
+        (item.remarks.trim().isNotEmpty || item.attachments.isNotEmpty);
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-
           // =====================================================
           // TIMELINE
           // =====================================================
@@ -1850,14 +1703,11 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
             width: 34,
             child: Column(
               children: [
-
                 Container(
                   width: 25,
                   height: 25,
                   decoration: BoxDecoration(
-                    color: completed
-                        ? const Color(0xFF22A06B)
-                        : Colors.white,
+                    color: completed ? const Color(0xFF22A06B) : Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: completed
@@ -1868,28 +1718,27 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   ),
                   child: completed
                       ? const Icon(
-                    Icons.check_rounded,
-                    size: 15,
-                    color: Colors.white,
-                  )
+                          Icons.check_rounded,
+                          size: 15,
+                          color: Colors.white,
+                        )
                       : Center(
-                    child: Text(
-                      "${index + 1}",
-                      style: const TextStyle(
-                        color: Color(0xFF7A869A),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
+                          child: Text(
+                            "${index + 1}",
+                            style: const TextStyle(
+                              color: Color(0xFF7A869A),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
                 ),
 
                 if (index != total - 1)
                   Expanded(
                     child: Container(
                       width: 1.5,
-                      margin:
-                      const EdgeInsets.symmetric(vertical: 3),
+                      margin: const EdgeInsets.symmetric(vertical: 3),
                       color: completed
                           ? const Color(0xFFB7E4CF)
                           : const Color(0xFFE2E7ED),
@@ -1904,12 +1753,9 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           // =====================================================
           // DESCRIPTION
           // =====================================================
-
           Expanded(
             child: Container(
-              margin: EdgeInsets.only(
-                bottom: index == total - 1 ? 0 : 12,
-              ),
+              margin: EdgeInsets.only(bottom: index == total - 1 ? 0 : 12),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: completed
@@ -1925,7 +1771,6 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Text(
                     item.description,
                     style: TextStyle(
@@ -1934,19 +1779,15 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                           : const Color(0xFF172B4D),
                       fontSize: 12,
                       height: 1.45,
-                      fontWeight: completed
-                          ? FontWeight.w500
-                          : FontWeight.w600,
+                      fontWeight: completed ? FontWeight.w500 : FontWeight.w600,
                     ),
                   ),
 
                   if (completed) ...[
-
                     const SizedBox(height: 8),
 
                     Row(
                       children: [
-
                         const Icon(
                           Icons.verified_rounded,
                           size: 13,
@@ -1955,24 +1796,23 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
 
                         const SizedBox(width: 5),
 
-                        const Text(
-                          "Completed",
+                        Text(
+                          notApplicable ? "Not Applicable" : "Completed",
                           style: TextStyle(
-                            color: Color(0xFF16875B),
+                            color: notApplicable
+                                ? Color(0xFFD99A00)
+                                : Color(0xFF16875B),
                             fontSize: 9.5,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
 
                         if (item.completedAt != null) ...[
-
                           const SizedBox(width: 5),
 
                           const Text(
                             "•",
-                            style: TextStyle(
-                              color: Color(0xFF97A0AF),
-                            ),
+                            style: TextStyle(color: Color(0xFF97A0AF)),
                           ),
 
                           const SizedBox(width: 5),
@@ -1999,5 +1839,9 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
       ),
     );
   }
-}
 
+  bool _isResolvedSowItem(SowItemModel item) =>
+      item.status == 1 ||
+      (item.status != 1 &&
+          (item.remarks.trim().isNotEmpty || item.attachments.isNotEmpty));
+}
