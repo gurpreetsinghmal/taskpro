@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/common/models/sow_item_response_model.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 import 'package:taskpro/theme/app_colors.dart';
@@ -295,7 +296,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                   const SizedBox(height: 16),
 
 
-                  _buildChecklistSection1(completionController),
+                  _buildChecklistSection1(context, completionController),
 
                   const SizedBox(height: 16),
 
@@ -1301,6 +1302,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   }
 
   Widget _buildChecklistSection1(
+      BuildContext context,
       TaskCompletionController controller,
       ) {
     return Obx(() {
@@ -1322,8 +1324,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
       final total = items.length;
 
-      final completed =
-          items.where((e) => e.status == 1).length;
+      final completed = items.where(controller.isSowItemResolved).length;
 
       final progress = total == 0 ? 0.0 : completed / total;
 
@@ -1526,6 +1527,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
             if (preInstallItems.isNotEmpty)
               _buildSowGroup(
+                context: context,
                 controller: controller,
                 title: "Pre-Installation",
                 subtitle: "Complete before starting installation",
@@ -1545,6 +1547,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                 ),
 
               _buildSowGroup(
+                context: context,
                 controller: controller,
                 title: "Installation & Testing",
                 subtitle: controller.isPreInstallationCompleted
@@ -1569,6 +1572,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
 
   Widget _buildSowGroup({
+    required BuildContext context,
     required TaskCompletionController controller,
     required String title,
     required String subtitle,
@@ -1576,8 +1580,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
     required List<SowItemModel> items,
     bool isLocked = false,
   }) {
-    final completed =
-        items.where((e) => e.status == 1).length;
+    final completed = items.where(controller.isSowItemResolved).length;
 
     final bool allCompleted =
         completed == items.length;
@@ -1678,6 +1681,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
               final item = items[index];
 
               return _buildSowChecklistItem(
+                context: context,
                 controller: controller,
                 item: item,
                 index: index,
@@ -1692,13 +1696,15 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   }
 
   Widget _buildSowChecklistItem({
+    required BuildContext context,
     required TaskCompletionController controller,
     required SowItemModel item,
     required int index,
     required bool isLast,
     bool isLocked = false,
   }) {
-    final bool checked = item.status == 1;
+    final bool notApplicable = controller.isSowItemNotApplicable(item);
+    final bool checked = controller.isSowItemResolved(item);
 
     return Opacity(
       opacity: isLocked ? 0.55 : 1.0,
@@ -1719,8 +1725,19 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
             ),
           );
         }
-            : () async{
-          await controller.toggleSowItem(item);
+            : () async {
+          if (!await controller.canOpenSowItem(item) || !context.mounted) {
+            return;
+          }
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => _SowItemResponseDialog(
+              controller: controller,
+              item: item,
+              initialResponse: controller.sowItemResponses[item.id],
+            ),
+          );
         },
       
         child: Container(
@@ -1732,12 +1749,16 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
             vertical: 11,
           ),
           decoration: BoxDecoration(
-            color: checked
+            color: notApplicable
+                ? const Color(0xFFFFFAEB)
+                : checked
                 ? const Color(0xFFF5FBF8)
                 : const Color(0xFFFAFBFC),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: checked
+              color: notApplicable
+                  ? const Color(0xFFF6D98B)
+                  : checked
                   ? const Color(0xFFCDECDD)
                   : const Color(0xFFE6EAF0),
             ),
@@ -1755,12 +1776,16 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: checked
+                  color: notApplicable
+                      ? const Color(0xFFD99A00)
+                      : checked
                       ? _green
                       : Colors.white,
                   borderRadius: BorderRadius.circular(7),
                   border: Border.all(
-                    color: checked
+                    color: notApplicable
+                        ? const Color(0xFFD99A00)
+                        : checked
                         ? _green
                         : const Color(0xFFC7D0DC),
                     width: 1.5,
@@ -1792,7 +1817,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                         fontSize: 11.5,
                         height: 1.4,
                         fontWeight: FontWeight.w600,
-                        color: checked
+                        color: checked && !notApplicable
                             ? const Color(0xFF536171)
                             : _text,
                       ),
@@ -1804,24 +1829,28 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
       
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.verified_rounded,
                             size: 12,
-                            color: _green,
+                            color: notApplicable
+                                ? Color(0xFFD99A00)
+                                : _green,
                           ),
       
                           const SizedBox(width: 4),
       
-                          const Text(
-                            "Completed",
+                          Text(
+                            notApplicable ? "Not Applicable" : "Completed",
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
-                              color: _green,
+                              color: notApplicable
+                                  ? const Color(0xFFD99A00)
+                                  : _green,
                             ),
                           ),
       
-                          if (item.completedAt != null) ...[
+                          if (!notApplicable && item.completedAt != null) ...[
                             const SizedBox(width: 5),
       
                             const Text(
@@ -1866,10 +1895,14 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
       
               Icon(
                 checked
-                    ? Icons.check_circle_rounded
+                    ? notApplicable
+                        ? Icons.do_not_disturb_on_rounded
+                        : Icons.check_circle_rounded
                     : Icons.radio_button_unchecked_rounded,
                 size: 18,
-                color: checked
+                color: notApplicable
+                    ? const Color(0xFFD99A00)
+                    : checked
                     ? _green
                     : const Color(0xFFCBD5E1),
               ),
@@ -1888,6 +1921,395 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
     return "${two(d.day)}/${two(d.month)}/${d.year} "
         "${two(d.hour)}:${two(d.minute)}";
+  }
+}
+
+class _SowItemResponseDialog extends StatefulWidget {
+  const _SowItemResponseDialog({
+    required this.controller,
+    required this.item,
+    required this.initialResponse,
+  });
+
+  final TaskCompletionController controller;
+  final SowItemModel item;
+  final SowItemResponseModel? initialResponse;
+
+  @override
+  State<_SowItemResponseDialog> createState() => _SowItemResponseDialogState();
+}
+
+class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
+  static const Color _dialogText = AppColors.textPrimary;
+  static const Color _dialogMuted = AppColors.textHint;
+  static const Color _dialogBlue = AppColors.primary;
+
+  late final TextEditingController _commentsController;
+  late final List<SowItemEvidenceModel> _images;
+  final List<SowItemEvidenceModel> _newImages = [];
+  SowItemResponseStatus? _status;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final response = widget.initialResponse;
+    _status =
+        response?.status ??
+        (widget.item.status == 1 ? SowItemResponseStatus.completed : null);
+    _commentsController = TextEditingController(
+      text: response?.comments ?? '',
+    );
+    _images = [...?response?.images];
+  }
+
+  Future<void> _addImages() async {
+    final images = await widget.controller.pickSowItemImages();
+    if (!mounted || images.isEmpty) return;
+    setState(() {
+      _images.addAll(images);
+      _newImages.addAll(images);
+    });
+  }
+
+  Future<void> _removeImage(SowItemEvidenceModel image) async {
+    setState(() => _images.remove(image));
+    if (_newImages.remove(image)) {
+      await widget.controller.discardSowItemImages([image]);
+    }
+  }
+
+  Future<void> _cancel() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    await widget.controller.discardSowItemImages(_newImages);
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _save() async {
+    if (_status == null) {
+      Get.snackbar(
+        'Choose a Status',
+        'Select Completed or Not Applicable before saving this item.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade800,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await widget.controller.saveSowItemResponse(
+        SowItemResponseModel(
+          sowItemId: widget.item.id,
+          status: _status!,
+          comments: _commentsController.text.trim(),
+          images: List.unmodifiable(_images),
+        ),
+      );
+      _newImages.clear();
+      if (mounted) Navigator.pop(context);
+    } catch (error) {
+      Get.snackbar(
+        'Unable to Save SOW Response',
+        error.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _previewImage(SowItemEvidenceModel image) {
+    showDialog<void>(
+      context: context,
+      builder: (previewContext) => Dialog(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            InteractiveViewer(
+              child: Image.file(
+                File(image.filePath),
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const SizedBox(
+                  height: 280,
+                  child: Center(
+                    child: Text(
+                      'Unable to preview this image.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                onPressed: () => Navigator.pop(previewContext),
+                icon: const Icon(Icons.close, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _commentsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.all(20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 520,
+          maxHeight: MediaQuery.sizeOf(context).height * .86,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 12, 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.fact_check_outlined, color: _dialogBlue),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'SOW Item Response',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: _dialogText,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _isSaving ? null : _cancel,
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.item.description,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: _dialogText,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Status',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _dialogText,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 10,
+                      children: [
+                        ChoiceChip(
+                          label: const Text('Completed'),
+                          selected: _status == SowItemResponseStatus.completed,
+                          onSelected: _isSaving
+                              ? null
+                              : (_) => setState(
+                                  () => _status =
+                                      SowItemResponseStatus.completed,
+                                ),
+                        ),
+                        ChoiceChip(
+                          label: const Text('Not Applicable'),
+                          selected:
+                              _status == SowItemResponseStatus.notApplicable,
+                          onSelected: _isSaving
+                              ? null
+                              : (_) => setState(
+                                  () => _status =
+                                      SowItemResponseStatus.notApplicable,
+                                ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _commentsController,
+                      enabled: !_isSaving,
+                      minLines: 2,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: 'Comments',
+                        hintText: 'Add comments for this SOW item',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Images',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: _dialogText,
+                            ),
+                          ),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _isSaving ? null : _addImages,
+                          icon: const Icon(Icons.add_photo_alternate_outlined),
+                          label: const Text('Add images'),
+                        ),
+                      ],
+                    ),
+                    if (_images.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final image in _images)
+                            SizedBox(
+                              width: 88,
+                              child: Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      InkWell(
+                                        onTap: () => _previewImage(image),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Image.file(
+                                            File(image.filePath),
+                                            width: 88,
+                                            height: 76,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, _, _) =>
+                                                Container(
+                                                  width: 88,
+                                                  height: 76,
+                                                  color: AppColors.background,
+                                                  child: const Icon(
+                                                    Icons.broken_image_outlined,
+                                                  ),
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 2,
+                                        right: 2,
+                                        child: IconButton.filled(
+                                          visualDensity: VisualDensity.compact,
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: Colors.black54,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          onPressed: _isSaving
+                                              ? null
+                                              : () => _removeImage(image),
+                                          icon: const Icon(
+                                            Icons.close_rounded,
+                                            size: 15,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    image.fileName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: _dialogMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ] else
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Select multiple images from your gallery. Images are saved locally.',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: _dialogMuted,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSaving ? null : _cancel,
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _dialogBlue,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Save response'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

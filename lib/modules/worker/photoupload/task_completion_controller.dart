@@ -8,12 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/network/api_exception.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/singature/signature_screen.dart';
 import 'package:taskpro/theme/app_colors.dart';
 import '../../../common/models/work_order_model.dart';
+import '../../../common/models/sow_item_response_model.dart';
 
 import '../../../services/secure_storage_service.dart';
 import '../../../services/worker_data_service.dart';
@@ -25,6 +27,8 @@ class TaskCompletionController extends GetxController {
   WorkOrderModel get task => local.findOrder(_initialTask.id) ?? _initialTask;
   Worker? _ordersWorker;
   final RxList<SowItemModel> sowItems = <SowItemModel>[].obs;
+  final sowItemResponses = <int, SowItemResponseModel>{}.obs;
+  Future<void> _sowItemResponsesReady = Future<void>.value();
 
   void setSowItems(WorkOrderModel task) {
     sowItems.assignAll(task.sowItems);
@@ -39,6 +43,7 @@ class TaskCompletionController extends GetxController {
       sowItems.assignAll(local.findOrder(_initialTask.id)?.sowItems ?? []);
     });
     local.initialize();
+    _sowItemResponsesReady = _loadSowItemResponses();
   }
 
   TaskCompletionController({
@@ -133,6 +138,7 @@ class TaskCompletionController extends GetxController {
   // Controllers & Form State
   final notesController = TextEditingController();
   final isPickingPhoto = false.obs;
+  final isPickingSowImages = false.obs;
   final isSubmitting = false.obs;
 
   final uploadProgress = 0.0.obs;
@@ -273,10 +279,182 @@ class TaskCompletionController extends GetxController {
     }
   }
 
+  Future<List<SowItemEvidenceModel>> pickSowItemImages() async {
+    if (isPickingSowImages.value || isSubmitting.value) return const [];
+    final images = <SowItemEvidenceModel>[];
+
+    try {
+      isPickingSowImages.value = true;
+      final selectedFiles = await _imagePicker.pickMultiImage();
+      final appDirectory = await getApplicationDocumentsDirectory();
+      final evidenceDirectory = Directory(
+        '${appDirectory.path}${Platform.pathSeparator}'
+        '${SowItemResponseModel.evidenceDirectoryName}'
+        '${Platform.pathSeparator}${task.id}',
+      );
+      await evidenceDirectory.create(recursive: true);
+
+      for (final selectedFile in selectedFiles) {
+        final file = File(selectedFile.path);
+        if (!await file.exists()) {
+          throw const FileSystemException('Selected image file was not found.');
+        }
+        final size = await file.length();
+        if (size <= 0) {
+          _showError('Invalid Photo', 'A selected image is empty or damaged.');
+          continue;
+        }
+        if (size > maxPhotoSizeBytes) {
+          _showError(
+            'Photo Too Large',
+            '${selectedFile.name} exceeds the 5 MB per-image limit.',
+          );
+          continue;
+        }
+
+        final safeName = selectedFile.name.replaceAll(
+          RegExp(r'[^A-Za-z0-9._-]'),
+          '_',
+        );
+        final savedFile = await file.copy(
+          '${evidenceDirectory.path}${Platform.pathSeparator}'
+          '${DateTime.now().microsecondsSinceEpoch}_$safeName',
+        );
+        images.add(
+          SowItemEvidenceModel(
+            filePath: savedFile.path,
+            fileName: selectedFile.name.isEmpty
+                ? _fileNameFromPath(selectedFile.path)
+                : selectedFile.name,
+            fileSizeBytes: size,
+            source: 'Gallery',
+            timestamp: _formatDateTime(DateTime.now()),
+          ),
+        );
+      }
+      return images;
+    } on PlatformException catch (error) {
+      await discardSowItemImages(images);
+      _showError(
+        'Permission Required',
+        error.message ?? 'Photo-library permission could not be granted.',
+      );
+      return const [];
+    } on FileSystemException catch (error) {
+      await discardSowItemImages(images);
+      _showError('Unable to Read Photo', error.message);
+      return const [];
+    } catch (error) {
+      await discardSowItemImages(images);
+      _showError(
+        'Unable to Add Photos',
+        'The selected images could not be read: $error',
+      );
+      return const [];
+    } finally {
+      isPickingSowImages.value = false;
+    }
+  }
+
+  Future<void> discardSowItemImages(
+    Iterable<SowItemEvidenceModel> images,
+  ) async {
+    for (final image in images) {
+      try {
+        final file = File(image.filePath);
+        if (await file.exists()) await file.delete();
+      } on FileSystemException catch (error) {
+        debugPrint('Unable to remove unsaved SOW evidence: $error');
+      }
+    }
+  }
+
+  Future<void> _loadSowItemResponses() async {
+    try {
+      final value = await storage.read(
+        SowItemResponseModel.storageKey(task.id),
+      );
+      if (!isClosed) {
+        sowItemResponses.assignAll(SowItemResponseModel.decodeStorage(value));
+      }
+    } catch (error) {
+      debugPrint('Unable to load saved SOW responses: $error');
+    }
+  }
+
+  bool isSowItemNotApplicable(SowItemModel item) =>
+      sowItemResponses[item.id]?.status ==
+      SowItemResponseStatus.notApplicable;
+
+  bool isSowItemResolved(SowItemModel item) =>
+      item.status == 1 || sowItemResponses[item.id] != null;
+
+  Future<List<Map<String, dynamic>>> buildSowItemsSubmission() async {
+    final payload = <Map<String, dynamic>>[];
+    for (final item in sowItems) {
+      if (isSowItemNotApplicable(item)) continue;
+
+      final response = sowItemResponses[item.id];
+      final images = <String>[];
+      for (final image in response?.images ?? const <SowItemEvidenceModel>[]) {
+        images.add(base64Encode(await File(image.filePath).readAsBytes()));
+      }
+
+      payload.add({
+        'id': item.id,
+        'status': item.status,
+        'comments': response?.comments ?? '',
+        'images': images,
+      });
+    }
+    return payload;
+  }
+
+  Future<void> saveSowItemResponse(SowItemResponseModel response) async {
+    final previousResponse = sowItemResponses[response.sowItemId];
+    final updatedResponses = Map<int, SowItemResponseModel>.from(
+      sowItemResponses,
+    )..[response.sowItemId] = response;
+    final status = response.status == SowItemResponseStatus.completed ? 1 : 0;
+
+    await storage.editWorkOrder(task.id, (current) {
+      return current.copyWith(
+        sowItems: current.sowItems.map((item) {
+          if (item.id != response.sowItemId) return item;
+          return item.copyWith(
+            status: status,
+            completedAt: status == 1 ? DateTime.now() : null,
+          );
+        }).toList(),
+        sync: response.status == SowItemResponseStatus.completed
+            ? 0
+            : current.sync,
+      );
+    });
+    await storage.write(
+      SowItemResponseModel.storageKey(task.id),
+      SowItemResponseModel.encodeStorage(updatedResponses),
+    );
+    sowItemResponses.assignAll(updatedResponses);
+
+    final retainedPaths = response.images.map((image) => image.filePath).toSet();
+    for (final image in previousResponse?.images ?? const []) {
+      if (retainedPaths.contains(image.filePath)) continue;
+      try {
+        final file = File(image.filePath);
+        if (await file.exists()) await file.delete();
+      } on FileSystemException catch (error) {
+        debugPrint('Unable to remove replaced SOW evidence: $error');
+      }
+    }
+  }
+
   Future<void> submitTaskCompletion({required VoidCallback onSuccess}) async {
+    await _sowItemResponsesReady;
+
     // 1. PRE-INSTALLATION MUST BE COMPLETED FIRST
     final pendingPreInstall = sowItems
-        .where((item) => item.type == 'pre_install' && item.status != 1)
+        .where((item) => item.type == 'pre_install' && !isSowItemResolved(item))
         .toList();
 
     if (pendingPreInstall.isNotEmpty) {
@@ -296,7 +474,7 @@ class TaskCompletionController extends GetxController {
 
     // 2. INSTALLATION MUST BE COMPLETED
     final pendingInstall = sowItems
-        .where((item) => item.type == 'install' && item.status != 1)
+        .where((item) => item.type == 'install' && !isSowItemResolved(item))
         .toList();
 
     if (pendingInstall.isNotEmpty) {
@@ -355,11 +533,7 @@ class TaskCompletionController extends GetxController {
       formData.fields.add(
         MapEntry(
           'sow_items',
-          jsonEncode(
-            sowItems.map((item) {
-              return {'id': item.id, 'status': item.status};
-            }).toList(),
-          ),
+          jsonEncode(await buildSowItemsSubmission()),
         ),
       );
 
@@ -594,14 +768,15 @@ class TaskCompletionController extends GetxController {
     super.onClose();
   }
 
-  Future<void> toggleSowItem(SowItemModel item) async {
+  Future<bool> canOpenSowItem(SowItemModel item) async {
+    await _sowItemResponsesReady;
     // ------------------------------------------------------------
     // If technician is trying to update an INSTALL item,
     // first verify that ALL PRE-INSTALL items are completed.
     // ------------------------------------------------------------
     if (item.type == 'install') {
       final pendingPreInstall = sowItems
-          .where((e) => e.type == 'pre_install' && e.status != 1)
+          .where((e) => e.type == 'pre_install' && !isSowItemResolved(e))
           .toList();
 
       if (pendingPreInstall.isNotEmpty) {
@@ -617,40 +792,10 @@ class TaskCompletionController extends GetxController {
           icon: const Icon(Icons.lock_outline_rounded, color: Colors.white),
         );
 
-        return;
+        return false;
       }
     }
-
-    // ------------------------------------------------------------
-    // Find SOW item
-    // ------------------------------------------------------------
-    final index = sowItems.indexWhere((e) => e.id == item.id);
-
-    if (index == -1) return;
-
-    final currentItem = sowItems[index];
-
-    final newStatus = currentItem.status == 1 ? 0 : 1;
-
-    final updatedItem = currentItem.copyWith(
-      status: newStatus,
-      completedAt: newStatus == 1 ? DateTime.now() : null,
-    );
-
-    // ------------------------------------------------------------
-    // Update RxList -> Obx automatically rebuilds
-    // ------------------------------------------------------------
-    sowItems[index] = updatedItem;
-
-    // Edit only this checklist item on the latest persisted order.
-    await storage.editWorkOrder(task.id, (current) {
-      return current.copyWith(
-        sowItems: current.sowItems
-            .map((entry) => entry.id == updatedItem.id ? updatedItem : entry)
-            .toList(),
-        sync: 0,
-      );
-    });
+    return true;
   }
 
   bool get isPreInstallationCompleted {
@@ -663,6 +808,6 @@ class TaskCompletionController extends GetxController {
       return true;
     }
 
-    return preInstallItems.every((e) => e.status == 1);
+    return preInstallItems.every(isSowItemResolved);
   }
 }

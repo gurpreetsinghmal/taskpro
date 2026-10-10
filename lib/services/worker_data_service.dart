@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 import '../common/helpers/api_routes.dart';
+import '../common/models/sow_item_response_model.dart';
 import '../common/models/work_order_model.dart';
 import '../network/api_exception.dart';
 import '../network/api_service.dart';
@@ -120,15 +123,43 @@ class WorkerDataService {
     } on Exception catch (error) {
       return 'Check-ins: $error';
     }
-/*
+
+    final sowItems = <Map<String, dynamic>>[];
+    try {
+      final responses = SowItemResponseModel.decodeStorage(
+        await local.storage.read(SowItemResponseModel.storageKey(task.id)),
+      );
+      final workOrder = task.toJson();
+      for (final item in task.sowItems) {
+        final response = responses[item.id];
+        final images = <String>[];
+        for (final image in response?.images ?? const <SowItemEvidenceModel>[]) {
+          images.add(base64Encode(await File(image.filePath).readAsBytes()));
+        }
+        sowItems.add({
+          ...item.toJson(),
+          'response_status': response?.status.name,
+          'comments': response?.comments ?? '',
+          'images': images,
+        });
+      }
+      workOrder['sow_items'] = sowItems;
+
+    } on Exception catch (error, stackTrace) {
+      log(
+        'Unable to log complete work order #${task.id}',
+        name: 'WorkerDataService.syncOrderFailure',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return 'Work-order logging: $error';
+    }
     try {
       final sowResponse = await api.post(
         ApiRoutes.workOrderSowItemsSync,
         data: {
           'work_order_id': task.id,
-          'sow_items': task.sowItems
-              .map((item) => {'id': item.id, 'status': item.status})
-              .toList(),
+          'sow_items': sowItems,
         },
       );
       if (!_successful(sowResponse.data)) {
@@ -144,7 +175,7 @@ class WorkerDataService {
     } on Exception catch (error) {
       return 'SOW items: $error';
     }
-*
+/*
     try {
       final workOrderFields = task.toJson()
         ..remove('checkins')

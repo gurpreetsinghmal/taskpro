@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/common/models/sow_item_response_model.dart';
 import 'package:taskpro/modules/worker/tasks/w_tasks_screen.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_controller.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_screen.dart';
@@ -223,9 +225,22 @@ void main() {
         local: local,
       )..onInit();
       await tasks.getTasksData();
-      await completion.toggleSowItem(completion.sowItems.first);
+      await completion.saveSowItemResponse(
+        const SowItemResponseModel(
+          sowItemId: 10,
+          status: SowItemResponseStatus.completed,
+          comments: 'Installed and tested.',
+        ),
+      );
       expect(tasks.workOrderList.first.sowItems.first.status, 1);
       expect(completion.sowItems.first.status, 1);
+      expect(completion.isSowItemResolved(completion.sowItems.first), isTrue);
+      expect(
+        SowItemResponseModel.decodeStorage(
+          await storage.read(SowItemResponseModel.storageKey(1)),
+        )[10]?.comments,
+        'Installed and tested.',
+      );
       await storage.editWorkOrder(
         1,
         (order) => order.copyWith(proposedDatetimeAcceptedByManager: 2),
@@ -236,6 +251,88 @@ void main() {
       expect(tasks.CheckinStatus, isEmpty);
       expect(completion.sowItems, isEmpty);
       tasks.onClose();
+      completion.onClose();
+    },
+  );
+
+  test(
+    'SOW submission includes comments and image base64 for completed items',
+    () async {
+      final completion = TaskCompletionController(
+        task: local.findOrder(1)!,
+        local: local,
+      )..onInit();
+      final directory = await Directory.systemTemp.createTemp();
+      final image = File('${directory.path}${Platform.pathSeparator}proof.jpg');
+      await image.writeAsBytes([1, 2, 3, 4]);
+
+      await completion.saveSowItemResponse(
+        SowItemResponseModel(
+          sowItemId: 10,
+          status: SowItemResponseStatus.completed,
+          comments: 'Installed and tested.',
+          images: [
+            SowItemEvidenceModel(
+              filePath: image.path,
+              fileName: 'proof.jpg',
+              fileSizeBytes: 4,
+              source: 'Gallery',
+              timestamp: 'Today',
+            ),
+          ],
+        ),
+      );
+
+      expect(await completion.buildSowItemsSubmission(), [
+        {
+          'id': 10,
+          'status': 1,
+          'comments': 'Installed and tested.',
+          'images': [base64Encode([1, 2, 3, 4])],
+        },
+      ]);
+
+      completion.onClose();
+      await directory.delete(recursive: true);
+    },
+  );
+
+  test(
+    'not-applicable responses resolve but are omitted from SOW submission',
+    () async {
+      final completion = TaskCompletionController(
+        task: local.findOrder(1)!,
+        local: local,
+      )..onInit();
+      await completion.saveSowItemResponse(
+        const SowItemResponseModel(
+          sowItemId: 10,
+          status: SowItemResponseStatus.notApplicable,
+          comments: 'This equipment is not installed at this site.',
+          images: [
+            SowItemEvidenceModel(
+              filePath: '/local/evidence.jpg',
+              fileName: 'evidence.jpg',
+              fileSizeBytes: 1024,
+              source: 'Gallery',
+              timestamp: 'Today',
+            ),
+          ],
+        ),
+      );
+
+      expect(
+        completion.isSowItemNotApplicable(completion.sowItems.first),
+        isTrue,
+      );
+      expect(completion.isSowItemResolved(completion.sowItems.first), isTrue);
+      expect(await completion.buildSowItemsSubmission(), isEmpty);
+
+      final saved = SowItemResponseModel.decodeStorage(
+        await storage.read(SowItemResponseModel.storageKey(1)),
+      )[10]!;
+      expect(saved.status, SowItemResponseStatus.notApplicable);
+      expect(saved.images.single.filePath, '/local/evidence.jpg');
       completion.onClose();
     },
   );
