@@ -482,6 +482,7 @@ class _CheckInOutCard extends StatelessWidget {
               style: TextStyle(fontSize: 12.5, height: 1.5, color: _muted),
             ),
             SizedBox(height: 12,),
+            if(controller.task.rateType==1)
              _buildGetSignature(controller, controller.signatureBase64CheckIn),
           ],
         ),
@@ -501,7 +502,7 @@ class _CheckInOutCard extends StatelessWidget {
             final hasSignature =
                 controller.signatureBase64CheckIn.value?.isNotEmpty ?? false;
 
-            if (!hasSignature) {
+            if (!hasSignature && controller.task.rateType==1) {
               return const SizedBox.shrink();
             }
 
@@ -586,6 +587,7 @@ class _CheckInOutCard extends StatelessWidget {
               style: TextStyle(fontSize: 12.5, height: 1.5, color: _muted),
             ),
             SizedBox(height: 12,),
+            if(controller.task.rateType==1)
             _buildGetSignature(controller, controller.signatureBase64CheckOut),
           ],
         ),
@@ -601,7 +603,7 @@ class _CheckInOutCard extends StatelessWidget {
             final hasSignature =
                 controller.signatureBase64CheckOut.value?.isNotEmpty ?? false;
 
-            if (!hasSignature) {
+            if (!hasSignature && controller.task.rateType==1) {
               return const SizedBox.shrink();
             }
 
