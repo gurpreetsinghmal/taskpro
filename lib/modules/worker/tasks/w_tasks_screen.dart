@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:taskpro/common/helpers/app_helper.dart';
 import 'package:taskpro/common/helpers/helper_methods.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/common/widgets/sow_item_response_details.dart';
 import 'package:taskpro/modules/worker/tasks/w_tasks_controller.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
@@ -2490,6 +2491,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       ],
                     ),
                   ],
+                  if (completed) SowItemResponseDetails(item: item),
                 ],
               ),
             ),

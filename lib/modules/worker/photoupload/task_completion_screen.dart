@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/common/models/sow_item_response_model.dart';
+import '../../../common/widgets/sow_item_response_details.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_controller.dart';
 import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 import 'package:taskpro/theme/app_colors.dart';
@@ -1838,6 +1839,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                               ),
                             ),
                           ],
+                          if (checked) SowItemResponseDetails(item: item),
                         ],
                       ),
                     ],

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
 import 'package:taskpro/common/models/sow_item_response_model.dart';
+import 'package:taskpro/common/widgets/sow_item_response_details.dart';
 import 'package:taskpro/modules/worker/tasks/w_tasks_screen.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_controller.dart';
 import 'package:taskpro/modules/worker/checkin/checkin_screen.dart';
@@ -148,6 +149,20 @@ void main() {
   test(
     'downloads preserve changes made in flight and pending offline work',
     () async {
+      await storage.editWorkOrder(
+        2,
+        (order) => order.copyWith(
+          sync: 0,
+          sowItems: order.sowItems
+              .map(
+                (item) => item.copyWith(
+                  status: 2,
+                  remarks: 'Not applicable at this site.',
+                ),
+              )
+              .toList(),
+        ),
+      );
       final snapshot = {
         for (final order in local.workOrders)
           order.id: jsonEncode(order.toJson()),
@@ -156,12 +171,18 @@ void main() {
         1,
         (order) => order.copyWith(workOrderTitle: 'Local edit'),
       );
-      await storage.editWorkOrder(2, (order) => order.copyWith(sync: 0));
       await storage.mergeDownloadedOrders([
         WorkOrderModel.fromJson(orderJson(1, title: 'Old server data')),
+        WorkOrderModel.fromJson(orderJson(2, title: 'New server data')),
       ], snapshot: snapshot);
       expect(local.findOrder(1)!.workOrderTitle, 'Local edit');
       expect(local.findOrder(2)!.sync, 0);
+      expect(local.findOrder(2)!.workOrderTitle, 'New server data');
+      expect(local.findOrder(2)!.sowItems.single.status, 2);
+      expect(
+        local.findOrder(2)!.sowItems.single.remarks,
+        'Not applicable at this site.',
+      );
     },
   );
 
@@ -233,13 +254,16 @@ void main() {
         ),
       );
       expect(tasks.workOrderList.first.sowItems.first.status, 1);
+      expect(
+        tasks.workOrderList.first.sowItems.first.remarks,
+        'Installed and tested.',
+      );
       expect(completion.sowItems.first.status, 1);
       expect(completion.isSowItemResolved(completion.sowItems.first), isTrue);
+      expect(tasks.workOrderList.first.sync, 0);
       expect(
-        SowItemResponseModel.decodeStorage(
-          await storage.read(SowItemResponseModel.storageKey(1)),
-        )[10]?.comments,
-        'Installed and tested.',
+        (await storage.findThisWorkOrder(1))!.toJson()['sow_items'],
+        isA<List<dynamic>>(),
       );
       await storage.editWorkOrder(
         1,
@@ -296,6 +320,16 @@ void main() {
           ],
         },
       ]);
+      final savedOrder = await storage.findThisWorkOrder(1);
+      expect(savedOrder!.sowItems.single.remarks, 'Installed and tested.');
+      expect(
+        savedOrder.toJson()['sow_items'][0]['remarks'],
+        'Installed and tested.',
+      );
+      expect(
+        savedOrder.sowItems.single.attachments.single.filePath,
+        image.path,
+      );
 
       completion.onClose();
       await directory.delete(recursive: true);
@@ -303,7 +337,7 @@ void main() {
   );
 
   test(
-    'not-applicable responses resolve but are omitted from SOW submission',
+    'not-applicable responses and evidence persist in the work order',
     () async {
       final completion = TaskCompletionController(
         task: local.findOrder(1)!,
@@ -336,14 +370,59 @@ void main() {
       expect(completion.isSowItemResolved(completion.sowItems.first), isTrue);
       expect(await completion.buildSowItemsSubmission(), isEmpty);
 
-      final saved = SowItemResponseModel.decodeStorage(
-        await storage.read(SowItemResponseModel.storageKey(1)),
-      )[10]!;
-      expect(saved.status, SowItemResponseStatus.notApplicable);
-      expect(saved.images.single.filePath, '/local/evidence.jpg');
+      final savedOrder = await storage.findThisWorkOrder(1);
+      final saved = savedOrder!.sowItems.single;
+      expect(saved.status, 2);
+      expect(saved.remarks, 'This equipment is not installed at this site.');
+      expect(saved.attachments.single.filePath, '/local/evidence.jpg');
+      expect(savedOrder.sync, 0);
+      final sowItemJson = savedOrder.toJson()['sow_items'][0];
+      expect(sowItemJson['status'], 2);
+      expect(
+        sowItemJson['remarks'],
+        'This equipment is not installed at this site.',
+      );
+      expect(
+        (sowItemJson['attachments'] as List).single['file_path'],
+        '/local/evidence.jpg',
+      );
       completion.onClose();
     },
   );
+
+  testWidgets('SOW response details render remarks and image labels', (
+    tester,
+  ) async {
+    final item = SowItemModel(
+      id: 10,
+      workOrderId: 1,
+      type: 'pre_install',
+      sortOrder: 1,
+      description: 'Inspect equipment.',
+      status: 2,
+      remarks: 'Not present at site.',
+      attachments: const [
+        SowAttachmentModel(
+          id: 1,
+          workOrderId: 1,
+          sowItemId: 10,
+          disk: '',
+          filePath: 'AA==',
+          originalName: 'evidence.jpg',
+          mimeType: 'image/jpeg',
+          fileSize: 1,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: SowItemResponseDetails(item: item)),
+      ),
+    );
+
+    expect(find.text('Not present at site.'), findsOneWidget);
+    expect(find.text('evidence.jpg'), findsOneWidget);
+  });
 
   test('profile refresh preserves a draft until editing is canceled', () async {
     final profile = WorkerProfileController(local: local)..onInit();
@@ -370,6 +449,14 @@ void main() {
           body: Obx(() => Text(local.workOrders.first.workOrderTitle)),
         ),
       ),
+    );
+    final snapshot = {
+      for (final order in local.workOrders)
+        order.id: jsonEncode(order.toJson()),
+    };
+    await storage.editWorkOrder(
+      1,
+      (order) => order.copyWith(workOrderTitle: 'Local edit'),
     );
     expect(find.text('Install equipment'), findsOneWidget);
     await tester.runAsync(

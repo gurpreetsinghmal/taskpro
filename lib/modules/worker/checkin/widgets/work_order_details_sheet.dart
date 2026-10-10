@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../common/models/work_order_model.dart';
+import '../../../../common/widgets/sow_item_response_details.dart';
 import '../../../../services/local_data_service.dart';
 import 'package:get/get.dart';
 
@@ -1829,6 +1830,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                       ],
                     ),
                   ],
+                  if (completed) SowItemResponseDetails(item: item),
                 ],
               ),
             ),

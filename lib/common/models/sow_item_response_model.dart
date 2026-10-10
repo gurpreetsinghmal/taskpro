@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'work_order_model.dart';
 
 enum SowItemResponseStatus { completed, notApplicable }
@@ -40,20 +39,4 @@ class SowItemResponseModel {
     'comments': comments,
     'images': images.map((image) => image.toJson()).toList(),
   };
-
-  static String storageKey(int workOrderId) =>
-      'sow_item_responses_$workOrderId';
-
-  static Map<int, SowItemResponseModel> decodeStorage(String? value) {
-    if (value == null || value.isEmpty) return {};
-    final responses = (jsonDecode(value) as List<dynamic>).map(
-      (item) => SowItemResponseModel.fromJson(item as Map<String, dynamic>),
-    );
-    return {for (final response in responses) response.sowItemId: response};
-  }
-
-  static String encodeStorage(Map<int, SowItemResponseModel> responses) =>
-      jsonEncode(
-        responses.values.map((response) => response.toJson()).toList(),
-      );
 }

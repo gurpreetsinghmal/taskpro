@@ -29,19 +29,14 @@ class TaskCompletionController extends GetxController {
   final sowItemResponses = <int, SowItemResponseModel>{}.obs;
   Future<void> _sowItemResponsesReady = Future<void>.value();
 
-  void setSowItems(WorkOrderModel task) {
-    sowItems.assignAll(task.sowItems);
-  }
-
   @override
   void onInit() {
     super.onInit();
     taskId.value = task.id.toString();
-    setSowItems(task);
+    _setSowItems(task);
     _ordersWorker = ever(local.workOrders, (_) {
-      sowItems.assignAll(local.findOrder(_initialTask.id)?.sowItems ?? []);
+      _setSowItems(local.findOrder(_initialTask.id));
     });
-    local.initialize();
     _sowItemResponsesReady = _loadSowItemResponses();
   }
 
@@ -347,16 +342,24 @@ class TaskCompletionController extends GetxController {
   }
 
   Future<void> _loadSowItemResponses() async {
-    try {
-      final value = await storage.read(
-        SowItemResponseModel.storageKey(task.id),
-      );
-      if (!isClosed) {
-        sowItemResponses.assignAll(SowItemResponseModel.decodeStorage(value));
-      }
-    } catch (error) {
-      debugPrint('Unable to load saved SOW responses: $error');
-    }
+    await local.initialize();
+    if (!isClosed) _setSowItems(local.findOrder(_initialTask.id));
+  }
+
+  void _setSowItems(WorkOrderModel? order) {
+    final items = order?.sowItems ?? const <SowItemModel>[];
+    sowItems.assignAll(items);
+    sowItemResponses.assignAll({
+      for (final item in items.where((item) => item.isResolved))
+        item.id: SowItemResponseModel(
+          sowItemId: item.id,
+          status: item.isNotApplicable
+              ? SowItemResponseStatus.notApplicable
+              : SowItemResponseStatus.completed,
+          comments: item.remarks,
+          images: item.attachments,
+        ),
+    });
   }
 
   bool isSowItemNotApplicable(SowItemModel item) =>
@@ -375,9 +378,11 @@ class TaskCompletionController extends GetxController {
       final response = sowItemResponses[item.id];
       final images = <String>[];
       for (final image in response?.images ?? const <SowAttachmentModel>[]) {
-        final file = File(image.filePath);
+        final file = image.filePath.length <= 1024
+            ? File(image.filePath)
+            : null;
         images.add(
-          await file.exists()
+          file != null && await file.exists()
               ? base64Encode(await file.readAsBytes())
               : image.filePath,
         );
@@ -394,13 +399,22 @@ class TaskCompletionController extends GetxController {
   }
 
   Future<void> saveSowItemResponse(SowItemResponseModel response) async {
+    await _sowItemResponsesReady;
+    if (local.findOrder(task.id) == null) {
+      throw StateError(
+        'Work order ${task.id} is not available in local storage.',
+      );
+    }
     final previousResponse = sowItemResponses[response.sowItemId];
-    final updatedResponses = Map<int, SowItemResponseModel>.from(
-      sowItemResponses,
-    )..[response.sowItemId] = response;
     final status = response.status == SowItemResponseStatus.completed ? 1 : 2;
+    final completedAt = status == 1 ? DateTime.now() : null;
 
     await storage.editWorkOrder(task.id, (current) {
+      if (!current.sowItems.any((item) => item.id == response.sowItemId)) {
+        throw StateError(
+          'SOW item ${response.sowItemId} is no longer available in this work order.',
+        );
+      }
       return current.copyWith(
         sowItems: current.sowItems.map((item) {
           if (item.id != response.sowItemId) return item;
@@ -421,25 +435,20 @@ class TaskCompletionController extends GetxController {
                 )
                 .toList(),
             status: status,
-            completedAt: status == 1 ? DateTime.now() : null,
+            completedAt: completedAt,
+            clearCompletedAt: status != 1,
           );
         }).toList(),
-        sync: response.status == SowItemResponseStatus.completed
-            ? 0
-            : current.sync,
+        sync: 0,
       );
     });
-    await storage.write(
-      SowItemResponseModel.storageKey(task.id),
-      SowItemResponseModel.encodeStorage(updatedResponses),
-    );
-    sowItemResponses.assignAll(updatedResponses);
 
     final retainedPaths = response.images
         .map((image) => image.filePath)
         .toSet();
     for (final image in previousResponse?.images ?? const []) {
       if (retainedPaths.contains(image.filePath)) continue;
+      if (image.filePath.length > 1024) continue;
       try {
         final file = File(image.filePath);
         if (await file.exists()) await file.delete();

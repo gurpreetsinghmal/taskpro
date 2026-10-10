@@ -88,6 +88,7 @@ class SecureStorageService {
       if (saved.sync == 0) {
         return remote.copyWith(
           checkins: saved.checkins,
+          sowItems: saved.sowItems,
           sync: 0,
           syncErrors: saved.syncErrors,
         );
