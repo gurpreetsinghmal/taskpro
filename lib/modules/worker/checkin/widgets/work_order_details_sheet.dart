@@ -1325,7 +1325,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     final total = task.sowItems.length;
-    final completed = task.sowItems.where(_isResolvedSowItem).length;
+    final completed = task.sowItems.where((item) => item.isResolved).length;
 
     final progress = total == 0 ? 0.0 : completed / total;
 
@@ -1581,7 +1581,7 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
     required IconData icon,
     required List<SowItemModel> items,
   }) {
-    final completed = items.where(_isResolvedSowItem).length;
+    final completed = items.where((item) => item.isResolved).length;
 
     final allCompleted = items.isNotEmpty && completed == items.length;
 
@@ -1686,10 +1686,8 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
   }
 
   Widget _buildSowItem(SowItemModel item, int index, int total) {
-    final completed = _isResolvedSowItem(item);
-    final notApplicable =
-        item.status != 1 &&
-        (item.remarks.trim().isNotEmpty || item.attachments.isNotEmpty);
+    final completed = item.isResolved;
+    final notApplicable = item.isNotApplicable;
 
     return IntrinsicHeight(
       child: Row(
@@ -1839,9 +1837,4 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
       ),
     );
   }
-
-  bool _isResolvedSowItem(SowItemModel item) =>
-      item.status == 1 ||
-      (item.status != 1 &&
-          (item.remarks.trim().isNotEmpty || item.attachments.isNotEmpty));
 }

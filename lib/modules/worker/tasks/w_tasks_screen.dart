@@ -21,7 +21,8 @@ class WorkerTasksScreen extends StatefulWidget {
 
 class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     with SingleTickerProviderStateMixin {
-  late final WorkerTasksController controller = Get.find<WorkerTasksController>();
+  late final WorkerTasksController controller =
+      Get.find<WorkerTasksController>();
 
   TextEditingController get searchController => controller.searchController;
 
@@ -102,8 +103,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         index: index,
                         animationController: _animationController,
                         child: Obx(
-                          ()=> _TaskCard(
-                            checkin: controller.CheckinStatus[tasks[index].id] ?? "",
+                          () => _TaskCard(
+                            checkin:
+                                controller.CheckinStatus[tasks[index].id] ?? "",
                             task: tasks[index],
                             controller: controller,
                             onTap: () async {
@@ -230,22 +232,28 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                     ),
 
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(13),
-                        border: Border.all(color: Colors.white.withValues(alpha: .10)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: .10),
+                        ),
                       ),
                       child: Column(
                         children: [
-                          Obx(()=>Text(
-                            controller.workOrderList.length.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),),
-
+                          Obx(
+                            () => Text(
+                              controller.workOrderList.length.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
                           ),
                           const Text(
                             "JOBS",
@@ -258,7 +266,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                           ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ],
@@ -323,7 +331,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 ? IconButton(
                     onPressed: () {
                       searchController.clear();
-
                     },
                     icon: const Icon(Icons.close_rounded, size: 19),
                   )
@@ -505,8 +512,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   Future<void> _showTaskDetails(
     BuildContext context,
     WorkOrderModel task,
-  ) async
-  {
+  ) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -517,189 +523,194 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         return Obx(() {
           final currentTask = controller.local.findOrder(task.id) ?? task;
           return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: .91,
-          minChildSize: .55,
-          maxChildSize: .97,
-          snap: true,
-          snapSizes: const [.91, .97],
-          builder: (_, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5F7FC),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Container(
-                      width: 42,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFD2D6DF),
-                        borderRadius: BorderRadius.circular(20),
+            expand: false,
+            initialChildSize: .91,
+            minChildSize: .55,
+            maxChildSize: .97,
+            snap: true,
+            snapSizes: const [.91, .97],
+            builder: (_, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F7FC),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Container(
+                        width: 42,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFD2D6DF),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
                     ),
-                  ),
 
-                  Expanded(
-                    child: ListView(
-                      controller: scrollController,
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 17, 16, 30),
-                      children: [
-                        _buildDetailHeader(currentTask),
+                    Expanded(
+                      child: ListView(
+                        controller: scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(16, 17, 16, 30),
+                        children: [
+                          _buildDetailHeader(currentTask),
 
-                        const SizedBox(height: 15),
+                          const SizedBox(height: 15),
 
-                        _buildStatusPriority(currentTask),
+                          _buildStatusPriority(currentTask),
 
-                        const SizedBox(height: 22),
+                          const SizedBox(height: 22),
 
-                        _modernSection(
-                          icon: Icons.work_outline_rounded,
-                          title: "Work Order Information",
-                          color: const Color(0xFF5B5FEF),
-                          children: [
-                            _modernInfoTile(
-                              icon: Icons.category_outlined,
-                              title: "Service Type",
-                              value: currentTask.serviceTypeName,
-                            ),
+                          _modernSection(
+                            icon: Icons.work_outline_rounded,
+                            title: "Work Order Information",
+                            color: const Color(0xFF5B5FEF),
+                            children: [
+                              _modernInfoTile(
+                                icon: Icons.category_outlined,
+                                title: "Service Type",
+                                value: currentTask.serviceTypeName,
+                              ),
 
-                            _modernInfoTile(
-                              icon: Icons.engineering_outlined,
-                              title: "Assigned Technician",
-                              value:
-                                  "${currentTask.technicianFirstName} ${currentTask.technicianLastName}",
-                            ),
+                              _modernInfoTile(
+                                icon: Icons.engineering_outlined,
+                                title: "Assigned Technician",
+                                value:
+                                    "${currentTask.technicianFirstName} ${currentTask.technicianLastName}",
+                              ),
 
-                            _psnManagerDetails(currentTask),
+                              _psnManagerDetails(currentTask),
 
-                            buildSowSection(currentTask),
+                              buildSowSection(currentTask),
+                            ],
+                          ),
 
-                          ],
-                        ),
+                          const SizedBox(height: 14),
 
-                        const SizedBox(height: 14),
+                          _modernSection(
+                            icon: Icons.location_on_outlined,
+                            title: "Location Information",
+                            color: const Color(0xFF10A37F),
+                            children: [
+                              _modernInfoTile(
+                                icon: Icons.location_city_outlined,
+                                title: "Service Location",
+                                value: currentTask.address?.fullAddress ?? "-",
+                                multiline: true,
+                              ),
 
-                        _modernSection(
-                          icon: Icons.location_on_outlined,
-                          title: "Location Information",
-                          color: const Color(0xFF10A37F),
-                          children: [
-                            _modernInfoTile(
-                              icon: Icons.location_city_outlined,
-                              title: "Service Location",
-                              value: currentTask.address?.fullAddress ?? "-",
-                              multiline: true,
-                            ),
+                              _modernLocationButton(
+                                onTap: () {
+                                  if (currentTask.address?.googleMapLink !=
+                                      null) {
+                                    controller.loadMap(
+                                      currentTask.address!.googleMapLink,
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
 
-                            _modernLocationButton(
-                              onTap: () {
-                                if (currentTask.address?.googleMapLink != null) {
-                                  controller.loadMap(
-                                    currentTask.address!.googleMapLink,
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                          const SizedBox(height: 14),
 
-                        const SizedBox(height: 14),
+                          _modernSection(
+                            icon: Icons.calendar_month_outlined,
+                            title: "Schedule Information",
+                            color: const Color(0xFFF59E0B),
+                            children: [_buildScheduleGrid(currentTask)],
+                          ),
 
-                        _modernSection(
-                          icon: Icons.calendar_month_outlined,
-                          title: "Schedule Information",
-                          color: const Color(0xFFF59E0B),
-                          children: [_buildScheduleGrid(currentTask)],
-                        ),
+                          const SizedBox(height: 14),
 
-                        const SizedBox(height: 14),
-
-                        _modernSection(
-                          icon: Icons.directions_car_outlined,
-                          title: "Pay Rate",
-                          color: AppColors.chartCyan,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _InfoTile(
-                                    icon: Icons.route_outlined,
-                                    title: "Rate Type",
-                                    value: _rateType(currentTask.rateType),
+                          _modernSection(
+                            icon: Icons.directions_car_outlined,
+                            title: "Pay Rate",
+                            color: AppColors.chartCyan,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _InfoTile(
+                                      icon: Icons.route_outlined,
+                                      title: "Rate Type",
+                                      value: _rateType(currentTask.rateType),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _InfoTile(
-                                    icon: Icons.attach_money_rounded,
-                                    title: "Rate Value",
-                                    value: currentTask.rateValue,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _InfoTile(
+                                      icon: Icons.attach_money_rounded,
+                                      title: "Rate Value",
+                                      value: currentTask.rateValue,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
 
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _InfoTile(
-                                    icon: Icons.timer_outlined,
-                                    title: "Estimated Hours",
-                                    value: currentTask.approximateHoursToComplete,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _InfoTile(
+                                      icon: Icons.timer_outlined,
+                                      title: "Estimated Hours",
+                                      value: currentTask
+                                          .approximateHoursToComplete,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _InfoTile(
-                                    icon: Icons.hourglass_bottom_rounded,
-                                    title: "Maximum Hours",
-                                    value: currentTask.maxHours,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _InfoTile(
+                                      icon: Icons.hourglass_bottom_rounded,
+                                      title: "Maximum Hours",
+                                      value: currentTask.maxHours,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
 
-                            _InfoTile(
-                              icon: Icons.directions_car_outlined,
-                              title: "Travel Rates",
-                              value: currentTask.travelRate??"-",
-                            ),
+                              _InfoTile(
+                                icon: Icons.directions_car_outlined,
+                                title: "Travel Rates",
+                                value: currentTask.travelRate ?? "-",
+                              ),
 
-                            _InfoTile(
-                              icon: Icons.payments_rounded,
-                              title: "Maximum Payout",
-                              value: currentTask.rateType == 2
-                                  ? currentTask.rateValue
-                                  : "\$ ${((double.tryParse(currentTask.maxHours) ?? 0) * (double.tryParse(currentTask.rateValue) ?? 0)).toStringAsFixed(2)}",
-                              customColor: AppColors.income,
-                            ),
-                          ],
-                        ),
+                              _InfoTile(
+                                icon: Icons.payments_rounded,
+                                title: "Maximum Payout",
+                                value: currentTask.rateType == 2
+                                    ? currentTask.rateValue
+                                    : "\$ ${((double.tryParse(currentTask.maxHours) ?? 0) * (double.tryParse(currentTask.rateValue) ?? 0)).toStringAsFixed(2)}",
+                                customColor: AppColors.income,
+                              ),
+                            ],
+                          ),
 
-                        const SizedBox(height: 22),
-                         Obx(() {
-
-                          if (controller.hardStartChangeStatus[currentTask.id]==0) {
-                            return  _buildActions(currentTask);
-                          }
-                          if ((controller.hardStartChangeStatus[currentTask.id] ?? 0)>1) {
-                            return  _buildActions(currentTask);
-                          }
-                          return const SizedBox.shrink();
-                        })
-                      ],
+                          const SizedBox(height: 22),
+                          Obx(() {
+                            if (controller.hardStartChangeStatus[currentTask
+                                    .id] ==
+                                0) {
+                              return _buildActions(currentTask);
+                            }
+                            if ((controller.hardStartChangeStatus[currentTask
+                                        .id] ??
+                                    0) >
+                                1) {
+                              return _buildActions(currentTask);
+                            }
+                            return const SizedBox.shrink();
+                          }),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+                  ],
+                ),
+              );
+            },
+          );
         });
       },
     );
@@ -864,16 +875,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         ),
         const SizedBox(height: 8),
         Obx(() {
-          if (controller.hardStartChangeStatus[task.id]==0) {
-            return  _buildHardStartChangeRequest(task);
+          if (controller.hardStartChangeStatus[task.id] == 0) {
+            return _buildHardStartChangeRequest(task);
           }
           return _buildConstant(task);
-        })
-
-
-
-
-
+        }),
       ],
     );
   }
@@ -902,7 +908,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   // ================================================================
 
   Widget _buildActions(WorkOrderModel task) {
-    if (task.statusId == 13 && controller.hardStartChangeStatus[task.id] !=1) {
+    if (task.statusId == 13 && controller.hardStartChangeStatus[task.id] != 1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -934,7 +940,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       requireRemarks: false,
                     );
 
-                    if (result?.confirmed == true){
+                    if (result?.confirmed == true) {
                       Get.back();
 
                       await controller.acceptWorkOrderApi(
@@ -958,7 +964,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   onPressed: () async {
                     HapticFeedback.mediumImpact();
 
-                    final result  = await showConfirmationDialog(
+                    final result = await showConfirmationDialog(
                       context: context,
                       title: "Reject Work Order?",
                       message:
@@ -966,16 +972,16 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       confirmText: "Reject",
                       isDestructive: true,
                       icon: Icons.block_rounded,
-                      requireRemarks: true
+                      requireRemarks: true,
                     );
 
-                    if (result?.confirmed == true){
+                    if (result?.confirmed == true) {
                       Get.back();
 
                       await controller.rejectWorkOrderApi(
                         task.id,
                         task.workOrderNo,
-                        result?.remarks ?? ""
+                        result?.remarks ?? "",
                       );
 
                       Get.offAllNamed(AppRoutes.workerdashboard);
@@ -1335,16 +1341,13 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
   Widget _buildHardStartChangeRequest(WorkOrderModel task) {
     // Replace these with your actual model fields.
 
-
-
     // ─────────────────────────────────────────────
     // Request already exists
     // ─────────────────────────────────────────────
-    var  hasRequest = task.proposedDatetimeAcceptedByManager??0;
+    var hasRequest = task.proposedDatetimeAcceptedByManager ?? 0;
 
-
-    final bool approved =  hasRequest == 2;
-    final bool rejected =  hasRequest == 3;
+    final bool approved = hasRequest == 2;
+    final bool rejected = hasRequest == 3;
 
     final Color statusColor = approved
         ? const Color(0xFF16A34A)
@@ -1364,18 +1367,14 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         ? const Color(0xFFFECACA)
         : const Color(0xFFFDE68A);
 
-
-
-    if (hasRequest==0 && task.statusId==13) {
+    if (hasRequest == 0 && task.statusId == 13) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
           color: const Color(0xFFFFF7ED),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: const Color(0xFFFED7AA),
-          ),
+          border: Border.all(color: const Color(0xFFFED7AA)),
         ),
         child: Row(
           children: [
@@ -1431,10 +1430,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   _showHardStartChangeDialog(task);
                 },
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   child: Text(
                     'Request',
                     style: TextStyle(
@@ -1449,156 +1445,152 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           ],
         ),
       );
-    }
-    else if (hasRequest!=0){
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
+    } else if (hasRequest != 0) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                approved
-                    ? Icons.check_circle_rounded
-                    : rejected
-                    ? Icons.cancel_rounded
-                    : Icons.hourglass_top_rounded,
-                size: 19,
-                color: statusColor,
-              ),
-
-              const SizedBox(width: 7),
-
-              const Expanded(
-                child: Text(
-                  'Hard Start Time Change',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF172033),
-                  ),
-                ),
-              ),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Text(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
                   approved
-                      ? 'APPROVED'
+                      ? Icons.check_circle_rounded
                       : rejected
-                      ? 'REJECTED'
-                      : 'PENDING',
-                  style: TextStyle(
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w900,
-                    color: statusColor,
-                  ),
+                      ? Icons.cancel_rounded
+                      : Icons.hourglass_top_rounded,
+                  size: 19,
+                  color: statusColor,
                 ),
-              ),
-            ],
-          ),
 
-          const SizedBox(height: 12),
+                const SizedBox(width: 7),
 
-          Row(
-            children: [
-              Expanded(
-                child: _ChangeTimeBox(
-                  title: 'Current',
-                  value: Common.getformatDate(
-                    task.hardStartTime,
-                  ),
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 17,
-                  color: Color(0xFF94A3B8),
-                ),
-              ),
-
-              Expanded(
-                child:
-                    Obx(()=> _ChangeTimeBox(
-                      title: 'Proposed',
-                      value: controller.proposedTimeFor(task.id)==""
-                          ? Common.getformatDate(task.proposedDatetime.toString())
-                          : Common.getformatDate(controller.proposedTimeFor(task.id).toString()),
-                      color: statusColor,
-                    ))
-               ,
-              ),
-            ],
-          ),
-
-          if (rejected && task.proposedReason != null) ...[
-            const SizedBox(height: 10),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.65),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.info_outline_rounded,
-                    size: 15,
-                    color: statusColor,
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    child: Text(
-                      task.proposedReason!,
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        height: 1.35,
-                        color: Color(0xFF475569),
-                        fontWeight: FontWeight.w600,
-                      ),
+                const Expanded(
+                  child: Text(
+                    'Hard Start Time Change',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF172033),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Text(
+                    approved
+                        ? 'APPROVED'
+                        : rejected
+                        ? 'REJECTED'
+                        : 'PENDING',
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _ChangeTimeBox(
+                    title: 'Current',
+                    value: Common.getformatDate(task.hardStartTime),
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 17,
+                    color: Color(0xFF94A3B8),
+                  ),
+                ),
+
+                Expanded(
+                  child: Obx(
+                    () => _ChangeTimeBox(
+                      title: 'Proposed',
+                      value: controller.proposedTimeFor(task.id) == ""
+                          ? Common.getformatDate(
+                              task.proposedDatetime.toString(),
+                            )
+                          : Common.getformatDate(
+                              controller.proposedTimeFor(task.id).toString(),
+                            ),
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            if (rejected && task.proposedReason != null) ...[
+              const SizedBox(height: 10),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 15,
+                      color: statusColor,
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        task.proposedReason!,
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          height: 1.35,
+                          color: Color(0xFF475569),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ],
-      ),
-    );
+        ),
+      );
+    } else {
+      return SizedBox.shrink();
     }
-    else
-      {
-        return SizedBox.shrink();
-      }
   }
 
-  Future<void> _showHardStartChangeDialog(
-      WorkOrderModel task,
-      ) async {
-    DateTime selectedDateTime = DateTime.tryParse(task.hardStartTime ?? '') ?? DateTime.now();
+  Future<void> _showHardStartChangeDialog(WorkOrderModel task) async {
+    DateTime selectedDateTime =
+        DateTime.tryParse(task.hardStartTime ?? '') ?? DateTime.now();
 
     final result = await showDialog<DateTime>(
       context: Get.context!,
@@ -1609,37 +1601,16 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              titlePadding: const EdgeInsets.fromLTRB(
-                20,
-                20,
-                20,
-                5,
-              ),
-              contentPadding: const EdgeInsets.fromLTRB(
-                20,
-                8,
-                20,
-                10,
-              ),
-              actionsPadding: const EdgeInsets.fromLTRB(
-                15,
-                0,
-                15,
-                15,
-              ),
+              titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 5),
+              contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
+              actionsPadding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
               title: const Row(
                 children: [
-                  Icon(
-                    Icons.edit_calendar_rounded,
-                    color: Color(0xFFEA580C),
-                  ),
+                  Icon(Icons.edit_calendar_rounded, color: Color(0xFFEA580C)),
                   SizedBox(width: 9),
                   Text(
                     'Request Time Change',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
                   ),
                 ],
               ),
@@ -1685,18 +1656,12 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                     onTap: () async {
                       final now = DateTime.now();
 
-                      final today = DateTime(
-                        now.year,
-                        now.month,
-                        now.day,
-                      );
+                      final today = DateTime(now.year, now.month, now.day);
 
-                      final lastDate = today.add(
-                        const Duration(days: 30),
-                      );
+                      final lastDate = today.add(const Duration(days: 30));
 
-// Existing hard start may already be in the past.
-// In that case, open the picker on today instead.
+                      // Existing hard start may already be in the past.
+                      // In that case, open the picker on today instead.
                       final initialDate = selectedDateTime.isBefore(today)
                           ? today
                           : selectedDateTime;
@@ -1710,14 +1675,14 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
                       if (date == null || !context.mounted) return;
 
-// ─────────────────────────────────────────────
-// Select Time
-// ─────────────────────────────────────────────
+                      // ─────────────────────────────────────────────
+                      // Select Time
+                      // ─────────────────────────────────────────────
 
                       final isToday =
                           date.year == now.year &&
-                              date.month == now.month &&
-                              date.day == now.day;
+                          date.month == now.month &&
+                          date.day == now.day;
 
                       final currentTime = TimeOfDay.fromDateTime(now);
 
@@ -1728,11 +1693,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         // open the picker around the current time.
                         final selectedMinutes =
                             selectedDateTime.hour * 60 +
-                                selectedDateTime.minute;
+                            selectedDateTime.minute;
 
-                        final currentMinutes =
-                            now.hour * 60 +
-                                now.minute;
+                        final currentMinutes = now.hour * 60 + now.minute;
 
                         initialTime = selectedMinutes > currentMinutes
                             ? TimeOfDay.fromDateTime(selectedDateTime)
@@ -1748,9 +1711,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
                       if (time == null) return;
 
-// ─────────────────────────────────────────────
-// Final validation
-// ─────────────────────────────────────────────
+                      // ─────────────────────────────────────────────
+                      // Final validation
+                      // ─────────────────────────────────────────────
 
                       final proposedDateTime = DateTime(
                         date.year,
@@ -1760,7 +1723,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                         time.minute,
                       );
 
-                      if (!controller.validateProposedTime(proposedDateTime, now)) return;
+                      if (!controller.validateProposedTime(
+                        proposedDateTime,
+                        now,
+                      ))
+                        return;
 
                       setState(() {
                         selectedDateTime = proposedDateTime;
@@ -1772,9 +1739,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFF7ED),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFFED7AA),
-                        ),
+                        border: Border.all(color: const Color(0xFFFED7AA)),
                       ),
                       child: Row(
                         children: [
@@ -1825,10 +1790,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pop(
-                      context,
-                      selectedDateTime,
-                    );
+                    Navigator.pop(context, selectedDateTime);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEA580C),
@@ -1838,15 +1800,10 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: const Icon(
-                    Icons.send_rounded,
-                    size: 16,
-                  ),
+                  icon: const Icon(Icons.send_rounded, size: 16),
                   label: const Text(
                     'Send Request',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
               ],
@@ -1858,15 +1815,14 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
     if (result == null) return;
 
-    await controller.proposeChangeScheduleTimeApi(result,task);
-
+    await controller.proposeChangeScheduleTimeApi(result, task);
   }
 
   Widget _buildConstant(WorkOrderModel task) {
-    var  hasRequest = task.proposedDatetimeAcceptedByManager??0;
+    var hasRequest = task.proposedDatetimeAcceptedByManager ?? 0;
 
-    final bool approved =  hasRequest == 2;
-    final bool rejected =  hasRequest == 3;
+    final bool approved = hasRequest == 2;
+    final bool rejected = hasRequest == 3;
     final Color statusColor = approved
         ? const Color(0xFF16A34A)
         : rejected
@@ -1890,9 +1846,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1923,10 +1877,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               ),
 
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(7),
@@ -1954,9 +1905,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               Expanded(
                 child: _ChangeTimeBox(
                   title: 'Current',
-                  value: Common.getformatDate(
-                    task.hardStartTime,
-                  ),
+                  value: Common.getformatDate(task.hardStartTime),
                   color: const Color(0xFF64748B),
                 ),
               ),
@@ -1971,15 +1920,17 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               ),
 
               Expanded(
-                child:
-                Obx(()=> _ChangeTimeBox(
-                  title: 'Proposed',
-                  value: controller.proposedTimeFor(task.id) ==""
-                      ? Common.getformatDate(task.proposedDatetime.toString())
-                      : Common.getformatDate(controller.proposedTimeFor(task.id).toString()),
-                  color: statusColor,
-                ))
-                ,
+                child: Obx(
+                  () => _ChangeTimeBox(
+                    title: 'Proposed',
+                    value: controller.proposedTimeFor(task.id) == ""
+                        ? Common.getformatDate(task.proposedDatetime.toString())
+                        : Common.getformatDate(
+                            controller.proposedTimeFor(task.id).toString(),
+                          ),
+                    color: statusColor,
+                  ),
+                ),
               ),
             ],
           ),
@@ -2021,40 +1972,30 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         ],
       ),
     );
-
-
   }
 
   Widget buildSowSection(WorkOrderModel task) {
-    final preInstall = task.sowItems
-        .where((e) => e.type == 'pre_install')
-        .toList()
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final preInstall =
+        task.sowItems.where((e) => e.type == 'pre_install').toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-    final installation = task.sowItems
-        .where((e) => e.type == 'install')
-        .toList()
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final installation =
+        task.sowItems.where((e) => e.type == 'install').toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     final total = task.sowItems.length;
-    final completed =
-        task.sowItems.where((e) => e.status == 1).length;
+    final completed = task.sowItems.where((item) => item.isResolved).length;
 
     final progress = total == 0 ? 0.0 : completed / total;
 
     if (total == 0) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 24,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: const Color(0xFFE5EAF1),
-          ),
+          border: Border.all(color: const Color(0xFFE5EAF1)),
         ),
         child: Column(
           children: [
@@ -2101,16 +2042,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             const SizedBox(height: 14),
 
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 11,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE5EAF1),
-                ),
+                border: Border.all(color: const Color(0xFFE5EAF1)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -2140,7 +2076,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         // =========================================================
         // HEADER / OVERALL PROGRESS
         // =========================================================
@@ -2149,17 +2084,14 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF0F5FA6),
-                Color(0xFF1976C9),
-              ],
+              colors: [Color(0xFF0F5FA6), Color(0xFF1976C9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F5FA6).withValues(alpha:.15),
+                color: const Color(0xFF0F5FA6).withValues(alpha: .15),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -2167,15 +2099,13 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           ),
           child: Column(
             children: [
-
               Row(
                 children: [
-
                   Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha:.15),
+                      color: Colors.white.withValues(alpha: .15),
                       borderRadius: BorderRadius.circular(13),
                     ),
                     child: const Icon(
@@ -2191,7 +2121,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Text(
                           "Scope of Work",
                           style: TextStyle(
@@ -2221,7 +2150,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha:.15),
+                      color: Colors.white.withValues(alpha: .15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -2243,11 +2172,8 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 7,
-                  backgroundColor: Colors.white.withValues(alpha:.20),
-                  valueColor:
-                  const AlwaysStoppedAnimation<Color>(
-                    Colors.white,
-                  ),
+                  backgroundColor: Colors.white.withValues(alpha: .20),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
 
@@ -2256,7 +2182,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-
                   Text(
                     "$completed tasks completed",
                     style: const TextStyle(
@@ -2284,7 +2209,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         // =========================================================
         // PRE INSTALL
         // =========================================================
-
         if (preInstall.isNotEmpty)
           _buildSowGroup(
             title: "Pre-Installation",
@@ -2299,7 +2223,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
         // =========================================================
         // INSTALLATION
         // =========================================================
-
         if (installation.isNotEmpty)
           _buildSowGroup(
             title: "Installation & Testing",
@@ -2316,41 +2239,30 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     required String subtitle,
     required IconData icon,
     required List<SowItemModel> items,
-  })
-  {
-    final completed =
-        items.where((item) => item.status == 1).length;
+  }) {
+    final completed = items.where((item) => item.isResolved).length;
 
-    final allCompleted =
-        items.isNotEmpty && completed == items.length;
+    final allCompleted = items.isNotEmpty && completed == items.length;
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE5EAF1),
-        ),
+        border: Border.all(color: const Color(0xFFE5EAF1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:.035),
+            color: Colors.black.withValues(alpha: .035),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Theme(
-        data: ThemeData(
-          dividerColor: Colors.transparent,
-        ),
+        data: ThemeData(dividerColor: Colors.transparent),
         child: ExpansionTile(
-
           initiallyExpanded: false,
 
-          tilePadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 5,
-          ),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
 
           childrenPadding: const EdgeInsets.only(
             left: 14,
@@ -2368,9 +2280,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              allCompleted
-                  ? Icons.check_circle_rounded
-                  : icon,
+              allCompleted ? Icons.check_circle_rounded : icon,
               color: allCompleted
                   ? const Color(0xFF22A06B)
                   : const Color(0xFF1769AA),
@@ -2400,10 +2310,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           ),
 
           trailing: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 9,
-              vertical: 5,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             decoration: BoxDecoration(
               color: allCompleted
                   ? const Color(0xFFE8F7EF)
@@ -2423,21 +2330,13 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           ),
 
           children: [
-
-            const Divider(
-              height: 10,
-              color: Color(0xFFEEF1F5),
-            ),
+            const Divider(height: 10, color: Color(0xFFEEF1F5)),
 
             const SizedBox(height: 6),
 
             ...List.generate(
               items.length,
-                  (index) => _buildSowItem(
-                items[index],
-                index,
-                items.length,
-              ),
+              (index) => _buildSowItem(items[index], index, items.length),
             ),
           ],
         ),
@@ -2445,19 +2344,14 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
     );
   }
 
-  Widget _buildSowItem(
-      SowItemModel item,
-      int index,
-      int total,
-      )
-  {
-    final completed = item.status == 1;
+  Widget _buildSowItem(SowItemModel item, int index, int total) {
+    final completed = item.isResolved;
+    final notApplicable = item.isNotApplicable;
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-
           // =====================================================
           // TIMELINE
           // =====================================================
@@ -2466,14 +2360,11 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
             width: 34,
             child: Column(
               children: [
-
                 Container(
                   width: 25,
                   height: 25,
                   decoration: BoxDecoration(
-                    color: completed
-                        ? const Color(0xFF22A06B)
-                        : Colors.white,
+                    color: completed ? const Color(0xFF22A06B) : Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: completed
@@ -2484,28 +2375,27 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                   ),
                   child: completed
                       ? const Icon(
-                    Icons.check_rounded,
-                    size: 15,
-                    color: Colors.white,
-                  )
+                          Icons.check_rounded,
+                          size: 15,
+                          color: Colors.white,
+                        )
                       : Center(
-                    child: Text(
-                      "${index + 1}",
-                      style: const TextStyle(
-                        color: Color(0xFF7A869A),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
+                          child: Text(
+                            "${index + 1}",
+                            style: const TextStyle(
+                              color: Color(0xFF7A869A),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
                 ),
 
                 if (index != total - 1)
                   Expanded(
                     child: Container(
                       width: 1.5,
-                      margin:
-                      const EdgeInsets.symmetric(vertical: 3),
+                      margin: const EdgeInsets.symmetric(vertical: 3),
                       color: completed
                           ? const Color(0xFFB7E4CF)
                           : const Color(0xFFE2E7ED),
@@ -2520,12 +2410,9 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
           // =====================================================
           // DESCRIPTION
           // =====================================================
-
           Expanded(
             child: Container(
-              margin: EdgeInsets.only(
-                bottom: index == total - 1 ? 0 : 12,
-              ),
+              margin: EdgeInsets.only(bottom: index == total - 1 ? 0 : 12),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: completed
@@ -2541,7 +2428,6 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Text(
                     item.description,
                     style: TextStyle(
@@ -2550,19 +2436,15 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                           : const Color(0xFF172B4D),
                       fontSize: 12,
                       height: 1.45,
-                      fontWeight: completed
-                          ? FontWeight.w500
-                          : FontWeight.w600,
+                      fontWeight: completed ? FontWeight.w500 : FontWeight.w600,
                     ),
                   ),
 
                   if (completed) ...[
-
                     const SizedBox(height: 8),
 
                     Row(
                       children: [
-
                         const Icon(
                           Icons.verified_rounded,
                           size: 13,
@@ -2571,31 +2453,32 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
                         const SizedBox(width: 5),
 
-                        const Text(
-                          "Completed",
+                        Text(
+                          notApplicable ? "Not Applicable" : "Completed",
                           style: TextStyle(
-                            color: Color(0xFF16875B),
+                            color: notApplicable
+                                ? Color(0xFFD99A00)
+                                : Color(0xFF16875B),
                             fontSize: 9.5,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
 
                         if (item.completedAt != null) ...[
-
                           const SizedBox(width: 5),
 
                           const Text(
                             "•",
-                            style: TextStyle(
-                              color: Color(0xFF97A0AF),
-                            ),
+                            style: TextStyle(color: Color(0xFF97A0AF)),
                           ),
 
                           const SizedBox(width: 5),
 
                           Expanded(
                             child: Text(
-                              Common.formatToLocalUS(item.completedAt.toString()),
+                              Common.formatToLocalUS(
+                                item.completedAt.toString(),
+                              ),
                               style: const TextStyle(
                                 color: Color(0xFF7A869A),
                                 fontSize: 9.5,
@@ -2631,16 +2514,11 @@ class _ChangeTimeBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 9,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.75),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB),
-        ),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2725,7 +2603,7 @@ class _TaskCard extends StatefulWidget {
     required this.task,
     required this.controller,
     required this.onTap,
-    required this.checkin
+    required this.checkin,
   });
 
   @override
@@ -2742,7 +2620,7 @@ class _TaskCardState extends State<_TaskCard> {
       widget.controller.workOrderStatusList,
     );
 
-    final status=widget.checkin;
+    final status = widget.checkin;
 
     final statusText = Common.getStatusText(
       widget.task.statusId,
@@ -2797,7 +2675,6 @@ class _TaskCardState extends State<_TaskCard> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-
                           // Icon
                           Container(
                             height: 52,
@@ -2824,17 +2701,16 @@ class _TaskCardState extends State<_TaskCard> {
 
                           Expanded(
                             child: Column(
-
                               children: [
-
                                 Row(
-
                                   children: [
                                     Container(
                                       width: 10,
                                       height: 10,
                                       decoration: BoxDecoration(
-                                        color: status=="Checked"?AppColors.success:null,
+                                        color: status == "Checked"
+                                            ? AppColors.success
+                                            : null,
                                         shape: BoxShape.circle,
                                       ),
                                       child: SizedBox.shrink(),
@@ -2849,11 +2725,9 @@ class _TaskCardState extends State<_TaskCard> {
                                         style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w800,
-
                                         ),
                                       ),
                                     ),
-
                                   ],
                                 ),
 
@@ -3289,7 +3163,6 @@ class _AnimatedActionButtonState extends State<_AnimatedActionButton> {
     );
   }
 }
-
 
 // ====================================================================
 // EMPTY STATE

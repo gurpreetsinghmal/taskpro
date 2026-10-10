@@ -531,6 +531,10 @@ class SowItemModel {
 
   bool get isCompleted => status == 1;
 
+  bool get isNotApplicable => status == 2;
+
+  bool get isResolved => isCompleted || isNotApplicable;
+
   bool get isPreInstall => type == 'pre_install';
 
   bool get isInstall => type == 'install';

@@ -1060,6 +1060,7 @@ class DashboardTabScreen extends StatelessWidget {
                     },
                   );
                 }),
+                if(kDebugMode)
                 Obx(
                   () => WorkOrderDetailsWidget(
                     workOrders: controller.workOrderList.toList(),

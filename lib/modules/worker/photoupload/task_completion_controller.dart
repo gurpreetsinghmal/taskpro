@@ -360,10 +360,12 @@ class TaskCompletionController extends GetxController {
   }
 
   bool isSowItemNotApplicable(SowItemModel item) =>
-      sowItemResponses[item.id]?.status == SowItemResponseStatus.notApplicable;
+      sowItemResponses[item.id]?.status ==
+          SowItemResponseStatus.notApplicable ||
+      item.isNotApplicable;
 
   bool isSowItemResolved(SowItemModel item) =>
-      item.status == 1 || sowItemResponses[item.id] != null;
+      item.isResolved || sowItemResponses[item.id] != null;
 
   Future<List<Map<String, dynamic>>> buildSowItemsSubmission() async {
     final payload = <Map<String, dynamic>>[];
@@ -396,7 +398,7 @@ class TaskCompletionController extends GetxController {
     final updatedResponses = Map<int, SowItemResponseModel>.from(
       sowItemResponses,
     )..[response.sowItemId] = response;
-    final status = response.status == SowItemResponseStatus.completed ? 1 : 0;
+    final status = response.status == SowItemResponseStatus.completed ? 1 : 2;
 
     await storage.editWorkOrder(task.id, (current) {
       return current.copyWith(
