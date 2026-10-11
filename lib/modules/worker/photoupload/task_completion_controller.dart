@@ -276,7 +276,9 @@ class TaskCompletionController extends GetxController {
     }
   }
 
-  Future<List<SowAttachmentModel>> pickSowItemImages() async {
+  Future<List<SowAttachmentModel>> pickSowItemImages({
+    void Function(int processed, int total)? onProgress,
+  }) async {
     if (isPickingSowImages.value || isSubmitting.value) return const [];
     final images = <SowAttachmentModel>[];
 
@@ -287,6 +289,8 @@ class TaskCompletionController extends GetxController {
         maxWidth: 2560,
         maxHeight: 2560,
       );
+      var processed = 0;
+      onProgress?.call(processed, selectedFiles.length);
       for (final selectedFile in selectedFiles) {
         final file = File(selectedFile.path);
         if (!await file.exists()) {
@@ -295,6 +299,7 @@ class TaskCompletionController extends GetxController {
         final size = await file.length();
         if (size <= 0) {
           _showError('Invalid Photo', 'A selected image is empty or damaged.');
+          onProgress?.call(++processed, selectedFiles.length);
           continue;
         }
         if (size > maxSowImageSourceBytes) {
@@ -302,6 +307,7 @@ class TaskCompletionController extends GetxController {
             'Photo Too Large',
             '${selectedFile.name} exceeds the 25 MB source-image limit.',
           );
+          onProgress?.call(++processed, selectedFiles.length);
           continue;
         }
 
@@ -323,6 +329,7 @@ class TaskCompletionController extends GetxController {
             fileSize: compressedBytes.lengthInBytes,
           ),
         );
+        onProgress?.call(++processed, selectedFiles.length);
       }
       return images;
     } on PlatformException catch (error) {
