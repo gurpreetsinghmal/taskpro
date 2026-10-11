@@ -277,7 +277,8 @@ class TaskCompletionController extends GetxController {
   }
 
   Future<List<SowAttachmentModel>> pickSowItemImages({
-    void Function(int processed, int total)? onProgress,
+    void Function(List<SowImageProgress> images)? onProgress,
+    Future<void> Function(SowAttachmentModel image)? onImageReady,
   }) async {
     if (isPickingSowImages.value || isSubmitting.value) return const [];
     final images = <SowAttachmentModel>[];
@@ -289,34 +290,49 @@ class TaskCompletionController extends GetxController {
         maxWidth: 2560,
         maxHeight: 2560,
       );
-      var processed = 0;
-      onProgress?.call(processed, selectedFiles.length);
-      for (final selectedFile in selectedFiles) {
-        final file = File(selectedFile.path);
-        if (!await file.exists()) {
-          throw const FileSystemException('Selected image file was not found.');
-        }
-        final size = await file.length();
-        if (size <= 0) {
-          _showError('Invalid Photo', 'A selected image is empty or damaged.');
-          onProgress?.call(++processed, selectedFiles.length);
-          continue;
-        }
-        if (size > maxSowImageSourceBytes) {
-          _showError(
-            'Photo Too Large',
-            '${selectedFile.name} exceeds the 25 MB source-image limit.',
-          );
-          onProgress?.call(++processed, selectedFiles.length);
-          continue;
-        }
-
-        final compressedBytes = await compute(
-          compressSowImage,
-          await file.readAsBytes(),
+      final progress = [
+        for (final file in selectedFiles)
+          SowImageProgress(
+            fileName: file.name.isEmpty
+                ? _fileNameFromPath(file.path)
+                : file.name,
+          ),
+      ];
+      void report(int index, SowImageStage stage, [String? message]) {
+        progress[index] = SowImageProgress(
+          fileName: progress[index].fileName,
+          stage: stage,
+          message: message,
         );
-        images.add(
-          SowAttachmentModel(
+        onProgress?.call(List.unmodifiable(progress));
+      }
+
+      onProgress?.call(List.unmodifiable(progress));
+      for (var index = 0; index < selectedFiles.length; index++) {
+        final selectedFile = selectedFiles[index];
+        try {
+          report(index, SowImageStage.reading);
+          final file = File(selectedFile.path);
+          if (!await file.exists()) {
+            throw const FileSystemException(
+              'Selected image file was not found.',
+            );
+          }
+          final size = await file.length();
+          if (size <= 0) {
+            report(index, SowImageStage.skipped, 'Empty or damaged image');
+            continue;
+          }
+          if (size > maxSowImageSourceBytes) {
+            report(index, SowImageStage.skipped, 'Exceeds the 25 MB limit');
+            continue;
+          }
+
+          final bytes = await file.readAsBytes();
+          report(index, SowImageStage.compressing);
+          final compressedBytes = await compute(compressSowImage, bytes);
+          report(index, SowImageStage.previewing);
+          final image = SowAttachmentModel(
             id: 0,
             workOrderId: task.id,
             sowItemId: 0,
@@ -327,9 +343,16 @@ class TaskCompletionController extends GetxController {
                 : selectedFile.name,
             mimeType: 'image/jpeg',
             fileSize: compressedBytes.lengthInBytes,
-          ),
-        );
-        onProgress?.call(++processed, selectedFiles.length);
+          );
+          await onImageReady?.call(image);
+          images.add(image);
+          report(index, SowImageStage.ready);
+        } catch (error) {
+          debugPrint(
+            'Unable to prepare SOW image ${selectedFile.name}: $error',
+          );
+          report(index, SowImageStage.failed, 'Unable to process image');
+        }
       }
       return images;
     } on PlatformException catch (error) {

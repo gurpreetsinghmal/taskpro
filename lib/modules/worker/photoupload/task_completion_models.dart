@@ -1,3 +1,51 @@
+enum SowImageStage {
+  queued,
+  reading,
+  compressing,
+  previewing,
+  ready,
+  skipped,
+  failed,
+}
+
+class SowImageProgress {
+  const SowImageProgress({
+    required this.fileName,
+    this.stage = SowImageStage.queued,
+    this.message,
+  });
+
+  final String fileName;
+  final SowImageStage stage;
+  final String? message;
+
+  bool get isFinished => switch (stage) {
+    SowImageStage.ready ||
+    SowImageStage.skipped ||
+    SowImageStage.failed => true,
+    _ => false,
+  };
+
+  // Progress counts completed preparation steps, not elapsed time or bytes sent.
+  double get progress => switch (stage) {
+    SowImageStage.queued || SowImageStage.reading => 0,
+    SowImageStage.compressing => 1 / 3,
+    SowImageStage.previewing => 2 / 3,
+    SowImageStage.ready => 1,
+    SowImageStage.skipped || SowImageStage.failed => 0,
+  };
+
+  String get label => switch (stage) {
+    SowImageStage.queued => 'Waiting',
+    SowImageStage.reading => 'Reading image',
+    SowImageStage.compressing => 'Compressing',
+    SowImageStage.previewing => 'Preparing preview',
+    SowImageStage.ready => 'Ready',
+    SowImageStage.skipped => message ?? 'Skipped',
+    SowImageStage.failed => message ?? 'Unable to process image',
+  };
+}
+
 class UploadedPhotoModel {
   final String id;
   final String filePath;
@@ -64,9 +112,7 @@ class VerificationCheckItem {
       title: title ?? this.title,
       isChecked: isChecked ?? this.isChecked,
       quantity: quantity ?? this.quantity,
-      markFromTechnician:
-      markFromTechnician ?? this.markFromTechnician,
+      markFromTechnician: markFromTechnician ?? this.markFromTechnician,
     );
   }
 }
-

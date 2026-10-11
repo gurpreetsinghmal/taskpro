@@ -1908,8 +1908,15 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
   SowItemResponseStatus? _status;
   bool _isSaving = false;
   bool _isAddingImages = false;
-  int _processedImages = 0;
-  int _totalImages = 0;
+  List<SowImageProgress> _imageProgress = [];
+  final Map<SowAttachmentModel, MemoryImage> _previewImages = {};
+
+  int get _processedImages =>
+      _imageProgress.where((image) => image.isFinished).length;
+  int get _totalImages => _imageProgress.length;
+
+  MemoryImage _imageProvider(SowAttachmentModel image) => _previewImages
+      .putIfAbsent(image, () => MemoryImage(base64Decode(image.filePath)));
 
   bool get _isBusy => _isSaving || _isAddingImages;
 
@@ -1928,24 +1935,33 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
     if (_isBusy) return;
     setState(() {
       _isAddingImages = true;
-      _processedImages = 0;
-      _totalImages = 0;
+      _imageProgress = [];
     });
     try {
-      final images = await widget.controller.pickSowItemImages(
-        onProgress: (processed, total) {
+      await widget.controller.pickSowItemImages(
+        onProgress: (images) {
+          if (!mounted) return;
+          setState(() => _imageProgress = images);
+        },
+        onImageReady: (image) async {
+          if (!mounted) return;
+          Object? previewError;
+          await precacheImage(
+            _imageProvider(image),
+            context,
+            onError: (error, stackTrace) => previewError = error,
+          );
+          if (previewError != null) {
+            _previewImages.remove(image);
+            throw StateError('Unable to prepare image preview: $previewError');
+          }
           if (!mounted) return;
           setState(() {
-            _processedImages = processed;
-            _totalImages = total;
+            _images.add(image);
+            _newImages.add(image);
           });
         },
       );
-      if (!mounted || images.isEmpty) return;
-      setState(() {
-        _images.addAll(images);
-        _newImages.addAll(images);
-      });
     } finally {
       if (mounted) setState(() => _isAddingImages = false);
     }
@@ -1953,6 +1969,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
 
   Future<void> _removeImage(SowAttachmentModel image) async {
     setState(() => _images.remove(image));
+    _previewImages.remove(image);
     if (_newImages.remove(image)) {
       await widget.controller.discardSowItemImages([image]);
     }
@@ -2014,7 +2031,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
           children: [
             InteractiveViewer(
               child: Image(
-                image: MemoryImage(base64Decode(image.filePath)),
+                image: _imageProvider(image),
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const SizedBox(
                   height: 280,
@@ -2045,6 +2062,43 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
   void dispose() {
     _commentsController.dispose();
     super.dispose();
+  }
+
+  Widget _buildImageProgress(SowImageProgress image) {
+    final hasError =
+        image.stage == SowImageStage.failed ||
+        image.stage == SowImageStage.skipped;
+    final color = hasError ? Colors.red.shade700 : _dialogBlue;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            image.fileName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            hasError
+                ? image.label
+                : '${image.label} · ${(image.progress * 100).round()}%',
+            style: TextStyle(fontSize: 10, color: color),
+          ),
+          if (!hasError) ...[
+            const SizedBox(height: 4),
+            LinearProgressIndicator(
+              value: image.progress,
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+              minHeight: 4,
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -2187,7 +2241,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                         const SizedBox(height: 8),
                         Text(
                           _totalImages == 0
-                              ? 'Waiting for image selection...'
+                              ? 'Selecting and preparing images...'
                               : 'Processing images: $_processedImages of $_totalImages '
                                     '(${(_processedImages / _totalImages * 100).round()}%)',
                           style: const TextStyle(
@@ -2206,6 +2260,23 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                           minHeight: 6,
                         ),
                         const SizedBox(height: 8),
+                      ],
+                      if (_imageProgress.isNotEmpty) ...[
+                        if (_isAddingImages)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              'Progress shows completed preparation steps.',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: _dialogMuted,
+                              ),
+                            ),
+                          ),
+                        for (final image in _imageProgress)
+                          if (_isAddingImages ||
+                              image.stage != SowImageStage.ready)
+                            _buildImageProgress(image),
                       ],
                       if (_images.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -2227,9 +2298,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                                               10,
                                             ),
                                             child: Image(
-                                              image: MemoryImage(
-                                                base64Decode(image.filePath),
-                                              ),
+                                              image: _imageProvider(image),
                                               width: 88,
                                               height: 76,
                                               fit: BoxFit.cover,
