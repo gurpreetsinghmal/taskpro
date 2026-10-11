@@ -41,18 +41,9 @@ class SowItemResponseDetails extends StatelessWidget {
           ],
           if (item.attachments.isNotEmpty) ...[
             if (remarks.isNotEmpty) const SizedBox(height: 8),
-            const Text(
-              'Evidence',
-              style: TextStyle(
-                color: Color(0xFF5E6C84),
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 5),
             Wrap(
-              spacing: 7,
-              runSpacing: 7,
+              spacing: 5,
+              runSpacing: 5,
               children: [
                 for (final attachment in item.attachments)
                   _EvidenceThumbnail(attachment: attachment),
@@ -92,7 +83,7 @@ class _EvidenceThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageProvider = _imageProvider;
     return SizedBox(
-      width: 72,
+      width: 50,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -136,11 +127,11 @@ class _EvidenceThumbnail extends StatelessWidget {
                     ),
                   ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(5),
               child: imageProvider == null
                   ? const SizedBox(
-                      width: 72,
-                      height: 58,
+                      width: 60,
+                      height: 60,
                       child: ColoredBox(
                         color: Color(0xFFE8EDF4),
                         child: Icon(
@@ -152,12 +143,12 @@ class _EvidenceThumbnail extends StatelessWidget {
                     )
                   : Image(
                       image: imageProvider,
-                      width: 72,
-                      height: 58,
+                      width: 60,
+                      height: 60,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => const SizedBox(
-                        width: 72,
-                        height: 58,
+                        width: 60,
+                        height: 60,
                         child: ColoredBox(
                           color: Color(0xFFE8EDF4),
                           child: Icon(
@@ -173,7 +164,7 @@ class _EvidenceThumbnail extends StatelessWidget {
           if (attachment.originalName.isNotEmpty) ...[
             const SizedBox(height: 3),
             Text(
-              attachment.originalName,
+              "${(attachment.fileSize/1024).toStringAsFixed(2)} KB",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(color: Color(0xFF7A869A), fontSize: 9),

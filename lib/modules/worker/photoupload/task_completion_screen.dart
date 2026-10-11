@@ -1827,7 +1827,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
                             const SizedBox(width: 5),
 
-                            Flexible(
+                            Expanded(
                               child: Text(
                                 _formatSowDate(item.completedAt!),
                                 overflow: TextOverflow.ellipsis,
@@ -1839,11 +1839,13 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                               ),
                             ),
                           ],
-                          if (checked) SowItemResponseDetails(item: item),
                         ],
-                      ),
+                       ),
                     ],
+                    if (checked) SowItemResponseDetails(item: item),
                   ],
+
+                     
                 ),
               ),
 
