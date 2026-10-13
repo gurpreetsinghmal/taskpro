@@ -2506,7 +2506,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                       ],
                     ),
                   ],
-                  if (completed) SowItemResponseDetails(item: item),
+                   SowItemResponseDetails(item: item),
                 ],
               ),
             ),

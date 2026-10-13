@@ -2359,6 +2359,7 @@ class _SowItemResponseDialogState extends State<_SowItemResponseDialog> {
                                       ],
                                     ),
                                     const SizedBox(height: 3),
+
                                     Text(
                                       image.originalName,
                                       maxLines: 1,
