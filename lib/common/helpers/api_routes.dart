@@ -21,7 +21,7 @@ class ApiRoutes {
 
   static const String workOrderCheckInSync = "auth/work-order-checkin-sync";
   // Placeholder routes; replace with the backend's confirmed sync endpoints.
-  static const String workOrderSowItemsSync = "auth/work-order-sow-items-sync";
+  static const String workOrderSowItemsSync = "auth/work-order/update/sow";
   static const String workOrderFieldsSync = "auth/work-order-fields-sync";
   static const String workOrderProposedDatetimeUpdate =
       "auth/work-order-proposed-datetime-update";

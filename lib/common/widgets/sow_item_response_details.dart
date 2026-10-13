@@ -10,7 +10,7 @@ class SowItemResponseDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remarks = item.remarks.trim();
+    final remarks = item.notes.trim();
     if (remarks.isEmpty && item.attachments.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -22,7 +22,7 @@ class SowItemResponseDetails extends StatelessWidget {
         children: [
           if (remarks.isNotEmpty) ...[
             const Text(
-              'Remarks',
+              'Notes',
               style: TextStyle(
                 color: Color(0xFF5E6C84),
                 fontSize: 10,

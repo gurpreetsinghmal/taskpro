@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../common/models/work_order_model.dart';
 import '../../../../common/widgets/sow_item_response_details.dart';
+import '../../../../common/widgets/sow_products_widget.dart';
 import '../../../../services/local_data_service.dart';
 import 'package:get/get.dart';
 
@@ -116,28 +117,15 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTitleCard(),
-
-                  const SizedBox(height: 18),
-
+                  const SizedBox(height: 10),
                   _sectionTitle(
-                    icon: Icons.info_outline_rounded,
-                    title: 'Work Order Information',
+                    icon: Icons.groups_rounded,
+                    title: 'On Site POC',
                   ),
 
                   const SizedBox(height: 10),
 
-                  _buildBasicInfo(),
-
-                  const SizedBox(height: 20),
-
-                  _sectionTitle(
-                    icon: Icons.schedule_rounded,
-                    title: 'Schedule',
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  _buildScheduleCard(),
+                  _buildPeopleSection(),
 
                   const SizedBox(height: 20),
 
@@ -151,56 +139,57 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
 
                     _buildAddressCard(),
 
-                    const SizedBox(height: 20),
-
-                    buildSowSection(workOrder),
-                  ],
-
-                  _sectionTitle(
-                    icon: Icons.groups_rounded,
-                    title: 'On Site POC',
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  _buildPeopleSection(),
-
-                  const SizedBox(height: 20),
-
-                  _sectionTitle(
-                    icon: Icons.assignment_rounded,
-                    title: 'Work Details',
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  _buildWorkDetails(),
-
-                  const SizedBox(height: 20),
-
-                  _sectionTitle(
-                    icon: Icons.payments_rounded,
-                    title: 'Commercial Details',
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  _buildCommercialDetails(),
-
-                  if (_hasHardStartRequest) ...[
-                    const SizedBox(height: 20),
-
-                    _sectionTitle(
-                      icon: Icons.access_time_filled_rounded,
-                      title: 'Hard Start Change Request',
-                    ),
 
                     const SizedBox(height: 10),
 
-                    _buildHardStartRequest(),
+                    WorkOrderProductsView(
+                      products: workOrder.products.map((item) {
+                        return item;
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 12),
+
+                    buildSowSection(workOrder),
+                    const SizedBox(height: 20),
                   ],
 
-                  const SizedBox(height: 20),
+
+
+
+
+                  // _sectionTitle(
+                  //   icon: Icons.assignment_rounded,
+                  //   title: 'Work Details',
+                  // ),
+
+
+                  // _buildWorkDetails(),
+                  //
+                  // const SizedBox(height: 20),
+                  //
+                  // _sectionTitle(
+                  //   icon: Icons.payments_rounded,
+                  //   title: 'Commercial Details',
+                  // ),
+                  //
+                  // const SizedBox(height: 10),
+                  //
+                  // _buildCommercialDetails(),
+
+                  // if (_hasHardStartRequest) ...[
+                  //   const SizedBox(height: 20),
+                  //
+                  //   _sectionTitle(
+                  //     icon: Icons.access_time_filled_rounded,
+                  //     title: 'Hard Start Change Request',
+                  //   ),
+                  //
+                  //   const SizedBox(height: 10),
+                  //
+                  //   _buildHardStartRequest(),
+                  // ],
+
+                  // const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -1458,6 +1447,9 @@ class _WorkOrderDetailsSheet extends StatelessWidget {
                   ),
 
                   const SizedBox(width: 12),
+
+
+
 
                   const Expanded(
                     child: Column(

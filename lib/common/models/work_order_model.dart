@@ -411,8 +411,10 @@ class SowAttachmentModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
+         bool isMobileUpload;
+        String? fileName;
 
-  const SowAttachmentModel({
+  SowAttachmentModel({
     required this.id,
     required this.workOrderId,
     required this.sowItemId,
@@ -425,6 +427,8 @@ class SowAttachmentModel {
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
+    this.isMobileUpload=false,
+    this.fileName
   });
 
   factory SowAttachmentModel.fromJson(Map<String, dynamic> json) {
@@ -449,6 +453,8 @@ class SowAttachmentModel {
       deletedAt: json['deleted_at'] != null
           ? DateTime.tryParse(json['deleted_at'].toString())
           : null,
+      isMobileUpload: json['is_mobile_upload'] != null,
+      fileName: json['file_name']?.toString(),
     );
   }
 
@@ -466,6 +472,8 @@ class SowAttachmentModel {
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
       'deleted_at': deletedAt?.toIso8601String(),
+      'is_mobile_upload': isMobileUpload,
+      'file_name': fileName,
     };
   }
 
@@ -482,6 +490,8 @@ class SowAttachmentModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
+    bool? isMobileUpload,
+    String? fileName,
   }) {
     return SowAttachmentModel(
       id: id ?? this.id,
@@ -496,6 +506,8 @@ class SowAttachmentModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      isMobileUpload: isMobileUpload ?? this.isMobileUpload,
+      fileName: fileName ?? this.fileName,
     );
   }
 }
@@ -506,7 +518,7 @@ class SowItemModel {
   final String type;
   final int sortOrder;
   final String description;
-  String remarks;
+  String notes;
   int status;
   final DateTime? completedAt;
   final int? completedBy;
@@ -520,7 +532,7 @@ class SowItemModel {
     required this.type,
     required this.sortOrder,
     required this.description,
-    this.remarks = '',
+    this.notes = '',
     this.status = 0,
     this.completedAt,
     this.completedBy,
@@ -546,7 +558,7 @@ class SowItemModel {
       type: json['type']?.toString() ?? '',
       sortOrder: int.tryParse(json['sort_order']?.toString() ?? '') ?? 0,
       description: json['description']?.toString() ?? '',
-      remarks: json['remarks']?.toString() ?? '',
+      notes: json['notes']?.toString() ?? '',
       status: int.tryParse(json['status']?.toString() ?? '') ?? 0,
       completedAt: json['completed_at'] != null
           ? DateTime.tryParse(json['completed_at'].toString())
@@ -577,7 +589,7 @@ class SowItemModel {
       'type': type,
       'sort_order': sortOrder,
       'description': description,
-      'remarks': remarks,
+      'notes': notes,
       'status': status,
       'completed_at': completedAt?.toIso8601String(),
       'completed_by': completedBy,
@@ -593,7 +605,7 @@ class SowItemModel {
     String? type,
     int? sortOrder,
     String? description,
-    String? remarks,
+    String? notes,
     int? status,
     DateTime? completedAt,
     bool clearCompletedAt = false,
@@ -608,7 +620,7 @@ class SowItemModel {
       type: type ?? this.type,
       sortOrder: sortOrder ?? this.sortOrder,
       description: description ?? this.description,
-      remarks: remarks ?? this.remarks,
+      notes: notes ?? this.notes,
       status: status ?? this.status,
       completedAt: clearCompletedAt ? null : completedAt ?? this.completedAt,
       completedBy: completedBy ?? this.completedBy,

@@ -343,6 +343,7 @@ class TaskCompletionController extends GetxController {
                 : selectedFile.name,
             mimeType: 'image/jpeg',
             fileSize: compressedBytes.lengthInBytes,
+
           );
           await onImageReady?.call(image);
           images.add(image);
@@ -397,7 +398,7 @@ class TaskCompletionController extends GetxController {
           status: item.isNotApplicable
               ? SowItemResponseStatus.notApplicable
               : SowItemResponseStatus.completed,
-          comments: item.remarks,
+          comments: item.notes,
           images: item.attachments,
         ),
     });
@@ -460,7 +461,7 @@ class TaskCompletionController extends GetxController {
         sowItems: current.sowItems.map((item) {
           if (item.id != response.sowItemId) return item;
           return item.copyWith(
-            remarks: response.comments,
+            notes: response.comments,
             attachments: response.images
                 .map(
                   (image) => SowAttachmentModel(
@@ -468,10 +469,11 @@ class TaskCompletionController extends GetxController {
                     workOrderId: item.workOrderId,
                     sowItemId: item.id,
                     disk: '',
-                    filePath: image.filePath,
                     originalName: image.originalName,
                     mimeType: '',
                     fileSize: image.fileSize,
+                    filePath:  image.filePath,
+                    isMobileUpload: true
                   ),
                 )
                 .toList(),

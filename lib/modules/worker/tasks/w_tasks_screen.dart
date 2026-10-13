@@ -13,6 +13,8 @@ import 'package:taskpro/common/widgets/sow_item_response_details.dart';
 import 'package:taskpro/modules/worker/tasks/w_tasks_controller.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
+import '../../../common/widgets/sow_products_widget.dart';
+
 class WorkerTasksScreen extends StatefulWidget {
   const WorkerTasksScreen({super.key});
 
@@ -583,6 +585,14 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
                               ),
 
                               _psnManagerDetails(currentTask),
+
+                              const SizedBox(height: 8),
+                              WorkOrderProductsView(
+                                products: currentTask.products.map((item) {
+                                  return item;
+                                }).toList(),
+                              ),
+                              const SizedBox(height: 12),
 
                               buildSowSection(currentTask),
                             ],
@@ -2245,101 +2255,106 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
 
     final allCompleted = items.isNotEmpty && completed == items.length;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5EAF1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .035),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Theme(
-        data: ThemeData(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          initiallyExpanded: false,
-
-          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-
-          childrenPadding: const EdgeInsets.only(
-            left: 14,
-            right: 14,
-            bottom: 14,
-          ),
-
-          leading: Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: allCompleted
-                  ? const Color(0xFFE8F7EF)
-                  : const Color(0xFFEAF3FC),
-              borderRadius: BorderRadius.circular(12),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+      
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE5EAF1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .035),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(
-              allCompleted ? Icons.check_circle_rounded : icon,
-              color: allCompleted
-                  ? const Color(0xFF22A06B)
-                  : const Color(0xFF1769AA),
-              size: 21,
+          ],
+        ),
+        child: Theme(
+          data: ThemeData(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            initiallyExpanded: false,
+      
+            tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      
+            childrenPadding: const EdgeInsets.only(
+              left: 14,
+              right: 14,
+              bottom: 14,
             ),
-          ),
-
-          title: Text(
-            title,
-            style: const TextStyle(
-              color: Color(0xFF172B4D),
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Text(
-              subtitle,
-              style: const TextStyle(
-                color: Color(0xFF7A869A),
-                fontSize: 10.5,
-                fontWeight: FontWeight.w500,
+      
+            leading: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: allCompleted
+                    ? const Color(0xFFE8F7EF)
+                    : const Color(0xFFEAF3FC),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                allCompleted ? Icons.check_circle_rounded : icon,
+                color: allCompleted
+                    ? const Color(0xFF22A06B)
+                    : const Color(0xFF1769AA),
+                size: 21,
               ),
             ),
-          ),
-
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-            decoration: BoxDecoration(
-              color: allCompleted
-                  ? const Color(0xFFE8F7EF)
-                  : const Color(0xFFF1F4F8),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              "$completed/${items.length}",
-              style: TextStyle(
-                color: allCompleted
-                    ? const Color(0xFF16875B)
-                    : const Color(0xFF44546F),
-                fontSize: 10,
+      
+            title: Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF172B4D),
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
               ),
             ),
-          ),
-
-          children: [
-            const Divider(height: 10, color: Color(0xFFEEF1F5)),
-
-            const SizedBox(height: 6),
-
-            ...List.generate(
-              items.length,
-              (index) => _buildSowItem(items[index], index, items.length),
+      
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(
+                subtitle,
+                style: const TextStyle(
+                  color: Color(0xFF7A869A),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ],
+      
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: allCompleted
+                    ? const Color(0xFFE8F7EF)
+                    : const Color(0xFFF1F4F8),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                "$completed/${items.length}",
+                style: TextStyle(
+                  color: allCompleted
+                      ? const Color(0xFF16875B)
+                      : const Color(0xFF44546F),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+      
+            children: [
+              const Divider(height: 10, color: Color(0xFFEEF1F5)),
+      
+              const SizedBox(height: 6),
+      
+              ...List.generate(
+                items.length,
+                (index) => _buildSowItem(items[index], index, items.length),
+              ),
+            ],
+          ),
         ),
       ),
     );

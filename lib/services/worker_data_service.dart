@@ -81,6 +81,10 @@ class WorkerDataService {
   }
 
   Future<String?> syncOrderFailure(WorkOrderModel task) async {
+    ///
+    /// ****************        CHECK-IN / CHECK-OUT SYNC STARTS HERE           ********************************
+    ///
+    log(task.checkins.map((item) => item.toJson()).toString());
     try {
       final checkinsResponse = await api.post(
         ApiRoutes.workOrderCheckInSync,
@@ -122,6 +126,10 @@ class WorkerDataService {
       return 'Check-ins: $error';
     }
 
+    ///
+    /// ****************        SOW SYNC STARTS HERE           ********************************
+    ///
+
     final sowItems = <Map<String, dynamic>>[];
     try {
       final workOrder = task.toJson();
@@ -139,6 +147,8 @@ class WorkerDataService {
       );
       return 'Work-order logging: $error';
     }
+
+
     try {
       final sowResponse = await api.post(
         ApiRoutes.workOrderSowItemsSync,
@@ -157,6 +167,10 @@ class WorkerDataService {
     } on Exception catch (error) {
       return 'SOW items: $error';
     }
+
+    ///
+    /// ****************        ANY FUTURE SYNC STARTS HERE           ********************************
+    ///
     /*
     try {
       final workOrderFields = task.toJson()

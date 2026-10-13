@@ -160,7 +160,7 @@ void main() {
               .map(
                 (item) => item.copyWith(
                   status: 2,
-                  remarks: 'Not applicable at this site.',
+                  notes: 'Not applicable at this site.',
                 ),
               )
               .toList(),
@@ -183,7 +183,7 @@ void main() {
       expect(local.findOrder(2)!.workOrderTitle, 'New server data');
       expect(local.findOrder(2)!.sowItems.single.status, 2);
       expect(
-        local.findOrder(2)!.sowItems.single.remarks,
+        local.findOrder(2)!.sowItems.single.notes,
         'Not applicable at this site.',
       );
     },
@@ -258,7 +258,7 @@ void main() {
       );
       expect(tasks.workOrderList.first.sowItems.first.status, 1);
       expect(
-        tasks.workOrderList.first.sowItems.first.remarks,
+        tasks.workOrderList.first.sowItems.first.notes,
         'Installed and tested.',
       );
       expect(completion.sowItems.first.status, 1);
@@ -324,7 +324,7 @@ void main() {
         },
       ]);
       final savedOrder = await storage.findThisWorkOrder(1);
-      expect(savedOrder!.sowItems.single.remarks, 'Installed and tested.');
+      expect(savedOrder!.sowItems.single.notes, 'Installed and tested.');
       expect(
         savedOrder.toJson()['sow_items'][0]['remarks'],
         'Installed and tested.',
@@ -347,7 +347,7 @@ void main() {
         local: local,
       )..onInit();
       await completion.saveSowItemResponse(
-        const SowItemResponseModel(
+        SowItemResponseModel(
           sowItemId: 10,
           status: SowItemResponseStatus.notApplicable,
           comments: 'This equipment is not installed at this site.',
@@ -361,6 +361,8 @@ void main() {
               originalName: 'evidence.jpg',
               mimeType: '',
               fileSize: 1024,
+              isMobileUpload: true
+
             ),
           ],
         ),
@@ -376,7 +378,7 @@ void main() {
       final savedOrder = await storage.findThisWorkOrder(1);
       final saved = savedOrder!.sowItems.single;
       expect(saved.status, 2);
-      expect(saved.remarks, 'This equipment is not installed at this site.');
+      expect(saved.notes, 'This equipment is not installed at this site.');
       expect(saved.attachments.single.filePath, '/local/evidence.jpg');
       expect(savedOrder.sync, 0);
       final sowItemJson = savedOrder.toJson()['sow_items'][0];
@@ -403,8 +405,8 @@ void main() {
       sortOrder: 1,
       description: 'Inspect equipment.',
       status: 2,
-      remarks: 'Not present at site.',
-      attachments: const [
+      notes: 'Not present at site.',
+      attachments:  [
         SowAttachmentModel(
           id: 1,
           workOrderId: 1,
@@ -414,6 +416,7 @@ void main() {
           originalName: 'evidence.jpg',
           mimeType: 'image/jpeg',
           fileSize: 1,
+          isMobileUpload: true
         ),
       ],
     );
