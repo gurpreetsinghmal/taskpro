@@ -2,6 +2,7 @@ import '../../../services/local_data_service.dart';
 import 'dart:convert';
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
@@ -35,6 +36,7 @@ class TaskCompletionController extends GetxController {
   void onInit() {
     super.onInit();
     taskId.value = task.id.toString();
+    uploadedPhotos.assignAll(task.photos ?? const <UploadedPhotoModel>[]);
     _setSowItems(task);
     _ordersWorker = ever(local.workOrders, (_) {
       _setSowItems(local.findOrder(_initialTask.id));
@@ -98,7 +100,7 @@ class TaskCompletionController extends GetxController {
   final taskLocation = 'Building A - Roof Level 3'.obs;
   final workerName = 'Alex Morgan'.obs;
 
-  // Local images are stored here and uploaded only after Submit is pressed.
+  // Photos are cached with their Base64 image data for offline sync.
   final uploadedPhotos = <UploadedPhotoModel>[].obs;
 
   // Verification Checklist State
@@ -135,6 +137,7 @@ class TaskCompletionController extends GetxController {
   // Controllers & Form State
   final notesController = TextEditingController();
   final isPickingPhoto = false.obs;
+  final isCompressingPhoto = false.obs;
   final isPickingSowImages = false.obs;
   final isSubmitting = false.obs;
 
@@ -178,9 +181,10 @@ class TaskCompletionController extends GetxController {
     );
   }
 
-  void removePhoto(String id) {
+  Future<void> removePhoto(String id) async {
     if (isSubmitting.value) return;
     uploadedPhotos.removeWhere((photo) => photo.id == id);
+    await _savePhotosLocally();
   }
 
   Future<void> pickPhoto(
@@ -235,19 +239,38 @@ class TaskCompletionController extends GetxController {
 
       if (!confirmed) return;
 
-      uploadedPhotos.add(
-        UploadedPhotoModel(
-          id: 'photo_${DateTime.now().microsecondsSinceEpoch}',
-          filePath: selectedFile.path,
-          fileName: selectedFile.name.isEmpty
-              ? _fileNameFromPath(selectedFile.path)
-              : selectedFile.name,
-          fileSizeBytes: fileSize,
-          source: source == ImageSource.camera ? 'Camera' : 'Gallery',
-          timestamp: _formatDateTime(DateTime.now()),
-          caption: 'Task completion proof',
-        ),
+      late final Uint8List compressedImage;
+      try {
+        isCompressingPhoto.value = true;
+        compressedImage = await compute(
+          compressTaskCompletionPhoto,
+          await file.readAsBytes(),
+        );
+      } finally {
+        isCompressingPhoto.value = false;
+      }
+      if (isClosed) return;
+
+      final originalFileName = selectedFile.name.isEmpty
+          ? _fileNameFromPath(selectedFile.path)
+          : selectedFile.name;
+      final photo = UploadedPhotoModel(
+        id: 'photo_${DateTime.now().microsecondsSinceEpoch}',
+        filePath: selectedFile.path,
+        fileName: _jpegFileName(originalFileName),
+        fileSizeBytes: compressedImage.lengthInBytes,
+        source: source == ImageSource.camera ? 'Camera' : 'Gallery',
+        timestamp: _formatDateTime(DateTime.now()),
+        caption: 'Task completion proof',
+        image: base64Encode(compressedImage),
       );
+      uploadedPhotos.add(photo);
+      try {
+        await _savePhotosLocally();
+      } catch (_) {
+        uploadedPhotos.removeWhere((item) => item.id == photo.id);
+        rethrow;
+      }
 
       Get.snackbar(
         'Photo Attached',
@@ -385,7 +408,11 @@ class TaskCompletionController extends GetxController {
 
   Future<void> _loadSowItemResponses() async {
     await local.initialize();
-    if (!isClosed) _setSowItems(local.findOrder(_initialTask.id));
+    if (!isClosed) {
+      final order = local.findOrder(_initialTask.id);
+      _setSowItems(order);
+      uploadedPhotos.assignAll(order?.photos ?? const <UploadedPhotoModel>[]);
+    }
   }
 
   void _setSowItems(WorkOrderModel? order) {
@@ -621,10 +648,7 @@ class TaskCompletionController extends GetxController {
       // ==========================================================
 
       for (final photo in uploadedPhotos) {
-        final file = await dio.MultipartFile.fromFile(
-          photo.filePath,
-          filename: photo.fileName,
-        );
+        final file = _multipartPhoto(photo);
 
         formData.files.add(MapEntry('photos', file));
       }
@@ -812,6 +836,31 @@ class TaskCompletionController extends GetxController {
     }
   }
 
+  Future<void> _savePhotosLocally() => storage.editWorkOrder(
+    task.id,
+    (current) => current.copyWith(
+      photos: uploadedPhotos.toList(growable: false),
+      sync: 0,
+    ),
+  );
+
+  dio.MultipartFile _multipartPhoto(UploadedPhotoModel photo) {
+    final image = photo.image;
+    if (image != null && image.isNotEmpty) {
+      return dio.MultipartFile.fromBytes(
+        base64Decode(_base64Payload(image)),
+        filename: photo.fileName,
+      );
+    }
+    return dio.MultipartFile.fromFileSync(
+      photo.filePath,
+      filename: photo.fileName,
+    );
+  }
+
+  String _base64Payload(String value) =>
+      value.startsWith('data:') ? value.substring(value.indexOf(',') + 1) : value;
+
   void _showError(String title, String message) {
     Get.snackbar(
       title,
@@ -838,6 +887,14 @@ class TaskCompletionController extends GetxController {
 
   String _fileNameFromPath(String path) {
     return path.split(Platform.pathSeparator).last;
+  }
+
+  String _jpegFileName(String name) {
+    final extensionIndex = name.lastIndexOf('.');
+    final baseName = extensionIndex <= 0
+        ? name
+        : name.substring(0, extensionIndex);
+    return '$baseName.jpg';
   }
 
   @override

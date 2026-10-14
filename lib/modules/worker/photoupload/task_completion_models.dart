@@ -54,6 +54,7 @@ class UploadedPhotoModel {
   final String source;
   final String timestamp;
   final String caption;
+  final String? image;
 
   const UploadedPhotoModel({
     required this.id,
@@ -63,6 +64,7 @@ class UploadedPhotoModel {
     required this.source,
     required this.timestamp,
     this.caption = '',
+    this.image,
   });
 
   String get readableFileSize {
@@ -78,6 +80,31 @@ class UploadedPhotoModel {
     final megabytes = kilobytes / 1024;
     return '${megabytes.toStringAsFixed(1)} MB';
   }
+
+  factory UploadedPhotoModel.fromJson(Map<String, dynamic> json) {
+    return UploadedPhotoModel(
+      id: json['id']?.toString() ?? '',
+      filePath: json['file_path']?.toString() ?? '',
+      fileName: json['file_name']?.toString() ?? '',
+      fileSizeBytes: int.tryParse(json['file_size_bytes']?.toString() ?? '') ??
+          0,
+      source: json['source']?.toString() ?? '',
+      timestamp: json['timestamp']?.toString() ?? '',
+      caption: json['caption']?.toString() ?? '',
+      image: json['image']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'file_path': filePath,
+    'file_name': fileName,
+    'file_size_bytes': fileSizeBytes,
+    'source': source,
+    'timestamp': timestamp,
+    'caption': caption,
+    'image': image,
+  };
 }
 
 class VerificationCheckItem {

@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:taskpro/common/helpers/api_routes.dart';
 import 'package:taskpro/common/models/work_order_model.dart';
+import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 import 'package:taskpro/network/api_service.dart';
 import 'package:taskpro/services/local_data_service.dart';
 import 'package:taskpro/services/secure_storage_service.dart';
@@ -30,6 +31,20 @@ WorkOrderModel _workOrder() => WorkOrderModel.fromJson({
   ],
   'sync': 0,
 });
+
+WorkOrderModel _workOrderWithPhoto() => _workOrder().copyWith(
+  photos: const [
+    UploadedPhotoModel(
+      id: 'photo-1',
+      filePath: '/unavailable/offline-proof.jpg',
+      fileName: 'offline-proof.jpg',
+      fileSizeBytes: 3,
+      source: 'Camera',
+      timestamp: 'Today, 10:00 AM',
+      image: 'AQID',
+    ),
+  ],
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -101,6 +116,41 @@ void main() {
       ApiRoutes.workOrderCheckInSync,
       ApiRoutes.workOrderSowItemsSync,
     ]);
+  });
+
+  test('syncs stored Base64 photos after SOW items', () async {
+    final requests = <RequestOptions>[];
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.test'));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          requests.add(options);
+          final data = options.path == ApiRoutes.workOrderCheckInSync
+              ? {'status': true, 'synced_count': 1}
+              : {'success': true};
+          handler.resolve(
+            Response(requestOptions: options, statusCode: 200, data: data),
+          );
+        },
+      ),
+    );
+
+    expect(
+      await WorkerDataService(api: ApiService(dio: dio)).syncOrder(
+        _workOrderWithPhoto(),
+      ),
+      isTrue,
+    );
+    expect(requests.map((request) => request.path), [
+      ApiRoutes.workOrderCheckInSync,
+      ApiRoutes.workOrderSowItemsSync,
+      ApiRoutes.workOrderPhotoGallerySync,
+    ]);
+    expect(requests.last.data, {
+      'photos': [
+        {'work_order_id': 42, 'image': 'AQID'},
+      ],
+    });
   });
 
   test(

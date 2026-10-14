@@ -48,7 +48,6 @@ class ControlledStorage extends FlutterSecureStorage {
 
 class TestCheckinController extends CheckinController {
   TestCheckinController({required super.task, required super.local});
-  @override
   void getPositions() {} // Native location is outside this widget regression.
 }
 
@@ -463,6 +462,27 @@ void main() {
     expect(pixel.b, greaterThan(240));
   });
 
+  test('task completion photo compression outputs a valid image within 500 KB', () {
+    final random = Random(24);
+    final source = img.Image(width: 1024, height: 1024);
+    for (var y = 0; y < source.height; y++) {
+      for (var x = 0; x < source.width; x++) {
+        source.setPixelRgb(
+          x,
+          y,
+          random.nextInt(256),
+          random.nextInt(256),
+          random.nextInt(256),
+        );
+      }
+    }
+
+    final compressed = compressTaskCompletionPhoto(img.encodePng(source));
+
+    expect(compressed.length, lessThanOrEqualTo(maxSowImageBytes));
+    expect(img.decodeImage(compressed), isNotNull);
+  });
+
   test('profile refresh preserves a draft until editing is canceled', () async {
     final profile = WorkerProfileController(local: local)..onInit();
     await profile.loadProfileFromStorage();
@@ -489,10 +509,7 @@ void main() {
         ),
       ),
     );
-    final snapshot = {
-      for (final order in local.workOrders)
-        order.id: jsonEncode(order.toJson()),
-    };
+
     await storage.editWorkOrder(
       1,
       (order) => order.copyWith(workOrderTitle: 'Local edit'),

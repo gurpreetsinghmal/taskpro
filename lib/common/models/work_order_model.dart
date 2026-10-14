@@ -1,4 +1,5 @@
 import 'package:taskpro/common/models/work_session_model.dart';
+import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 
 class WorkOrderModel {
   final int id;
@@ -49,6 +50,7 @@ class WorkOrderModel {
   final WorkOrderAddressModel? address;
   final List<WorkOrderProductModel> products;
   final WorkOrderProgressModel? progress;
+  final List<UploadedPhotoModel>? photos;
   //sow
   List<SowItemModel> sowItems;
 
@@ -105,6 +107,7 @@ class WorkOrderModel {
     this.address,
     this.products = const [],
     this.progress,
+    this.photos,
     this.sowItems = const [],
     this.checkins = const [],
     this.sync = 1,
@@ -191,6 +194,16 @@ class WorkOrderModel {
               json['progress'] as Map<String, dynamic>,
             )
           : null,
+      photos: json['photos'] is List
+          ? (json['photos'] as List)
+                .whereType<Map>()
+                .map(
+                  (photo) => UploadedPhotoModel.fromJson(
+                    Map<String, dynamic>.from(photo),
+                  ),
+                )
+                .toList()
+          : null,
       sowItems:
           (json['sow_items'] as List<dynamic>?)
               ?.map(
@@ -264,6 +277,7 @@ class WorkOrderModel {
       'address': address?.toJson(),
       'products': products.map((product) => product.toJson()).toList(),
       'progress': progress?.toJson(),
+      if (photos != null) 'photos': photos!.map((photo) => photo.toJson()).toList(),
       'sow_items': sowItems.map((item) => item.toJson()).toList(),
       'checkins': checkins.map((session) => session.toJson()).toList(),
       'sync': sync,
@@ -318,6 +332,7 @@ class WorkOrderModel {
     WorkOrderAddressModel? address,
     List<WorkOrderProductModel>? products,
     WorkOrderProgressModel? progress,
+    List<UploadedPhotoModel>? photos,
     List<SowItemModel>? sowItems,
     List<WorkSessionModel>? checkins,
     int? sync,
@@ -389,6 +404,7 @@ class WorkOrderModel {
       address: address ?? this.address,
       products: products ?? this.products,
       progress: progress ?? this.progress,
+      photos: photos ?? this.photos,
       sowItems: sowItems ?? this.sowItems,
       checkins: checkins ?? this.checkins,
 

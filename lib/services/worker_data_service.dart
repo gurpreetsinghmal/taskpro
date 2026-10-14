@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import '../common/helpers/api_routes.dart';
 import '../common/models/work_order_model.dart';
+import '../modules/worker/photoupload/task_completion_models.dart';
 import '../network/api_exception.dart';
 import '../network/api_service.dart';
 import 'local_data_service.dart';
@@ -168,6 +169,12 @@ class WorkerDataService {
     }
 
     ///
+    /// ****************        PHOTO SYNC STARTS HERE           ********************************
+    ///
+    final photoFailure = await _syncPhotos(task);
+    if (photoFailure != null) return photoFailure;
+
+    ///
     /// ****************        ANY FUTURE SYNC STARTS HERE           ********************************
     ///
     /*
@@ -274,6 +281,41 @@ class WorkerDataService {
         );
       });
 
+  Future<String?> _syncPhotos(WorkOrderModel task) async {
+    final photos = task.photos ?? const <UploadedPhotoModel>[];
+    if (photos.isEmpty) return null;
+
+    final payload = <Map<String, dynamic>>[];
+    for (var index = 0; index < photos.length; index++) {
+      final photo = photos[index];
+      final image = photo.image;
+      if (image == null || image.isEmpty) {
+        return 'Photos: Photo #${index + 1} "${photo.fileName}" is missing its saved image data.';
+      }
+      payload.add({'work_order_id': task.id, 'image': image});
+    }
+
+    try {
+      final response = await api.post(
+        ApiRoutes.workOrderPhotoGallerySync,
+        data: {'photos': payload},
+        headers: const {'Content-Type': 'application/json'},
+      );
+      if (_successful(response.data)) return null;
+
+      final details = _formatPhotoErrors(response.data, photos);
+      if (details.isNotEmpty) return details.join('\n');
+      return 'Photos: ${_responseMessage(response.data) ?? 'The server rejected the upload.'}';
+    } on ApiException catch (error) {
+      final details = _formatPhotoErrors(error.data, photos);
+      return details.isNotEmpty
+          ? details.join('\n')
+          : 'Photos: ${error.message}';
+    } on Exception catch (error) {
+      return 'Photos: $error';
+    }
+  }
+
   Future<void> _saveSyncFailure(int workOrderId, String failure) =>
       local.storage.editWorkOrder(workOrderId, (current) {
         final retained = current.syncErrors
@@ -327,6 +369,31 @@ class WorkerDataService {
       final reference = item == null
           ? 'SOW item index ${index ?? match.group(1)}'
           : 'SOW item #${item.id} (${item.type}: ${item.description})';
+      final field = match.group(2)?.replaceAll('].', '.') ?? '';
+      details.add(
+        '$reference${field.isEmpty ? '' : ' · $field'}: ${entry.value}',
+      );
+    }
+    return details;
+  }
+
+  List<String> _formatPhotoErrors(
+    dynamic response,
+    List<UploadedPhotoModel> photos,
+  ) {
+    final errors = _validationErrors(response);
+    final details = <String>[];
+    final indexedKey = RegExp(r'^photos?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$');
+    for (final entry in errors.entries) {
+      final match = indexedKey.firstMatch(entry.key);
+      if (match == null) continue;
+      final index = int.tryParse(match.group(1)!);
+      final photo = index != null && index >= 0 && index < photos.length
+          ? photos[index]
+          : null;
+      final reference = photo == null
+          ? 'Photo index ${index ?? match.group(1)}'
+          : 'Photo "${photo.fileName}"';
       final field = match.group(2)?.replaceAll('].', '.') ?? '';
       details.add(
         '$reference${field.isEmpty ? '' : ' · $field'}: ${entry.value}',

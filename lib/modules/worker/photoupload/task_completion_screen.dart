@@ -298,15 +298,15 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
                     const SizedBox(height: 16),
 
-                    _buildImageUploadSection(context, completionController),
-
-                    const SizedBox(height: 16),
-
                     _buildChecklistSection1(context, completionController),
 
                     const SizedBox(height: 16),
 
                     _buildNotesSection(completionController),
+
+                    const SizedBox(height: 16),
+
+                    _buildImageUploadSection(context, completionController),
 
                     const SizedBox(height: 16),
 
@@ -469,7 +469,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
         children: [
           _sectionHeader(
             icon: Icons.photo_camera_outlined,
-            title: 'Proof of Work',
+            title: 'Additional Photos (optional)',
             subtitle: 'Attach photos showing completed work',
             trailing: Obx(
               () => Container(
@@ -554,60 +554,70 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
     BuildContext context,
     TaskCompletionController controller,
   ) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(17),
-      child: InkWell(
-        onTap: () => _showPhotoPickerSourceSheet(context, controller),
+    return Obx(() {
+      final isCompressing = controller.isCompressingPhoto.value;
+      return Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(17),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF3F7FF),
-            borderRadius: BorderRadius.circular(17),
-            border: Border.all(color: const Color(0xFFBDD2FF), width: 1.2),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: _blue,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _blue.withValues(alpha: .22),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
+        child: InkWell(
+          onTap: isCompressing
+              ? null
+              : () => _showPhotoPickerSourceSheet(context, controller),
+          borderRadius: BorderRadius.circular(17),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F7FF),
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(color: const Color(0xFFBDD2FF), width: 1.2),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isCompressing)
+                  const SizedBox(
+                    width: 35,
+                    height: 35,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      color: _blue,
                     ),
-                  ],
+                  )
+                else
+                  Container(
+                    width: 35,
+                    height: 35,
+                    decoration: BoxDecoration(
+                      color: _blue,
+                      borderRadius: BorderRadius.circular(7),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _blue.withValues(alpha: .22),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                const SizedBox(height: 10),
+                Text(
+                  isCompressing ? 'Compressing...' : 'Add Photo',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: _blue,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.add_a_photo_rounded,
-                  color: Colors.white,
-                  size: 21,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Add Photo',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: _blue,
-                ),
-              ),
-              const SizedBox(height: 3),
-              const Text(
-                'Camera or Gallery',
-                style: TextStyle(fontSize: 10, color: _muted),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildPhotoTile(

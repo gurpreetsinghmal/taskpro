@@ -20,9 +20,9 @@ class ApiRoutes {
   static const String workOrderStatusUpdate = "auth/work-order-status-update";
 
   static const String workOrderCheckInSync = "auth/work-order-checkin-sync";
-  // Placeholder routes; replace with the backend's confirmed sync endpoints.
+  // SOW and field sync routes await backend confirmation.
   static const String workOrderSowItemsSync = "auth/work-order/update/sow";
+  static const String workOrderPhotoGallerySync = "auth/work-order-photo-gallery-sync";
   static const String workOrderFieldsSync = "auth/work-order-fields-sync";
-  static const String workOrderProposedDatetimeUpdate =
-      "auth/work-order-proposed-datetime-update";
+  static const String workOrderProposedDatetimeUpdate ="auth/work-order-proposed-datetime-update";
 }
