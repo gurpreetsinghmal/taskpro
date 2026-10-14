@@ -148,7 +148,6 @@ class WorkerDataService {
       return 'Work-order logging: $error';
     }
 
-
     try {
       final sowResponse = await api.post(
         ApiRoutes.workOrderSowItemsSync,
@@ -167,7 +166,6 @@ class WorkerDataService {
     } on Exception catch (error) {
       return 'SOW items: $error';
     }
-
 
     ///
     /// ****************        ANY FUTURE SYNC STARTS HERE           ********************************
@@ -227,10 +225,10 @@ class WorkerDataService {
     }
 
     final failures = <int, String>{};
+    var syncedAnyOrders = false;
     for (final task in pendingOrders) {
       final failure = await syncOrderFailure(task);
       if (failure == null) {
-
         await local.storage.editWorkOrder(task.id, (current) {
           if (jsonEncode(_syncData(current)) != jsonEncode(_syncData(task))) {
             return current;
@@ -242,12 +240,13 @@ class WorkerDataService {
                 .toList(),
           );
         });
-
+        syncedAnyOrders = true;
       } else {
         failures[task.id] = failure;
         await _saveSyncFailure(task.id, failure);
       }
     }
+    if (syncedAnyOrders) await loadOrders();
     return failures;
   }
 
@@ -336,15 +335,15 @@ class WorkerDataService {
     return details;
   }
 
-  List<String> _formatFieldErrors(dynamic response) {
-    return _validationErrors(response).entries.map((entry) {
-      final field = entry.key.replaceFirst(
-        RegExp(r'^(work_order|workOrder)\.'),
-        '',
-      );
-      return 'Work-order field "$field": ${entry.value}';
-    }).toList();
-  }
+  // List<String> _formatFieldErrors(dynamic response) {
+  //   return _validationErrors(response).entries.map((entry) {
+  //     final field = entry.key.replaceFirst(
+  //       RegExp(r'^(work_order|workOrder)\.'),
+  //       '',
+  //     );
+  //     return 'Work-order field "$field": ${entry.value}';
+  //   }).toList();
+  // }
 
   Map<String, String> _validationErrors(dynamic response) {
     if (response is! Map) return const {};

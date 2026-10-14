@@ -181,8 +181,61 @@ void main() {
       expect(requests, [
         ApiRoutes.workOrderCheckInSync,
         ApiRoutes.workOrderSowItemsSync,
-        ApiRoutes.workOrderFieldsSync,
+        ApiRoutes.workOrderList,
       ]);
+      local.onClose();
+    },
+  );
+
+  test(
+    'reloads the work order from the server after a successful sync',
+    () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final local = LocalDataService(
+        storage: SecureStorageService(storage: const FlutterSecureStorage()),
+      );
+      await local.initialize();
+      await local.storage.write(
+        StorageKeys.workOrderList,
+        jsonEncode([_workOrder().toJson()]),
+      );
+
+      final requests = <String>[];
+      final remoteOrder = _workOrder().toJson()
+        ..['work_order_title'] = 'Updated by server'
+        ..remove('sync');
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.test'));
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            requests.add(options.path);
+            final data = switch (options.path) {
+              ApiRoutes.workOrderCheckInSync => {
+                'status': true,
+                'synced_count': 1,
+              },
+              ApiRoutes.workOrderList => {
+                'status': 'success',
+                'data': [remoteOrder],
+              },
+              _ => {'success': true},
+            };
+            handler.resolve(
+              Response(requestOptions: options, statusCode: 200, data: data),
+            );
+          },
+        ),
+      );
+
+      await WorkerDataService(
+        api: OnlineApiService(dio),
+        local: local,
+      ).syncPendingOrders();
+
+      final reloaded = local.findOrder(42)!;
+      expect(reloaded.workOrderTitle, 'Updated by server');
+      expect(reloaded.sync, 1);
+      expect(requests.last, ApiRoutes.workOrderList);
       local.onClose();
     },
   );
