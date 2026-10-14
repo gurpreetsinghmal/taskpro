@@ -464,17 +464,47 @@ class TaskCompletionController extends GetxController {
             notes: response.comments,
             attachments: response.images
                 .map(
-                  (image) => SowAttachmentModel(
-                    id: 0,
-                    workOrderId: item.workOrderId,
-                    sowItemId: item.id,
-                    disk: '',
-                    originalName: image.originalName,
-                    mimeType: '',
-                    fileSize: image.fileSize,
-                    filePath:  image.filePath,
-                    isMobileUpload: true
-                  ),
+                  (image) {
+                    final existingAttachments = item.attachments;
+
+                    SowAttachmentModel? existing;
+
+                    for (final old in existingAttachments) {
+                      if (old.fileSize == image.fileSize && old.originalName == image.originalName) {
+                        existing = old;
+                        break;
+                      }
+                    }
+
+                    // Existing attachment: preserve all its original metadata.
+                    if (existing != null) {
+                      return existing;
+                    }
+
+                    // Newly added image: mark as mobile upload.
+                    return SowAttachmentModel(
+                      id: 0,
+                      workOrderId: item.workOrderId,
+                      sowItemId: item.id,
+                      disk: image.disk,
+                      originalName: image.originalName,
+                      mimeType: image.mimeType,
+                      fileSize: image.fileSize,
+                      filePath: image.filePath,
+                      isMobileUpload: true
+                    );
+                  }
+              // => SowAttachmentModel(
+              //       id: 0,
+              //       workOrderId: item.workOrderId,
+              //       sowItemId: item.id,
+              //       disk: '',
+              //       originalName: image.originalName,
+              //       mimeType: '',
+              //       fileSize: image.fileSize,
+              //       filePath:  image.filePath,
+              //       isMobileUpload: true
+              //     ),
                 )
                 .toList(),
             status: status,

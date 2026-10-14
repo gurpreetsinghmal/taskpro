@@ -453,7 +453,7 @@ class SowAttachmentModel {
       deletedAt: json['deleted_at'] != null
           ? DateTime.tryParse(json['deleted_at'].toString())
           : null,
-      isMobileUpload: json['is_mobile_upload'] != null,
+      isMobileUpload: json['is_mobile_upload'] ?? false,
       fileName: json['file_name']?.toString(),
     );
   }

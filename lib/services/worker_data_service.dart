@@ -168,6 +168,7 @@ class WorkerDataService {
       return 'SOW items: $error';
     }
 
+
     ///
     /// ****************        ANY FUTURE SYNC STARTS HERE           ********************************
     ///
@@ -229,6 +230,7 @@ class WorkerDataService {
     for (final task in pendingOrders) {
       final failure = await syncOrderFailure(task);
       if (failure == null) {
+
         await local.storage.editWorkOrder(task.id, (current) {
           if (jsonEncode(_syncData(current)) != jsonEncode(_syncData(task))) {
             return current;
@@ -240,6 +242,7 @@ class WorkerDataService {
                 .toList(),
           );
         });
+
       } else {
         failures[task.id] = failure;
         await _saveSyncFailure(task.id, failure);
