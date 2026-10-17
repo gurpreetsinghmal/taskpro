@@ -85,8 +85,9 @@ class WorkerDataService {
     ///
     /// ****************        CHECK-IN / CHECK-OUT SYNC STARTS HERE           ********************************
     ///
-    log(task.checkins.map((item) => item.toJson()).toString());
+
     try {
+      if(task.checkins.isNotEmpty) {
       final checkinsResponse = await api.post(
         ApiRoutes.workOrderCheckInSync,
         data: {
@@ -96,13 +97,13 @@ class WorkerDataService {
       );
       final syncedCount = checkinsResponse.data is Map
           ? int.tryParse(
-              checkinsResponse.data['synced_count']?.toString() ?? '',
-            )
+        checkinsResponse.data['synced_count']?.toString() ?? '',
+      )
           : null;
       final hasCheckinResult =
           checkinsResponse.data is Map &&
-          (checkinsResponse.data.containsKey('success') ||
-              checkinsResponse.data.containsKey('status'));
+              (checkinsResponse.data.containsKey('success') ||
+                  checkinsResponse.data.containsKey('status'));
       final checkinsSucceeded = hasCheckinResult
           ? _successful(checkinsResponse.data)
           : syncedCount == task.checkins.length;
@@ -115,9 +116,14 @@ class WorkerDataService {
         final reference = task.checkins.isEmpty
             ? 'No local check-in sessions were available.'
             : 'The server did not identify which session failed. '
-                  'Pending session references: ${task.checkins.map(_sessionReference).join('; ')}.';
-        return 'Check-ins: ${_responseMessage(checkinsResponse.data) ?? 'The server synced ${syncedCount ?? 0} of ${task.checkins.length} updates.'} $reference';
+            'Pending session references: ${task.checkins
+            .map(_sessionReference)
+            .join('; ')}.';
+        return 'Check-ins: ${_responseMessage(checkinsResponse.data) ??
+            'The server synced ${syncedCount ?? 0} of ${task.checkins
+                .length} updates.'} $reference';
       }
+    }
     } on ApiException catch (error) {
       final details = _formatCheckinErrors(error.data, task.checkins);
       return details.isNotEmpty
@@ -150,14 +156,17 @@ class WorkerDataService {
     }
 
     try {
-      final sowResponse = await api.post(
-        ApiRoutes.workOrderSowItemsSync,
-        data: {'work_order_id': task.id, 'sow_items': sowItems},
-      );
-      if (!_successful(sowResponse.data)) {
-        final details = _formatSowErrors(sowResponse.data, task);
-        if (details.isNotEmpty) return details.join('\n');
-        return 'SOW items: ${_responseMessage(sowResponse.data) ?? 'The server rejected the update.'}';
+      if(sowItems.isNotEmpty) {
+        final sowResponse = await api.post(
+          ApiRoutes.workOrderSowItemsSync,
+          data: {'work_order_id': task.id, 'sow_items': sowItems},
+        );
+        if (!_successful(sowResponse.data)) {
+          final details = _formatSowErrors(sowResponse.data, task);
+          if (details.isNotEmpty) return details.join('\n');
+          return 'SOW items: ${_responseMessage(sowResponse.data) ??
+              'The server rejected the update.'}';
+        }
       }
     } on ApiException catch (error) {
       final details = _formatSowErrors(error.data, task);
@@ -331,7 +340,8 @@ class WorkerDataService {
   List<String> _formatCheckinErrors(dynamic response, List<dynamic> sessions) {
     final errors = _validationErrors(response);
     final details = <String>[];
-    final indexedKey = RegExp(r'^checkins?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$');
+    final indexedKey = RegExp(r'^checkins?[.\\[](\d+)(?:\\]|\.)?\.?(.*)$');
+    // final indexedKey = RegExp(r'^checkins?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$');
     for (final entry in errors.entries) {
       final match = indexedKey.firstMatch(entry.key);
       if (match == null) continue;
@@ -358,7 +368,8 @@ class WorkerDataService {
   List<String> _formatSowErrors(dynamic response, WorkOrderModel task) {
     final errors = _validationErrors(response);
     final details = <String>[];
-    final indexedKey = RegExp(r'^sow_items?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$');
+    final indexedKey = RegExp(r'^sow_items?[.\\[](\d+)(?:\\]|\.)?\.?(.*)$');
+    //final indexedKey = RegExp(r'^sow_items?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$');
     for (final entry in errors.entries) {
       final match = indexedKey.firstMatch(entry.key);
       if (match == null) continue;
@@ -383,7 +394,7 @@ class WorkerDataService {
   ) {
     final errors = _validationErrors(response);
     final details = <String>[];
-    final indexedKey = RegExp(r'^photos?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$');
+    final indexedKey = RegExp(r'^photos?[.\\[](\d+)(?:\\]|\.)?\.?(.*)$');
     for (final entry in errors.entries) {
       final match = indexedKey.firstMatch(entry.key);
       if (match == null) continue;

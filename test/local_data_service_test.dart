@@ -360,8 +360,7 @@ void main() {
               originalName: 'evidence.jpg',
               mimeType: '',
               fileSize: 1024,
-              isMobileUpload: true
-
+              isMobileUpload: true,
             ),
           ],
         ),
@@ -405,7 +404,7 @@ void main() {
       description: 'Inspect equipment.',
       status: 2,
       notes: 'Not present at site.',
-      attachments:  [
+      attachments: [
         SowAttachmentModel(
           id: 1,
           workOrderId: 1,
@@ -415,7 +414,7 @@ void main() {
           originalName: 'evidence.jpg',
           mimeType: 'image/jpeg',
           fileSize: 1,
-          isMobileUpload: true
+          isMobileUpload: true,
         ),
       ],
     );
@@ -462,26 +461,29 @@ void main() {
     expect(pixel.b, greaterThan(240));
   });
 
-  test('task completion photo compression outputs a valid image within 500 KB', () {
-    final random = Random(24);
-    final source = img.Image(width: 1024, height: 1024);
-    for (var y = 0; y < source.height; y++) {
-      for (var x = 0; x < source.width; x++) {
-        source.setPixelRgb(
-          x,
-          y,
-          random.nextInt(256),
-          random.nextInt(256),
-          random.nextInt(256),
-        );
+  test(
+    'task completion photo compression outputs a valid image within 500 KB',
+    () {
+      final random = Random(24);
+      final source = img.Image(width: 1024, height: 1024);
+      for (var y = 0; y < source.height; y++) {
+        for (var x = 0; x < source.width; x++) {
+          source.setPixelRgb(
+            x,
+            y,
+            random.nextInt(256),
+            random.nextInt(256),
+            random.nextInt(256),
+          );
+        }
       }
-    }
 
-    final compressed = compressTaskCompletionPhoto(img.encodePng(source));
+      final compressed = compressTaskCompletionPhoto(img.encodePng(source));
 
-    expect(compressed.length, lessThanOrEqualTo(maxSowImageBytes));
-    expect(img.decodeImage(compressed), isNotNull);
-  });
+      expect(compressed.length, lessThanOrEqualTo(maxSowImageBytes));
+      expect(img.decodeImage(compressed), isNotNull);
+    },
+  );
 
   test('profile refresh preserves a draft until editing is canceled', () async {
     final profile = WorkerProfileController(local: local)..onInit();
