@@ -87,7 +87,6 @@ class WorkerDataService {
     ///
 
     try {
-      if(task.checkins.isNotEmpty) {
       final checkinsResponse = await api.post(
         ApiRoutes.workOrderCheckInSync,
         data: {
@@ -123,7 +122,6 @@ class WorkerDataService {
             'The server synced ${syncedCount ?? 0} of ${task.checkins
                 .length} updates.'} $reference';
       }
-    }
     } on ApiException catch (error) {
       final details = _formatCheckinErrors(error.data, task.checkins);
       return details.isNotEmpty
