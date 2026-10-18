@@ -1006,7 +1006,7 @@ class _WorkerTasksScreenState extends State<WorkerTasksScreen>
       );
     }
 
-    if (task.statusId == 59) {
+    if (task.statusId == 59 || controller.CheckinStatus[task.id]=="Checked") {
       return _AnimatedActionButton(
         title: "Proceed to Check In",
         icon: Icons.arrow_forward_rounded,

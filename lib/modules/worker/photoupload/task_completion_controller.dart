@@ -1,12 +1,12 @@
+import 'dart:ffi';
+
+import 'package:flutter/material.dart';
+
 import '../../../services/local_data_service.dart';
 import 'dart:convert';
-
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,6 +21,7 @@ import '../../../common/models/sow_item_response_model.dart';
 
 import '../../../services/secure_storage_service.dart';
 import '../../../services/worker_data_service.dart';
+import '../../app_routes/app_routes.dart';
 import 'task_completion_models.dart';
 
 class TaskCompletionController extends GetxController {
@@ -35,6 +36,12 @@ class TaskCompletionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    remarksFocusNode.addListener(() {
+      if (!remarksFocusNode.hasFocus) {
+        // Focus is lost – save text here
+        _saveRemarksToLocalStorage(notesController.text);
+      }
+    });
     taskId.value = task.id.toString();
     uploadedPhotos.assignAll(task.photos ?? const <UploadedPhotoModel>[]);
     _setSowItems(task);
@@ -42,6 +49,7 @@ class TaskCompletionController extends GetxController {
       _setSowItems(local.findOrder(_initialTask.id));
     });
     _sowItemResponsesReady = _loadSowItemResponses();
+    notesController.text=task.remarks??"";
   }
 
   TaskCompletionController({
@@ -127,15 +135,16 @@ class TaskCompletionController extends GetxController {
 
   // Quick Note Chips
   final quickNotes = <String>[
-    'All filters replaced',
-    'Safety check passed',
-    'System pressure optimal',
-    'Replaced worn belt',
-    'Client verbal sign-off',
+    // 'All filters replaced',
+    // 'Safety check passed',
+    // 'System pressure optimal',
+    // 'Replaced worn belt',
+    // 'Client verbal sign-off',
   ];
 
   // Controllers & Form State
   final notesController = TextEditingController();
+  final FocusNode remarksFocusNode = FocusNode();
   final isPickingPhoto = false.obs;
   final isCompressingPhoto = false.obs;
   final isPickingSowImages = false.obs;
@@ -143,7 +152,8 @@ class TaskCompletionController extends GetxController {
 
   final uploadProgress = 0.0.obs;
 
-  final uploadProgressText = 'Preparing upload...'.obs;
+  final uploadProgressText = 'Submitting...'.obs;
+
 
   void toggleChecklist(int index) {
     final item = checklist[index];
@@ -558,8 +568,9 @@ class TaskCompletionController extends GetxController {
     }
   }
 
-  Future<void> submitTaskCompletion({required VoidCallback onSuccess}) async {
+  Future<void> submitTaskCompletion({required VoidCallback onResult}) async {
     await _sowItemResponsesReady;
+    if (isClosed || isSubmitting.value) return;
 
     // 1. PRE-INSTALLATION MUST BE COMPLETED FIRST
     final pendingPreInstall = sowItems
@@ -605,18 +616,18 @@ class TaskCompletionController extends GetxController {
     // 2. VALIDATE PHOTO
     // ============================================================
 
-    if (uploadedPhotos.isEmpty) {
-      Get.snackbar(
-        'Proof Required',
-        'Please attach at least one work completion photo.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-
-      return;
-    }
+    // if (uploadedPhotos.isEmpty) {
+    //   Get.snackbar(
+    //     'Proof Required',
+    //     'Please attach at least one work completion photo.',
+    //     snackPosition: SnackPosition.BOTTOM,
+    //     backgroundColor: Colors.red.shade700,
+    //     colorText: Colors.white,
+    //     margin: const EdgeInsets.all(16),
+    //   );
+    //
+    //   return;
+    // }
 
     // ============================================================
     // 3. SUBMIT
@@ -626,132 +637,60 @@ class TaskCompletionController extends GetxController {
       isSubmitting.value = true;
 
       uploadProgress.value = 0.0;
-      uploadProgressText.value = 'Preparing upload...';
-
-      final formData = dio.FormData.fromMap({
-        'taskId': taskId.value,
-        'remarks': notesController.text.trim(),
-        'taskCategory': taskCategory.value,
-        'taskLocation': taskLocation.value,
-      });
-
-      // ==========================================================
-      // ADD SOW CHECKLIST
-      // ==========================================================
-
-      formData.fields.add(
-        MapEntry('sow_items', jsonEncode(await buildSowItemsSubmission())),
-      );
-
-      // ==========================================================
-      // ADD PHOTOS
-      // ==========================================================
-
-      for (final photo in uploadedPhotos) {
-        final file = _multipartPhoto(photo);
-
-        formData.files.add(MapEntry('photos', file));
-      }
 
       // ==========================================================
       // API
       // ==========================================================
 
-      final response = await _apiService.postMultipart(
-        ApiRoutes.taskSubmitted,
-        data: formData,
-        onSendProgress: (sent, total) {
-          if (total > 0) {
-            final percentage = ((sent / total) * 100).round();
 
-            uploadProgress.value = percentage / 100;
+        task.statusId=18; //submitted
+        await local.storage.updateWorkOrderData(task);
 
-            uploadProgressText.value = 'Uploading photos... $percentage%';
-          }
-        },
-      );
-
-      // ==========================================================
-      // SUCCESS
-      // ==========================================================
-
-      if ((response.statusCode == 200 || response.statusCode == 201) &&
-          !_hasRejectedResponse(response.data)) {
-        uploadProgress.value = 1.0;
-        uploadProgressText.value = 'Upload completed';
-
-        try {
-          await WorkerDataService(
-            api: _apiService,
-            local: local,
-          ).clearPhotoUploadFailures(task.id);
-        } catch (error) {
-          debugPrint('Unable to clear previous photo upload failure: $error');
-        }
-        if (!isClosed) onSuccess();
-      } else {
-        throw ApiException(
-          message:
-              _responseMessage(response.data) ?? 'Unable to complete task.',
-          statusCode: response.statusCode,
-          data: response.data,
+        final value = await _apiService.post(
+          ApiRoutes.workOrderStatusUpdate,
+          data: {
+            "work_order_id": task.id,
+            "status_id": 18,///submitted
+            "remarks":task.remarks
+          },
+          isLoaderShow: true,
         );
+        final dynamic responseData = value.data;
+
+        if (responseData != null && responseData['status'].toString() == "true") {
+
+          uploadProgress.value = 1.0;
+          uploadProgressText.value = 'Work Order Submitted completely';
+          onResult();
+          Get.snackbar(
+            'Success',
+            'Work order submitted successfully!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.success,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+
+        } else {
+          onResult();
+          Get.snackbar(
+            'Failed',
+            responseData['message'],
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+          );
+        }
+      } catch (error) {
+        debugPrint("❌SubmitTaskWorkOrderApi Error: $error");
       }
-    }
-    // ============================================================
-    // API ERROR
-    // ============================================================
-    on ApiException catch (e) {
-      final photoFailures = _photoUploadFailures(e.data, e.message);
-      await _recordPhotoUploadFailures(photoFailures);
-      Get.snackbar(
-        'Upload Failed',
-        photoFailures.join('\n'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    }
-    // ============================================================
-    // NETWORK ERROR
-    // ============================================================
-    on dio.DioException catch (e) {
-      final photoFailures = _photoUploadFailures(
-        e.response?.data,
-        e.message ?? 'Unable to connect to server.',
-      );
-      await _recordPhotoUploadFailures(photoFailures);
-      Get.snackbar(
-        'Network Error',
-        photoFailures.join('\n'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    }
-    // ============================================================
-    // UNKNOWN ERROR
-    // ============================================================
-    catch (e) {
-      final photoFailures = _photoUploadFailures(null, e.toString());
-      await _recordPhotoUploadFailures(photoFailures);
-      Get.snackbar(
-        'Error',
-        photoFailures.join('\n'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
-    }
-    // ============================================================
-    // ALWAYS RESET
-    // ============================================================
-    finally {
-      isSubmitting.value = false;
-    }
+      finally {
+        isSubmitting.value = false;
+        
+      }
+
+
   }
 
   List<String> _photoUploadFailures(dynamic response, String message) {
@@ -899,6 +838,7 @@ class TaskCompletionController extends GetxController {
 
   @override
   void onClose() {
+    remarksFocusNode.dispose();
     _ordersWorker?.dispose();
     notesController.dispose();
     super.onClose();
@@ -945,5 +885,10 @@ class TaskCompletionController extends GetxController {
     }
 
     return preInstallItems.every(isSowItemResolved);
+  }
+
+  void _saveRemarksToLocalStorage(String text) async{
+    task.remarks=text;
+    await local.storage.updateWorkOrderData(task);
   }
 }

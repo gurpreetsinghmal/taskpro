@@ -25,6 +25,8 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
   static const Color _blue = AppColors.primary;
   static const Color _green = AppColors.success;
 
+
+
   Future<void> _pickPhoto(
     BuildContext context,
     TaskCompletionController controller,
@@ -177,89 +179,45 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
     );
   }
 
-  void _showSuccessDialog(
+  Future<void> _confirmSubmission(
     BuildContext context,
     TaskCompletionController controller,
-    String? serverMessage,
-  ) {
-    showModalBottomSheet<void>(
+  ) async {
+    if (controller.isSubmitting.value) return;
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: Color(0xFF2563EB),
-                    size: 48,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Task Completed!',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  serverMessage?.trim().isNotEmpty == true
-                      ? serverMessage!.trim()
-                      : 'Task ${controller.taskId.value} was submitted with ${controller.uploadedPhotos.length} photo proof(s).',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF64748B),
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      Get.back();
-                    },
-                    child: const Text(
-                      'Return to Dashboard',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Submit Work Order?'),
+        content: const Text(
+          'After this you will not able to edit this work order.\n'
+              'Are you sure you want to submit this work order?',
+
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
           ),
-        );
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _blue,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    await controller.submitTaskCompletion(
+      onResult: () {
+        if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
+          Navigator.of(context).pop();
+        }
       },
     );
   }
@@ -310,9 +268,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
 
                     const SizedBox(height: 16),
 
-                    _buildGetSignature(completionController),
+                   // _buildGetSignature(completionController),
 
-                    const SizedBox(height: 20),
+                    //const SizedBox(height: 20),
 
                     _buildSubmitButton(context, completionController),
 
@@ -634,7 +592,24 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.file(
+            (photo.image != null && photo.image!.isNotEmpty)
+                ? Image.memory(
+              base64Decode(photo.image!),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: const Color(0xFFE9EEF5),
+                  child: const Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: _muted,
+                      size: 30,
+                    ),
+                  ),
+                );
+              },
+            )
+                : Image.file(
               File(photo.filePath),
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
@@ -745,6 +720,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                 ],
               ),
             ),
+
           ],
         ),
       ),
@@ -758,68 +734,69 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
         children: [
           _sectionHeader(
             icon: Icons.edit_note_rounded,
-            title: 'Custom Notes',
+            title: 'Custom Notes (Max 250 Characters)',
             subtitle: 'Add a short summary of the completed work',
           ),
 
           const SizedBox(height: 15),
 
-          const Text(
-            'QUICK NOTES',
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
-              color: _muted,
-              letterSpacing: .8,
-            ),
-          ),
+          // const Text(
+          //   'QUICK NOTES',
+          //   style: TextStyle(
+          //     fontSize: 9,
+          //     fontWeight: FontWeight.w800,
+          //     color: _muted,
+          //     letterSpacing: .8,
+          //   ),
+          // ),
 
-          const SizedBox(height: 9),
+          // const SizedBox(height: 9),
 
-          SizedBox(
-            height: 34,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: controller.quickNotes.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 7),
-              itemBuilder: (context, index) {
-                final note = controller.quickNotes[index];
+          // SizedBox(
+          //   height: 34,
+          //   child: ListView.separated(
+          //     scrollDirection: Axis.horizontal,
+          //     physics: const BouncingScrollPhysics(),
+          //     itemCount: controller.quickNotes.length,
+          //     separatorBuilder: (_, __) => const SizedBox(width: 7),
+          //     itemBuilder: (context, index) {
+          //       final note = controller.quickNotes[index];
+          //
+          //       return Material(
+          //         color: Colors.transparent,
+          //         child: InkWell(
+          //           borderRadius: BorderRadius.circular(20),
+          //           onTap: () => controller.addQuickNote(note),
+          //           child: Container(
+          //             padding: const EdgeInsets.symmetric(
+          //               horizontal: 12,
+          //               vertical: 7,
+          //             ),
+          //             decoration: BoxDecoration(
+          //               color: const Color(0xFFF1F5FF),
+          //               borderRadius: BorderRadius.circular(20),
+          //               border: Border.all(color: const Color(0xFFD9E5FF)),
+          //             ),
+          //             child: Text(
+          //               note,
+          //               style: const TextStyle(
+          //                 fontSize: 10,
+          //                 fontWeight: FontWeight.w700,
+          //                 color: _blue,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       );
+          //     },
+          //   ),
+          // ),
 
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => controller.addQuickNote(note),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5FF),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFD9E5FF)),
-                      ),
-                      child: Text(
-                        note,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: _blue,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 13),
+          // const SizedBox(height: 13),
 
           TextField(
             controller: controller.notesController,
+            maxLength: 250,
             maxLines: 5,
             minLines: 4,
             textInputAction: TextInputAction.newline,
@@ -852,7 +829,9 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                 borderRadius: BorderRadius.circular(15),
                 borderSide: const BorderSide(color: _blue, width: 1.4),
               ),
+
             ),
+              focusNode:controller.remarksFocusNode
           ),
         ],
       ),
@@ -929,16 +908,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
             child: ElevatedButton(
               onPressed: controller.isSubmitting.value
                   ? null
-                  : () => controller.submitTaskCompletion(
-                      onSuccess: () {
-                        if (context.mounted)
-                          _showSuccessDialog(
-                            context,
-                            controller,
-                            'Task completed successfully',
-                          );
-                      },
-                    ),
+                  : () => _confirmSubmission(context, controller),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _blue,
                 disabledBackgroundColor: _blue.withValues(alpha: .55),
@@ -966,7 +936,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                           ),
                           SizedBox(width: 10),
                           Text(
-                            'Uploading Report...',
+                            'Processing...',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
@@ -996,7 +966,7 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
           const SizedBox(height: 8),
 
           const Text(
-            'Your photos and completion details will be submitted together.',
+            'Your all completion details will be submitted together.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 10,

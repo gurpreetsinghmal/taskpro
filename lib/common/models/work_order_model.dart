@@ -4,6 +4,7 @@ import 'package:taskpro/modules/worker/photoupload/task_completion_models.dart';
 class WorkOrderModel {
   final int id;
   final String workOrderNo;
+   String? remarks;
   final int leadId;
   final String leadTitle;
   final String? contactFirstName;
@@ -62,6 +63,7 @@ class WorkOrderModel {
   WorkOrderModel({
     required this.id,
     required this.workOrderNo,
+    this.remarks,
     required this.leadId,
     required this.contactFirstName,
     required this.contactLastName,
@@ -118,6 +120,7 @@ class WorkOrderModel {
     return WorkOrderModel(
       id: json['id'] as int? ?? 0,
       workOrderNo: json['work_order_no']?.toString() ?? '',
+      remarks: json['remarks']?.toString() ?? '',
       leadId: json['lead_id'] as int? ?? 0,
       contactFirstName: json['contact_first_name'] as String? ?? '',
       contactLastName: json['contact_last_name'] as String? ?? '',
@@ -232,6 +235,7 @@ class WorkOrderModel {
     return {
       'id': id,
       'work_order_no': workOrderNo,
+      'remarks':remarks,
       'lead_id': leadId,
       'contact_first_name': contactFirstName,
       'contact_last_name': contactLastName,
@@ -288,6 +292,7 @@ class WorkOrderModel {
   WorkOrderModel copyWith({
     int? id,
     String? workOrderNo,
+    String? remarks,
     int? leadId,
     String? contactFirstName,
     String? contactLastName,
@@ -341,6 +346,7 @@ class WorkOrderModel {
     return WorkOrderModel(
       id: id ?? this.id,
       workOrderNo: workOrderNo ?? this.workOrderNo,
+      remarks: workOrderNo ?? this.remarks,
       leadId: leadId ?? this.leadId,
       contactFirstName: contactFirstName ?? this.contactFirstName,
       contactLastName: contactLastName ?? this.contactLastName,

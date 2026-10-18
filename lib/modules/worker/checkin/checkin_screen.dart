@@ -267,7 +267,7 @@ class _CheckInOutCard extends StatelessWidget {
           // ==================================================
           // GO TO SITE
           // ==================================================
-          if (controller.isCheckedIn) ...[
+          if (controller.isCheckedIn && controller.task.statusId==59) ...[
             _buildworkCompletionCheckList(),
             const SizedBox(height: 12),
           ],
