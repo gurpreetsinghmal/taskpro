@@ -9,6 +9,8 @@ import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:taskpro/theme/app_colors.dart';
 
+import '../../services/session_service.dart';
+
 class LoginController extends GetxController {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -20,11 +22,21 @@ class LoginController extends GetxController {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    SessionService().clearSession();
+  }
+
   bool isValidEmail(String email) {
     return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email.trim());
   }
 
   void login() async {
+    if (isLoading.value) {
+      return;
+    }
+
     if (usernameController.text.trim().isEmpty) {
       Get.snackbar(
         'Required',

@@ -44,21 +44,18 @@ class LoginScreen extends GetView<LoginController> {
           // ANIMATED BACKGROUND
           // ========================================================
 
-          const Positioned.fill(
-            child: _AnimatedBackground(),
-          ),
+          const Positioned.fill(child: _AnimatedBackground()),
 
           // ========================================================
           // CONTENT
           // ========================================================
-
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
+                      ScrollViewKeyboardDismissBehavior.onDrag,
 
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -88,8 +85,7 @@ class _LoginBody extends StatefulWidget {
   State<_LoginBody> createState() => _LoginBodyState();
 }
 
-class _LoginBodyState extends State<_LoginBody>
-    with TickerProviderStateMixin {
+class _LoginBodyState extends State<_LoginBody> with TickerProviderStateMixin {
   late AnimationController _entryController;
   late AnimationController _floatController;
   late AnimationController _shineController;
@@ -135,17 +131,10 @@ class _LoginBodyState extends State<_LoginBody>
     // LOGO SCALE
     // ============================================================
 
-    _logoScale = Tween<double>(
-      begin: 0.55,
-      end: 1.0,
-    ).animate(
+    _logoScale = Tween<double>(begin: 0.55, end: 1.0).animate(
       CurvedAnimation(
         parent: _entryController,
-        curve: const Interval(
-          0.0,
-          0.42,
-          curve: Curves.easeOutBack,
-        ),
+        curve: const Interval(0.0, 0.42, curve: Curves.easeOutBack),
       ),
     );
 
@@ -153,17 +142,10 @@ class _LoginBodyState extends State<_LoginBody>
     // LOGO OPACITY
     // ============================================================
 
-    _logoOpacity = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(
+    _logoOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _entryController,
-        curve: const Interval(
-          0.0,
-          0.30,
-          curve: Curves.easeIn,
-        ),
+        curve: const Interval(0.0, 0.30, curve: Curves.easeIn),
       ),
     );
 
@@ -171,35 +153,22 @@ class _LoginBodyState extends State<_LoginBody>
     // CARD SLIDE
     // ============================================================
 
-    _cardSlide = Tween<Offset>(
-      begin: const Offset(0, 0.20),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _entryController,
-        curve: const Interval(
-          0.25,
-          0.95,
-          curve: Curves.easeOutCubic,
-        ),
-      ),
-    );
+    _cardSlide = Tween<Offset>(begin: const Offset(0, 0.20), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _entryController,
+            curve: const Interval(0.25, 0.95, curve: Curves.easeOutCubic),
+          ),
+        );
 
     // ============================================================
     // CARD OPACITY
     // ============================================================
 
-    _cardOpacity = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(
+    _cardOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _entryController,
-        curve: const Interval(
-          0.25,
-          0.75,
-          curve: Curves.easeIn,
-        ),
+        curve: const Interval(0.25, 0.75, curve: Curves.easeIn),
       ),
     );
 
@@ -221,12 +190,7 @@ class _LoginBodyState extends State<_LoginBody>
     final controller = Get.find<LoginController>();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        16,
-        20,
-        25,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 25),
 
       child: Column(
         children: [
@@ -235,16 +199,11 @@ class _LoginBodyState extends State<_LoginBody>
           // ========================================================
           // LOGO
           // ========================================================
-
           AnimatedBuilder(
-            animation: Listenable.merge([
-              _entryController,
-              _floatController,
-            ]),
+            animation: Listenable.merge([_entryController, _floatController]),
 
             builder: (context, child) {
-              final float =
-                  (_floatController.value - 0.5) * 7;
+              final float = (_floatController.value - 0.5) * 7;
 
               return Transform.translate(
                 offset: Offset(0, float),
@@ -252,11 +211,7 @@ class _LoginBodyState extends State<_LoginBody>
                 child: Transform.scale(
                   scale: _logoScale.value,
 
-                  child: Opacity(
-                    opacity: _logoOpacity.value,
-
-                    child: child,
-                  ),
+                  child: Opacity(opacity: _logoOpacity.value, child: child),
                 ),
               );
             },
@@ -269,31 +224,20 @@ class _LoginBodyState extends State<_LoginBody>
           // ========================================================
           // BRAND
           // ========================================================
-
-          FadeTransition(
-            opacity: _entryController,
-
-            child: _buildBrand(),
-          ),
+          FadeTransition(opacity: _entryController, child: _buildBrand()),
 
           const SizedBox(height: 23),
 
           // ========================================================
           // FEATURE ICONS
           // ========================================================
-
-          FadeTransition(
-            opacity: _entryController,
-
-            child: _buildFeatureRow(),
-          ),
+          FadeTransition(opacity: _entryController, child: _buildFeatureRow()),
 
           const SizedBox(height: 22),
 
           // ========================================================
           // LOGIN CARD
           // ========================================================
-
           SlideTransition(
             position: _cardSlide,
 
@@ -309,12 +253,7 @@ class _LoginBodyState extends State<_LoginBody>
           // ========================================================
           // FOOTER
           // ========================================================
-
-          FadeTransition(
-            opacity: _entryController,
-
-            child: _buildFooter(),
-          ),
+          FadeTransition(opacity: _entryController, child: _buildFooter()),
         ],
       ),
     );
@@ -336,32 +275,22 @@ class _LoginBodyState extends State<_LoginBody>
 
         borderRadius: BorderRadius.circular(31),
 
-        border: Border.all(
-          color: LoginScreen.yellow,
-          width: 3,
-        ),
+        border: Border.all(color: LoginScreen.yellow, width: 3),
 
         boxShadow: [
           BoxShadow(
-            color: LoginScreen.yellow.withValues(
-              alpha: 0.25,
-            ),
+            color: LoginScreen.yellow.withValues(alpha: 0.25),
 
             blurRadius: 35,
             spreadRadius: 5,
           ),
 
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.30,
-            ),
+            color: Colors.black.withValues(alpha: 0.30),
 
             blurRadius: 25,
 
-            offset: const Offset(
-              0,
-              12,
-            ),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -369,10 +298,7 @@ class _LoginBodyState extends State<_LoginBody>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
 
-        child: Image.asset(
-          'assets/prosat.gif',
-          fit: BoxFit.cover,
-        ),
+        child: Image.asset('assets/prosat.gif', fit: BoxFit.cover),
       ),
     );
   }
@@ -423,34 +349,21 @@ class _LoginBodyState extends State<_LoginBody>
         const SizedBox(height: 7),
 
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
 
           decoration: BoxDecoration(
-            color: Colors.white.withValues(
-              alpha: 0.07,
-            ),
+            color: Colors.white.withValues(alpha: 0.07),
 
             borderRadius: BorderRadius.circular(30),
 
-            border: Border.all(
-              color: Colors.white.withValues(
-                alpha: 0.12,
-              ),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
 
           child: const Row(
             mainAxisSize: MainAxisSize.min,
 
             children: [
-              Icon(
-                Icons.bolt_rounded,
-                color: LoginScreen.yellow,
-                size: 15,
-              ),
+              Icon(Icons.bolt_rounded, color: LoginScreen.yellow, size: 15),
 
               SizedBox(width: 5),
 
@@ -521,52 +434,33 @@ class _LoginBodyState extends State<_LoginBody>
       borderRadius: BorderRadius.circular(31),
 
       child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: 15,
-          sigmaY: 15,
-        ),
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
 
         child: Container(
           width: double.infinity,
 
-          padding: const EdgeInsets.fromLTRB(
-            21,
-            24,
-            21,
-            21,
-          ),
+          padding: const EdgeInsets.fromLTRB(21, 24, 21, 21),
 
           decoration: BoxDecoration(
-            color: Colors.white.withValues(
-              alpha: 0.97,
-            ),
+            color: Colors.white.withValues(alpha: 0.97),
 
             borderRadius: BorderRadius.circular(31),
 
-            border: Border.all(
-              color: Colors.white,
-              width: 1.2,
-            ),
+            border: Border.all(color: Colors.white, width: 1.2),
 
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: 0.25,
-                ),
+                color: Colors.black.withValues(alpha: 0.25),
 
                 blurRadius: 35,
 
-                offset: const Offset(
-                  0,
-                  18,
-                ),
+                offset: const Offset(0, 18),
               ),
             ],
           ),
 
           child: Column(
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
               // ====================================================
@@ -581,26 +475,18 @@ class _LoginBodyState extends State<_LoginBody>
 
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          LoginScreen.yellow,
-                          LoginScreen.yellowDark,
-                        ],
+                        colors: [LoginScreen.yellow, LoginScreen.yellowDark],
                       ),
 
-                      borderRadius:
-                      BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14),
 
                       boxShadow: [
                         BoxShadow(
-                          color: LoginScreen.yellow
-                              .withValues(alpha: 0.30),
+                          color: LoginScreen.yellow.withValues(alpha: 0.30),
 
                           blurRadius: 12,
 
-                          offset: const Offset(
-                            0,
-                            5,
-                          ),
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -615,8 +501,7 @@ class _LoginBodyState extends State<_LoginBody>
                   const SizedBox(width: 13),
 
                   const Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
 
                     children: [
                       Text(
@@ -648,7 +533,6 @@ class _LoginBodyState extends State<_LoginBody>
               // ====================================================
               // EMAIL
               // ====================================================
-
               const _FieldLabel(
                 icon: Icons.alternate_email_rounded,
                 text: 'Email Address',
@@ -657,19 +541,15 @@ class _LoginBodyState extends State<_LoginBody>
               const SizedBox(height: 8),
 
               _LoginTextField(
-                controller:controller.usernameController,
+                controller: controller.usernameController,
 
-                hintText:
-                'Enter your email address',
+                hintText: 'Enter your email address',
 
-                prefixIcon:
-                Icons.person_outline_rounded,
+                prefixIcon: Icons.person_outline_rounded,
 
-                keyboardType:
-                TextInputType.emailAddress,
+                keyboardType: TextInputType.emailAddress,
 
-                textInputAction:
-                TextInputAction.next,
+                textInputAction: TextInputAction.next,
               ),
 
               const SizedBox(height: 17),
@@ -677,7 +557,6 @@ class _LoginBodyState extends State<_LoginBody>
               // ====================================================
               // PASSWORD
               // ====================================================
-
               const _FieldLabel(
                 icon: Icons.lock_outline_rounded,
                 text: 'Password',
@@ -686,47 +565,34 @@ class _LoginBodyState extends State<_LoginBody>
               const SizedBox(height: 8),
 
               Obx(
-                    () => _LoginTextField(
-                  controller:
-                  controller.passwordController,
+                () => _LoginTextField(
+                  controller: controller.passwordController,
 
-                  hintText:
-                  'Enter your password',
+                  hintText: 'Enter your password',
 
-                  prefixIcon:
-                  Icons.lock_outline_rounded,
+                  prefixIcon: Icons.lock_outline_rounded,
 
-                  obscureText:
-                  !controller
-                      .isPasswordVisible
-                      .value,
+                  obscureText: !controller.isPasswordVisible.value,
 
-                  textInputAction:
-                  TextInputAction.done,
+                  textInputAction: TextInputAction.done,
 
                   onSubmitted: (_) {
                     controller.login();
                   },
 
                   suffixIcon: IconButton(
-                    onPressed:
-                    controller
-                        .togglePasswordVisibility,
+                    onPressed: controller.togglePasswordVisibility,
 
                     splashRadius: 20,
 
                     icon: Icon(
-                      controller
-                          .isPasswordVisible
-                          .value
+                      controller.isPasswordVisible.value
                           ? Icons.visibility_rounded
-                          : Icons
-                          .visibility_off_rounded,
+                          : Icons.visibility_off_rounded,
 
                       size: 20,
 
-                      color:
-                      const Color(0xFF687690),
+                      color: const Color(0xFF687690),
                     ),
                   ),
                 ),
@@ -737,21 +603,22 @@ class _LoginBodyState extends State<_LoginBody>
               // ====================================================
               // LOGIN BUTTON
               // ====================================================
-              _AnimatedLoginButton(
-                controller: controller,
-                animation: _shineController,
-              )
-              ,
+
+                 _AnimatedLoginButton(
+                  controller: controller,
+                  animation: _shineController,
+                ),
+
 
               const SizedBox(height: 17),
-// ====================================================
-// FORGOT PASSWORD
-// ====================================================
+              // ====================================================
+              // FORGOT PASSWORD
+              // ====================================================
 
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: ()=>Get.toNamed(AppRoutes.forget_password),
+                  onPressed: () => Get.toNamed(AppRoutes.forget_password),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
@@ -787,12 +654,10 @@ class _LoginBodyState extends State<_LoginBody>
               // ====================================================
               // SECURITY MESSAGE
               // ====================================================
-
               Container(
                 width: double.infinity,
 
-                padding:
-                const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 13,
                   vertical: 11,
                 ),
@@ -800,12 +665,9 @@ class _LoginBodyState extends State<_LoginBody>
                 decoration: BoxDecoration(
                   color: const Color(0xFFF3FBF8),
 
-                  borderRadius:
-                  BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(13),
 
-                  border: Border.all(
-                    color: const Color(0xFFD7F0E8),
-                  ),
+                  border: Border.all(color: const Color(0xFFD7F0E8)),
                 ),
 
                 child: const Row(
@@ -874,17 +736,14 @@ class _LoginBodyState extends State<_LoginBody>
 
   Widget _buildFooter() {
     return Row(
-      mainAxisAlignment:
-      MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
 
       children: [
         Icon(
           Icons.shield_rounded,
           size: 13,
 
-          color: Colors.white.withValues(
-            alpha: 0.40,
-          ),
+          color: Colors.white.withValues(alpha: 0.40),
         ),
 
         const SizedBox(width: 6),
@@ -893,9 +752,7 @@ class _LoginBodyState extends State<_LoginBody>
           'Secure  •  Reliable  •  Connected',
 
           style: TextStyle(
-            color: Colors.white.withValues(
-              alpha: 0.48,
-            ),
+            color: Colors.white.withValues(alpha: 0.48),
 
             fontSize: 10,
 
@@ -933,35 +790,18 @@ class _FeatureIcon extends StatelessWidget {
           height: 51,
 
           decoration: BoxDecoration(
-            color: Colors.white.withValues(
-              alpha: 0.07,
-            ),
+            color: Colors.white.withValues(alpha: 0.07),
 
-            borderRadius:
-            BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16),
 
-            border: Border.all(
-              color: Colors.white.withValues(
-                alpha: 0.10,
-              ),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
 
             boxShadow: [
-              BoxShadow(
-                color: color.withValues(
-                  alpha: 0.12,
-                ),
-
-                blurRadius: 14,
-              ),
+              BoxShadow(color: color.withValues(alpha: 0.12), blurRadius: 14),
             ],
           ),
 
-          child: Icon(
-            icon,
-            color: color,
-            size: 23,
-          ),
+          child: Icon(icon, color: color, size: 23),
         ),
 
         const SizedBox(height: 5),
@@ -970,9 +810,7 @@ class _FeatureIcon extends StatelessWidget {
           label,
 
           style: TextStyle(
-            color: Colors.white.withValues(
-              alpha: 0.65,
-            ),
+            color: Colors.white.withValues(alpha: 0.65),
 
             fontSize: 9.5,
 
@@ -992,20 +830,13 @@ class _FieldLabel extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _FieldLabel({
-    required this.icon,
-    required this.text,
-  });
+  const _FieldLabel({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 15,
-          color: const Color(0xFF52627D),
-        ),
+        Icon(icon, size: 15, color: const Color(0xFF52627D)),
 
         const SizedBox(width: 6),
 
@@ -1061,14 +892,11 @@ class _LoginTextField extends StatefulWidget {
   });
 
   @override
-  State<_LoginTextField> createState() =>
-      _LoginTextFieldState();
+  State<_LoginTextField> createState() => _LoginTextFieldState();
 }
 
-class _LoginTextFieldState
-    extends State<_LoginTextField> {
-  final FocusNode _focusNode =
-  FocusNode();
+class _LoginTextFieldState extends State<_LoginTextField> {
+  final FocusNode _focusNode = FocusNode();
 
   bool _focused = false;
 
@@ -1079,8 +907,7 @@ class _LoginTextFieldState
     _focusNode.addListener(() {
       if (mounted) {
         setState(() {
-          _focused =
-              _focusNode.hasFocus;
+          _focused = _focusNode.hasFocus;
         });
       }
     });
@@ -1096,63 +923,46 @@ class _LoginTextFieldState
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration:
-      const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 200),
 
       height: 57,
 
       decoration: BoxDecoration(
-        color: _focused
-            ? const Color(0xFFFAFCFF)
-            : const Color(0xFFF4F7FB),
+        color: _focused ? const Color(0xFFFAFCFF) : const Color(0xFFF4F7FB),
 
-        borderRadius:
-        BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(17),
 
         border: Border.all(
-          color: _focused
-              ? const Color(0xFF12A987)
-              : const Color(0xFFE1E6EF),
+          color: _focused ? const Color(0xFF12A987) : const Color(0xFFE1E6EF),
 
-          width:
-          _focused ? 1.5 : 1,
+          width: _focused ? 1.5 : 1,
         ),
 
         boxShadow: _focused
             ? [
-          BoxShadow(
-            color:
-            const Color(0xFF12A987)
-                .withValues(
-              alpha: 0.10,
-            ),
+                BoxShadow(
+                  color: const Color(0xFF12A987).withValues(alpha: 0.10),
 
-            blurRadius: 13,
+                  blurRadius: 13,
 
-            spreadRadius: 1,
-          ),
-        ]
+                  spreadRadius: 1,
+                ),
+              ]
             : null,
       ),
 
       child: TextField(
-        controller:
-        widget.controller,
+        controller: widget.controller,
 
-        focusNode:
-        _focusNode,
+        focusNode: _focusNode,
 
-        obscureText:
-        widget.obscureText,
+        obscureText: widget.obscureText,
 
-        keyboardType:
-        widget.keyboardType,
+        keyboardType: widget.keyboardType,
 
-        textInputAction:
-        widget.textInputAction,
+        textInputAction: widget.textInputAction,
 
-        onSubmitted:
-        widget.onSubmitted,
+        onSubmitted: widget.onSubmitted,
 
         style: const TextStyle(
           color: Color(0xFF172646),
@@ -1160,35 +970,27 @@ class _LoginTextFieldState
           fontWeight: FontWeight.w600,
         ),
 
-        decoration:
-        InputDecoration(
+        decoration: InputDecoration(
           border: InputBorder.none,
 
-          contentPadding:
-          const EdgeInsets.symmetric(
+          contentPadding: const EdgeInsets.symmetric(
             horizontal: 14,
             vertical: 17,
           ),
 
-          prefixIcon:
-          Icon(
+          prefixIcon: Icon(
             widget.prefixIcon,
 
             size: 20,
 
-            color: _focused
-                ? const Color(0xFF12A987)
-                : const Color(0xFF7C879B),
+            color: _focused ? const Color(0xFF12A987) : const Color(0xFF7C879B),
           ),
 
-          suffixIcon:
-          widget.suffixIcon,
+          suffixIcon: widget.suffixIcon,
 
-          hintText:
-          widget.hintText,
+          hintText: widget.hintText,
 
-          hintStyle:
-          const TextStyle(
+          hintStyle: const TextStyle(
             color: Color(0xFF9AA5B7),
             fontSize: 12.5,
             fontWeight: FontWeight.w500,
@@ -1203,8 +1005,7 @@ class _LoginTextFieldState
 // ANIMATED LOGIN BUTTON
 // ============================================================================
 
-class _AnimatedLoginButton
-    extends StatelessWidget {
+class _AnimatedLoginButton extends StatelessWidget {
   final LoginController controller;
 
   final Animation<double> animation;
@@ -1217,67 +1018,47 @@ class _AnimatedLoginButton
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: controller.isLoading.value
-          ? null
-          : controller.login,
+      onTap: controller.isLoading.value ? null : controller.login,
 
-      child: AnimatedContainer(
-        duration:
-        const Duration(milliseconds: 250),
+      child: Obx(()=>AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
 
         height: 57,
 
         width: double.infinity,
 
         decoration: BoxDecoration(
-          gradient:
-          const LinearGradient(
-            colors: [
-              Color(0xFFFFE500),
-              Color(0xFFFFC400),
-              Color(0xFFFFE500),
-            ],
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFE500), Color(0xFFFFC400), Color(0xFFFFE500)],
 
-            begin:
-            Alignment.centerLeft,
+            begin: Alignment.centerLeft,
 
-            end:
-            Alignment.centerRight,
+            end: Alignment.centerRight,
           ),
 
-          borderRadius:
-          BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(17),
 
           boxShadow: [
             BoxShadow(
-              color:
-              const Color(0xFFFFD000)
-                  .withValues(
-                alpha: 0.30,
-              ),
+              color: const Color(0xFFFFD000).withValues(alpha: 0.30),
 
               blurRadius: 18,
 
-              offset:
-              const Offset(0, 8),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
 
-        child:
-        controller.isLoading.value
+        child: controller.isLoading.value
             ? const Center(
           child: SizedBox(
             width: 24,
             height: 24,
 
-            child:
-            CircularProgressIndicator(
+            child: CircularProgressIndicator(
               strokeWidth: 2.7,
 
-              valueColor:
-              AlwaysStoppedAnimation<
-                  Color>(
+              valueColor: AlwaysStoppedAnimation<Color>(
                 Color(0xFF111642),
               ),
             ),
@@ -1290,47 +1071,25 @@ class _AnimatedLoginButton
             // ------------------------------------------------
 
             AnimatedBuilder(
-              animation:
-              animation,
+              animation: animation,
 
-              builder:
-                  (context, child) {
+              builder: (context, child) {
                 return Positioned(
-                  left:
-                  -70 +
-                      (animation
-                          .value *
-                          450),
+                  left: -70 + (animation.value * 450),
 
                   top: 0,
                   bottom: 0,
 
-                  child:
-                  IgnorePointer(
-                    child:
-                    Container(
+                  child: IgnorePointer(
+                    child: Container(
                       width: 55,
 
-                      decoration:
-                      BoxDecoration(
-                        gradient:
-                        LinearGradient(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
                           colors: [
-                            Colors
-                                .white
-                                .withValues(
-                              alpha: 0,
-                            ),
-                            Colors
-                                .white
-                                .withValues(
-                              alpha: 0.30,
-                            ),
-                            Colors
-                                .white
-                                .withValues(
-                              alpha: 0,
-                            ),
+                            Colors.white.withValues(alpha: 0),
+                            Colors.white.withValues(alpha: 0.30),
+                            Colors.white.withValues(alpha: 0),
                           ],
                         ),
                       ),
@@ -1343,47 +1102,31 @@ class _AnimatedLoginButton
             // ------------------------------------------------
             // TEXT
             // ------------------------------------------------
-
             const Center(
               child: Row(
-                mainAxisAlignment:
-                MainAxisAlignment
-                    .center,
+                mainAxisAlignment: MainAxisAlignment.center,
 
                 children: [
                   Text(
                     'LOGIN',
 
-                    style:
-                    TextStyle(
-                      color:
-                      Color(
-                        0xFF111642,
-                      ),
+                    style: TextStyle(
+                      color: Color(0xFF111642),
 
                       fontSize: 14,
 
-                      fontWeight:
-                      FontWeight
-                          .w900,
+                      fontWeight: FontWeight.w900,
 
-                      letterSpacing:
-                      1.3,
+                      letterSpacing: 1.3,
                     ),
                   ),
 
-                  SizedBox(
-                    width: 11,
-                  ),
+                  SizedBox(width: 11),
 
                   Icon(
-                    Icons
-                        .arrow_forward_rounded,
+                    Icons.arrow_forward_rounded,
 
-                    color:
-                    Color(
-                      0xFF111642,
-                    ),
+                    color: Color(0xFF111642),
 
                     size: 21,
                   ),
@@ -1392,7 +1135,8 @@ class _AnimatedLoginButton
             ),
           ],
         ),
-      ),
+      ))
+      ,
     );
   }
 }
@@ -1401,36 +1145,26 @@ class _AnimatedLoginButton
 // ANIMATED BACKGROUND
 // ============================================================================
 
-class _AnimatedBackground
-    extends StatefulWidget {
+class _AnimatedBackground extends StatefulWidget {
   const _AnimatedBackground();
 
   @override
-  State<_AnimatedBackground>
-  createState() =>
-      _AnimatedBackgroundState();
+  State<_AnimatedBackground> createState() => _AnimatedBackgroundState();
 }
 
-class _AnimatedBackgroundState
-    extends State<_AnimatedBackground>
-    with
-        SingleTickerProviderStateMixin {
-  late AnimationController
-  _controller;
+class _AnimatedBackgroundState extends State<_AnimatedBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller =
-    AnimationController(
+    _controller = AnimationController(
       vsync: this,
 
-      duration:
-      const Duration(seconds: 7),
-    )..repeat(
-      reverse: true,
-    );
+      duration: const Duration(seconds: 7),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -1446,10 +1180,7 @@ class _AnimatedBackgroundState
       animation: _controller,
 
       builder: (context, child) {
-        final value =
-        Curves.easeInOut.transform(
-          _controller.value,
-        );
+        final value = Curves.easeInOut.transform(_controller.value);
 
         return Stack(
           children: [
@@ -1458,15 +1189,11 @@ class _AnimatedBackgroundState
             // ========================================================
 
             Container(
-              decoration:
-              const BoxDecoration(
-                gradient:
-                LinearGradient(
-                  begin:
-                  Alignment.topLeft,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
 
-                  end:
-                  Alignment.bottomRight,
+                  end: Alignment.bottomRight,
 
                   colors: [
                     Color(0xFF10143F),
@@ -1480,21 +1207,15 @@ class _AnimatedBackgroundState
             // ========================================================
             // YELLOW GLOW
             // ========================================================
-
             Positioned(
-              top:
-              -140 +
-                  (value * 45),
+              top: -140 + (value * 45),
 
               right: -120,
 
               child: _GlowCircle(
                 size: 350,
 
-                color:
-                const Color(
-                  0xFFFFE500,
-                ),
+                color: const Color(0xFFFFE500),
 
                 opacity: 0.14,
               ),
@@ -1503,21 +1224,15 @@ class _AnimatedBackgroundState
             // ========================================================
             // BLUE GLOW
             // ========================================================
-
             Positioned(
-              top:
-              220 -
-                  (value * 60),
+              top: 220 - (value * 60),
 
               left: -160,
 
               child: _GlowCircle(
                 size: 350,
 
-                color:
-                const Color(
-                  0xFF4555FF,
-                ),
+                color: const Color(0xFF4555FF),
 
                 opacity: 0.20,
               ),
@@ -1526,21 +1241,15 @@ class _AnimatedBackgroundState
             // ========================================================
             // TEAL GLOW
             // ========================================================
-
             Positioned(
-              bottom:
-              -160 +
-                  (value * 45),
+              bottom: -160 + (value * 45),
 
               left: -100,
 
               child: _GlowCircle(
                 size: 320,
 
-                color:
-                const Color(
-                  0xFF00D5B0,
-                ),
+                color: const Color(0xFF00D5B0),
 
                 opacity: 0.08,
               ),
@@ -1549,21 +1258,15 @@ class _AnimatedBackgroundState
             // ========================================================
             // ORANGE GLOW
             // ========================================================
-
             Positioned(
               bottom: -180,
 
-              right:
-              -110 +
-                  (value * 30),
+              right: -110 + (value * 30),
 
               child: _GlowCircle(
                 size: 340,
 
-                color:
-                const Color(
-                  0xFFFFB000,
-                ),
+                color: const Color(0xFFFFB000),
 
                 opacity: 0.09,
               ),
@@ -1572,18 +1275,9 @@ class _AnimatedBackgroundState
             // ========================================================
             // DOTS
             // ========================================================
+            const Positioned(top: 110, right: 35, child: _Dots()),
 
-            const Positioned(
-              top: 110,
-              right: 35,
-              child: _Dots(),
-            ),
-
-            const Positioned(
-              bottom: 90,
-              left: 25,
-              child: _Dots(),
-            ),
+            const Positioned(bottom: 90, left: 25, child: _Dots()),
           ],
         );
       },
@@ -1595,8 +1289,7 @@ class _AnimatedBackgroundState
 // GLOW CIRCLE
 // ============================================================================
 
-class _GlowCircle
-    extends StatelessWidget {
+class _GlowCircle extends StatelessWidget {
   final double size;
 
   final Color color;
@@ -1615,21 +1308,14 @@ class _GlowCircle
       width: size,
       height: size,
 
-      decoration:
-      BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
 
-        color:
-        color.withValues(
-          alpha: opacity,
-        ),
+        color: color.withValues(alpha: opacity),
 
         boxShadow: [
           BoxShadow(
-            color:
-            color.withValues(
-              alpha: opacity,
-            ),
+            color: color.withValues(alpha: opacity),
 
             blurRadius: 110,
 
@@ -1658,29 +1344,18 @@ class _Dots extends StatelessWidget {
         spacing: 7,
         runSpacing: 7,
 
-        children:
-        List.generate(
-          9,
+        children: List.generate(9, (index) {
+          return Container(
+            width: 4,
+            height: 4,
 
-              (index) {
-            return Container(
-              width: 4,
-              height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.20),
 
-              decoration:
-              BoxDecoration(
-                color:
-                Colors.white
-                    .withValues(
-                  alpha: 0.20,
-                ),
-
-                shape:
-                BoxShape.circle,
-              ),
-            );
-          },
-        ),
+              shape: BoxShape.circle,
+            ),
+          );
+        }),
       ),
     );
   }
