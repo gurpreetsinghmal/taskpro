@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:taskpro/policy/policy_screen.dart';
+import 'package:taskpro/policy/privacy_binding.dart';
 import '../../common/models/work_order_model.dart';
 import '../worker/tasks/w_tasks_screen.dart';
 import '../worker/tasks/w_tasks_controller.dart';
@@ -87,6 +89,10 @@ class AppPages {
       name: AppRoutes.workerProfile,
       page: () => WorkerProfileScreen(),
       binding: WorkerProfileBinding(),
+    ),GetPage(
+      name: AppRoutes.privacyPolicy,
+      page: () => PrivacyPolicyScreen(),
+      binding: PrivacyPolicyBinding(),
     ),
   ];
 }

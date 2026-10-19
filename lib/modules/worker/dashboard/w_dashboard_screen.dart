@@ -1602,7 +1602,7 @@ class RightProfileDrawer extends StatelessWidget {
                             ),
                             if (user.currentRole.isNotEmpty)
                               Text(
-                                user.currentRole,
+                                user.currentRole.capitalizeFirst.toString(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -1667,13 +1667,6 @@ class RightProfileDrawer extends StatelessWidget {
                   title: "Change Password",
                   onTap: () => Get.toNamed(AppRoutes.changePassword),
                 ),
-                _buildDrawerItem(
-                  icon: Icons.account_balance_wallet_outlined,
-                  title: "Wallet & Earnings",
-                  trailingText:
-                      "\$${controller.walletBalance.value.toStringAsFixed(0)}",
-                  onTap: () => Navigator.pop(context),
-                ),
                 const Divider(height: 24),
                 const Padding(
                   padding: EdgeInsets.only(left: 12, bottom: 6),
@@ -1694,7 +1687,7 @@ class RightProfileDrawer extends StatelessWidget {
                 _buildDrawerItem(
                   icon: Icons.security,
                   title: "Privacy & Guidelines",
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
                 ),
               ],
             ),

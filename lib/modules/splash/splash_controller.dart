@@ -54,7 +54,7 @@ class SplashController extends GetxController {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final response = await ApiService().get(ApiRoutes.dashboardStats);
-      final data ={"latest_version":"1.1.0","force_update":true};//response.data
+      final data ={"latest_version":"1.0.0","force_update":true};//response.data
       final latestVersion = data['latest_version']?.toString();
       final bool noForceUpdate = data['force_update'].toString()!="true";
 
