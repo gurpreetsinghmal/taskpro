@@ -8,6 +8,7 @@ class ApiRoutes {
   static const String resetPassword = "auth/reset-password";
   static const String updateProfile = "auth/profile/update";
   static const String changePassword = "auth/change-password";
+  static const String appVersion = "app/version";
 
   static const String dashboardStats = "auth/dashboard";
 
@@ -22,7 +23,9 @@ class ApiRoutes {
   static const String workOrderCheckInSync = "auth/work-order-checkin-sync";
   // SOW and field sync routes await backend confirmation.
   static const String workOrderSowItemsSync = "auth/work-order/update/sow";
-  static const String workOrderPhotoGallerySync = "auth/work-order-photo-gallery-sync";
+  static const String workOrderPhotoGallerySync =
+      "auth/work-order-photo-gallery-sync";
   static const String workOrderFieldsSync = "auth/work-order-fields-sync";
-  static const String workOrderProposedDatetimeUpdate ="auth/work-order-proposed-datetime-update";
+  static const String workOrderProposedDatetimeUpdate =
+      "auth/work-order-proposed-datetime-update";
 }
