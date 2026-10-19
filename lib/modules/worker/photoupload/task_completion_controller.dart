@@ -1,27 +1,26 @@
-import 'dart:ffi';
+
 
 import 'package:flutter/material.dart';
 
 import '../../../services/local_data_service.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:dio/dio.dart' as dio;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:taskpro/common/helpers/api_routes.dart';
+
 import 'package:taskpro/common/helpers/sow_image_compressor.dart';
-import 'package:taskpro/network/api_exception.dart';
-import 'package:taskpro/network/api_service.dart';
+
 import 'package:taskpro/singature/signature_screen.dart';
 import 'package:taskpro/theme/app_colors.dart';
 import '../../../common/models/work_order_model.dart';
 import '../../../common/models/sow_item_response_model.dart';
 
 import '../../../services/secure_storage_service.dart';
-import '../../../services/worker_data_service.dart';
-import '../../app_routes/app_routes.dart';
+
+
 import 'task_completion_models.dart';
 
 class TaskCompletionController extends GetxController {
@@ -49,7 +48,7 @@ class TaskCompletionController extends GetxController {
       _setSowItems(local.findOrder(_initialTask.id));
     });
     _sowItemResponsesReady = _loadSowItemResponses();
-    notesController.text=task.remarks??"";
+    notesController.text = task.remarks ?? "";
   }
 
   TaskCompletionController({
@@ -90,7 +89,6 @@ class TaskCompletionController extends GetxController {
   /// Replace this with your real task-completion API URL, preferably through
   /// an environment/configuration class rather than hard-coding it here.
 
-  final ApiService _apiService = ApiService();
 
   /// Pass the logged-in user's access token when your API uses JWT auth.
 
@@ -153,7 +151,6 @@ class TaskCompletionController extends GetxController {
   final uploadProgress = 0.0.obs;
 
   final uploadProgressText = 'Submitting...'.obs;
-
 
   void toggleChecklist(int index) {
     final item = checklist[index];
@@ -376,7 +373,6 @@ class TaskCompletionController extends GetxController {
                 : selectedFile.name,
             mimeType: 'image/jpeg',
             fileSize: compressedBytes.lengthInBytes,
-
           );
           await onImageReady?.call(image);
           images.add(image);
@@ -499,38 +495,38 @@ class TaskCompletionController extends GetxController {
           if (item.id != response.sowItemId) return item;
           return item.copyWith(
             notes: response.comments,
-            attachments: response.images
-                .map(
-                  (image) {
-                    final existingAttachments = item.attachments;
+            attachments: response.images.map(
+              (image) {
+                final existingAttachments = item.attachments;
 
-                    SowAttachmentModel? existing;
+                SowAttachmentModel? existing;
 
-                    for (final old in existingAttachments) {
-                      if (old.fileSize == image.fileSize && old.originalName == image.originalName) {
-                        existing = old;
-                        break;
-                      }
-                    }
-
-                    // Existing attachment: preserve all its original metadata.
-                    if (existing != null) {
-                      return existing;
-                    }
-
-                    // Newly added image: mark as mobile upload.
-                    return SowAttachmentModel(
-                      id: 0,
-                      workOrderId: item.workOrderId,
-                      sowItemId: item.id,
-                      disk: image.disk,
-                      originalName: image.originalName,
-                      mimeType: image.mimeType,
-                      fileSize: image.fileSize,
-                      filePath: image.filePath,
-                      isMobileUpload: true
-                    );
+                for (final old in existingAttachments) {
+                  if (old.fileSize == image.fileSize &&
+                      old.originalName == image.originalName) {
+                    existing = old;
+                    break;
                   }
+                }
+
+                // Existing attachment: preserve all its original metadata.
+                if (existing != null) {
+                  return existing;
+                }
+
+                // Newly added image: mark as mobile upload.
+                return SowAttachmentModel(
+                  id: 0,
+                  workOrderId: item.workOrderId,
+                  sowItemId: item.id,
+                  disk: image.disk,
+                  originalName: image.originalName,
+                  mimeType: image.mimeType,
+                  fileSize: image.fileSize,
+                  filePath: image.filePath,
+                  isMobileUpload: true,
+                );
+              },
               // => SowAttachmentModel(
               //       id: 0,
               //       workOrderId: item.workOrderId,
@@ -542,8 +538,7 @@ class TaskCompletionController extends GetxController {
               //       filePath:  image.filePath,
               //       isMobileUpload: true
               //     ),
-                )
-                .toList(),
+            ).toList(),
             status: status,
             completedAt: completedAt,
             clearCompletedAt: status != 1,
@@ -642,136 +637,23 @@ class TaskCompletionController extends GetxController {
       // API
       // ==========================================================
 
-
-        task.statusId=18; //submitted
-        await local.storage.updateWorkOrderData(task);
-
-        final value = await _apiService.post(
-          ApiRoutes.workOrderStatusUpdate,
-          data: {
-            "work_order_id": task.id,
-            "status_id": 18,///submitted
-            "remarks":task.remarks
-          },
-          isLoaderShow: true,
-        );
-        final dynamic responseData = value.data;
-
-        if (responseData != null && responseData['status'].toString() == "true") {
-
-          uploadProgress.value = 1.0;
-          uploadProgressText.value = 'Work Order Submitted completely';
-          onResult();
-          Get.snackbar(
-            'Success',
-            'Work order submitted successfully!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.success,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-          );
-
-        } else {
-          onResult();
-          Get.snackbar(
-            'Failed',
-            responseData['message'],
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: AppColors.error,
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-          );
-        }
-      } catch (error) {
-        debugPrint("❌SubmitTaskWorkOrderApi Error: $error");
-      }
-      finally {
-        isSubmitting.value = false;
-        
-      }
-
-
-  }
-
-  List<String> _photoUploadFailures(dynamic response, String message) {
-    final errors = response is Map
-        ? response['errors'] ??
-              (response['data'] is Map ? response['data']['errors'] : null)
-        : null;
-    final failures = <String>[];
-    if (errors is Map) {
-      final indexedPhotoError = RegExp(
-        r'^photos?(?:\.|\[)(\d+)(?:\]|\.)?\.?(.*)$',
+      task.statusId = 18; //submitted
+      await local.storage.updateWorkOrderData(task);
+      uploadProgress.value = 1.0;
+      uploadProgressText.value = 'Work Order Submitted completely';
+      onResult();
+      Get.snackbar(
+        'Success',
+        'Work order submitted successfully!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.success,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
       );
-      for (final entry in errors.entries) {
-        final match = indexedPhotoError.firstMatch(entry.key.toString());
-        if (match == null) continue;
-        final index = int.tryParse(match.group(1)!);
-        final photo =
-            index != null && index >= 0 && index < uploadedPhotos.length
-            ? uploadedPhotos[index]
-            : null;
-        final reference = photo == null
-            ? 'photo index ${index ?? match.group(1)}'
-            : '"${photo.fileName}"';
-        final field = match.group(2);
-        final detail = _errorText(entry.value);
-        failures.add(
-          'Photo upload failed for $reference'
-          '${field == null || field.isEmpty ? '' : ' ($field)'}: $detail',
-        );
-      }
-    }
-    if (failures.isNotEmpty) return failures;
-
-    final photoNames = uploadedPhotos
-        .asMap()
-        .entries
-        .map((entry) => '#${entry.key + 1} "${entry.value.fileName}"')
-        .join(', ');
-    return [
-      'Photo upload failed for $photoNames. '
-          'The server did not identify an individual file: $message',
-    ];
-  }
-
-  bool _hasRejectedResponse(dynamic response) {
-    if (response is! Map) return false;
-    final status = response['success'] ?? response['status'];
-    if (status == null) return false;
-    return status == false ||
-        status.toString().toLowerCase() == 'false' ||
-        status.toString().toLowerCase() == 'error' ||
-        status.toString().toLowerCase() == 'failed';
-  }
-
-  String? _responseMessage(dynamic response) {
-    if (response is! Map) return null;
-    final message = response['message'] ?? response['error'];
-    if (message == null || message.toString().trim().isEmpty) return null;
-    return message.toString();
-  }
-
-  String _errorText(dynamic value) {
-    if (value is List) return value.map(_errorText).join('; ');
-    if (value is Map) {
-      return value.entries
-          .map((entry) => '${entry.key}: ${_errorText(entry.value)}')
-          .join('; ');
-    }
-    return value?.toString() ?? 'Rejected by the server';
-  }
-
-  Future<void> _recordPhotoUploadFailures(List<String> failures) async {
-    try {
-      for (final failure in failures) {
-        await WorkerDataService(
-          api: _apiService,
-          local: local,
-        ).savePhotoUploadFailure(task.id, 'Photo upload: $failure');
-      }
     } catch (error) {
-      debugPrint('Unable to save photo upload failure: $error');
+      debugPrint("❌SubmitTaskWorkOrderApi Error: $error");
+    } finally {
+      isSubmitting.value = false;
     }
   }
 
@@ -783,22 +665,6 @@ class TaskCompletionController extends GetxController {
     ),
   );
 
-  dio.MultipartFile _multipartPhoto(UploadedPhotoModel photo) {
-    final image = photo.image;
-    if (image != null && image.isNotEmpty) {
-      return dio.MultipartFile.fromBytes(
-        base64Decode(_base64Payload(image)),
-        filename: photo.fileName,
-      );
-    }
-    return dio.MultipartFile.fromFileSync(
-      photo.filePath,
-      filename: photo.fileName,
-    );
-  }
-
-  String _base64Payload(String value) =>
-      value.startsWith('data:') ? value.substring(value.indexOf(',') + 1) : value;
 
   void _showError(String title, String message) {
     Get.snackbar(
@@ -887,8 +753,8 @@ class TaskCompletionController extends GetxController {
     return preInstallItems.every(isSowItemResolved);
   }
 
-  void _saveRemarksToLocalStorage(String text) async{
-    task.remarks=text;
+  void _saveRemarksToLocalStorage(String text) async {
+    task.remarks = text;
     await local.storage.updateWorkOrderData(task);
   }
 }

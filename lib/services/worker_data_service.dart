@@ -83,6 +83,35 @@ class WorkerDataService {
 
   Future<String?> syncOrderFailure(WorkOrderModel task) async {
     ///
+    /// ****************        Remarks, Status ID  STARTS HERE           ********************************
+    ///
+
+
+    try {
+
+        final responseData = await api.post(
+          ApiRoutes.workOrderStatusUpdate,
+          data: {
+            "work_order_id": task.id,
+            "status_id": task.statusId,
+            "remarks":task.remarks
+          }
+        );
+        if (!_successful(responseData.data)) {
+          return 'Remarks: ${_responseMessage(responseData.data) ??
+              'The server rejected the remarks update.'}';
+        }
+
+    } on ApiException catch (error) {
+      final details = _formatSowErrors(error.data, task);
+      return details.isNotEmpty
+          ? details.join('\n')
+          : 'Remarks: ${error.message}';
+    } on Exception catch (error) {
+      return 'Remarks: $error';
+    }
+
+    ///
     /// ****************        CHECK-IN / CHECK-OUT SYNC STARTS HERE           ********************************
     ///
 
