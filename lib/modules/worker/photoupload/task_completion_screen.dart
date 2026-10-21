@@ -1077,18 +1077,51 @@ class TaskCompletionScreen extends GetView<TaskCompletionController> {
                     minScale: 1,
                     maxScale: 5,
                     child: Center(
-                      child: Image.file(
+                      child: (photo.image != null && photo.image!.isNotEmpty)
+                          ? Image.memory(
+                        base64Decode(photo.image!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: const Color(0xFFE9EEF5),
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                color: _muted,
+                                size: 30,
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                          : Image.file(
                         File(photo.filePath),
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) {
-                          return const Center(
-                            child: Text(
-                              'Unable to preview this photo.',
-                              style: TextStyle(color: Colors.white),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: const Color(0xFFE9EEF5),
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                color: _muted,
+                                size: 30,
+                              ),
                             ),
                           );
                         },
                       ),
+                      // Image.file(
+                      //   File(photo.filePath),
+                      //   fit: BoxFit.contain,
+                      //   errorBuilder: (_, __, ___) {
+                      //     return const Center(
+                      //       child: Text(
+                      //         'Unable to preview this photo.',
+                      //         style: TextStyle(color: Colors.white),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                     ),
                   ),
                 ),

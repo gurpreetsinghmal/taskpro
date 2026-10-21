@@ -418,7 +418,8 @@ class DashboardTabScreen extends StatelessWidget {
             );
           }),
           // Show only in debug mode
-          if (kDebugMode) PendingSyncOrdersWidget(controller: controller),
+          //if(kDebugMode)
+          PendingSyncOrdersWidget(controller: controller),
           const SizedBox(height: 20),
 
           _buildTodaysOverviewSection(controller),
