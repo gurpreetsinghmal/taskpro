@@ -12,6 +12,7 @@ import 'package:taskpro/services/secure_storage_service.dart';
 import 'package:taskpro/services/storage_keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
 class SplashController extends GetxController {
   final _storage = SecureStorageService.instance;
 
@@ -53,17 +54,17 @@ class SplashController extends GetxController {
   Future<bool> _checkForRequiredUpdate() async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final response = await ApiService().get(ApiRoutes.dashboardStats);
-      final data ={"latest_version":"1.0.0","force_update":true};//response.data
+      final response = await ApiService().get(ApiRoutes.appVersion);
+      final data =response.data;
       final latestVersion = data['latest_version']?.toString();
-      final bool noForceUpdate = data['force_update'].toString()!="true";
+      final bool forceUpdate = data['force_update'].toString()=="true";
 
-      if (latestVersion == null || noForceUpdate || !_isVersionHigher(latestVersion, packageInfo.version)) {
+      if (latestVersion == null || !_isVersionHigher(latestVersion, packageInfo.version)) {
         return false;
       }
 
 
-      await Get.dialog<void>(
+      final bool result=await Get.dialog<bool>(
         PopScope(
           canPop: false,
           child: Dialog(
@@ -200,6 +201,46 @@ class SplashController extends GetxController {
                               ),
                             ],
                           ),
+                          if (!forceUpdate)
+                            Positioned(
+                              top: 10,
+                              right: 12,
+                              child: Material(
+                                color: Colors.white.withValues(alpha: .16),
+                                borderRadius: BorderRadius.circular(20),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () {
+                                    Get.back(result: false);
+                                  },
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 13,
+                                      vertical: 7,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Skip',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        SizedBox(width: 4),
+                                        Icon(
+                                          Icons.arrow_forward_rounded,
+                                          color: Colors.white,
+                                          size: 15,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -442,11 +483,11 @@ class SplashController extends GetxController {
           ),
         ),
         barrierDismissible: false,
-      );
+      )??true;
 
 
 
-      return true;
+      return result;
     } catch (_) {
       // A failed optional version check should not block normal app startup.
       return false;
